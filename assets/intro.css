@@ -1,0 +1,40 @@
+/* ==========================================================
+   オープニング演出 Version 2
+   ========================================================== */
+.intro-lock body{overflow:hidden}
+#intro{position:fixed;inset:0;z-index:1000;background:#02060c;color:#fff;cursor:pointer;overflow:hidden;--hole:0px;animation:introAuto .6s 10s forwards}
+@keyframes introAuto{to{opacity:0;visibility:hidden}}
+#intro.open{-webkit-mask:radial-gradient(circle at 50% 50%,transparent var(--hole),#000 calc(var(--hole) + 2px));mask:radial-gradient(circle at 50% 50%,transparent var(--hole),#000 calc(var(--hole) + 2px))}
+#intro.skip{transition:opacity .45s;opacity:0}
+.intro-stage{position:absolute;inset:0}
+.intro-stage.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%{transform:translate(-8px,4px)}20%{transform:translate(9px,-6px)}30%{transform:translate(-10px,-3px)}40%{transform:translate(7px,7px)}55%{transform:translate(-5px,-4px)}70%{transform:translate(3px,3px)}85%{transform:translate(-2px,1px)}}
+#intro canvas{position:absolute;inset:0;width:100%;height:100%}
+.intro-flash{position:absolute;inset:0;z-index:5;background:radial-gradient(circle,#fff 0%,#ffe2b8 30%,rgba(255,122,26,.6) 60%,transparent 80%);opacity:0;pointer-events:none}
+.intro-flash.go{animation:flash .9s ease-out}
+@keyframes flash{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
+.intro-cap{position:absolute;left:0;right:0;top:9%;z-index:3;margin:0;text-align:center;font:800 clamp(18px,3vw,30px)/1.3 "Noto Serif JP",serif;letter-spacing:.3em;color:#ffe2b8;text-shadow:0 0 24px rgba(255,140,50,.8);opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
+.intro-cap.on{opacity:1;transform:none}
+.intro-count{position:absolute;left:0;right:0;bottom:9%;z-index:3;display:grid;justify-items:center;opacity:0;transform:scale(.9);transition:opacity .35s,transform .35s}
+.intro-count.on{opacity:1;transform:none}
+.intro-num{font:800 clamp(48px,9vw,110px)/1 "Noto Sans JP",sans-serif;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff,#ffb45c 60%,#ff7a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,122,26,.6))}
+.intro-count span{font-size:clamp(12px,1.6vw,16px);font-weight:700;letter-spacing:.2em;color:#ffd6ad}
+.intro-center{position:absolute;inset:0;z-index:4;display:grid;place-content:center;justify-items:center;gap:26px;text-align:center;padding:0 18px;pointer-events:none}
+.intro-logo{width:clamp(96px,14vw,150px);aspect-ratio:1;opacity:0;filter:drop-shadow(0 0 30px rgba(255,140,50,.85)) drop-shadow(0 0 70px rgba(255,122,26,.5));transform:scale(3.2) rotate(-25deg);transition:transform .9s cubic-bezier(.6,0,.2,1),opacity .3s}
+.intro-logo.in{animation:logoIn .8s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes logoIn{0%{opacity:0;transform:scale(3.2) rotate(-25deg);filter:blur(12px) drop-shadow(0 0 30px #ff7a1a)}60%{opacity:1}100%{opacity:1;transform:none}}
+.intro-logo.fly{animation:none;opacity:1;transform:translate(var(--fx,0),var(--fy,0)) scale(var(--fs,.3))}
+.intro-logo-shape{position:relative;width:100%;height:100%;clip-path:polygon(50% 0,100% 100%,72% 100%,50% 52%,28% 100%,0 100%);background:linear-gradient(145deg,#ffcf8a,#ff8a2a 45%,#c24d05);overflow:hidden;display:grid;place-items:end center}
+.intro-logo-shape b{font:800 clamp(26px,3.6vw,38px)/1 "Noto Serif JP",serif;color:#2a1200;margin-bottom:10%}
+.intro-logo-shape::after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.95) 50%,transparent 58%);transform:translateX(-80%)}
+.intro-logo.in .intro-logo-shape::after{animation:shine 1.1s .7s ease-in-out 2}
+@keyframes shine{to{transform:translateX(80%)}}
+.intro-name{margin:0;display:flex;flex-wrap:wrap;justify-content:center;perspective:600px;font:800 clamp(20px,3.6vw,40px)/1.4 "Noto Sans JP",sans-serif;letter-spacing:.06em;max-width:900px}
+.intro-name span{display:inline-block;opacity:0;transform:rotateX(-100deg) translateY(30px) scale(1.6);transform-origin:50% 100%;text-shadow:0 2px 4px #000,0 0 14px #000,0 0 26px rgba(255,140,50,.8)}
+.intro-name.in span{animation:nameFlip .7s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:calc(var(--i) * 55ms)}
+@keyframes nameFlip{to{opacity:1;transform:none}}
+.intro-tag{margin:0;min-height:1.6em;text-shadow:0 1px 3px #000,0 0 12px #000;font-size:clamp(13px,1.8vw,18px);color:#ffb45c;letter-spacing:.28em;font-weight:700}
+#intro.closing .intro-name,#intro.closing .intro-tag{transition:opacity .4s,transform .5s;opacity:0;transform:scale(1.15)}
+.intro-skip{position:absolute;right:20px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:6;padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#e6edf4;font:700 12px "Noto Sans JP",sans-serif;cursor:pointer;backdrop-filter:blur(6px)}
+.intro-skip:hover{border-color:#ff7a1a;color:#fff}
+@media(prefers-reduced-motion:reduce){#intro{display:none}}

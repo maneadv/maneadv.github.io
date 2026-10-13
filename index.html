@@ -13,15 +13,16 @@
   <link rel="stylesheet" href="assets/karakuri.css">
   <link rel="stylesheet" href="assets/pages.css">
   <link rel="stylesheet" href="assets/fun.css">
+  <link rel="stylesheet" href="assets/intro.css">
 </head>
 <body data-page="top">
   <div id="intro" role="presentation">
-    <div class="intro-half top"></div><div class="intro-half bot"></div><canvas aria-hidden="true"></canvas>
-    <div class="intro-center"><svg class="intro-mark" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="introGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffad5c"/><stop offset="1" stop-color="#d55d08"/></linearGradient></defs><polygon class="fill" points="50,4 97,96 71,96 50,54 29,96 3,96"/><polygon class="stroke" points="50,4 97,96 71,96 50,54 29,96 3,96"/><text x="50" y="86" text-anchor="middle">M</text></svg>
-      <p class="intro-name"><span style="--i:0">株</span><span style="--i:1">式</span><span style="--i:2">会</span><span style="--i:3">社</span><span style="--i:4">マ</span><span style="--i:5">ネ</span><span style="--i:6">ー</span><span style="--i:7">ジ</span><span style="--i:8">メ</span><span style="--i:9">ン</span><span style="--i:10">ト</span><span style="--i:11">ア</span><span style="--i:12">ド</span><span style="--i:13">バ</span><span style="--i:14">イ</span><span style="--i:15">ザ</span><span style="--i:16">ー</span><span style="--i:17">ズ</span></p>
-      <p class="intro-tag">経営の相談に、確かな解決策を。</p></div>
-    <i class="intro-line" aria-hidden="true"></i>
-    <p class="intro-count" aria-hidden="true"><b class="intro-num">0</b>社超の代理店ネットワーク</p>
+    <div class="intro-stage"><canvas aria-hidden="true"></canvas>
+      <p class="intro-cap">大阪から、全国へ。</p>
+      <div class="intro-count" aria-hidden="true"><b class="intro-num">0</b><span>社超の提携代理店ネットワーク</span></div>
+      <div class="intro-center"><div class="intro-logo" aria-hidden="true"><div class="intro-logo-shape"><b>M</b></div></div>
+        <p class="intro-name" data-text="株式会社マネージメントアドバイザーズ"></p><p class="intro-tag" data-text="経営の相談に、確かな解決策を。"></p></div>
+    </div><i class="intro-flash" aria-hidden="true"></i>
     <button class="intro-skip" type="button">スキップ</button>
   </div>
   <script>try{if(sessionStorage.getItem("ma-intro")||matchMedia("(prefers-reduced-motion: reduce)").matches){document.getElementById("intro").remove()}else{document.documentElement.classList.add("intro-lock")}}catch(e){}</script>

@@ -410,45 +410,5 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.bgm-btn.on .bgm-eq i{animation:none;height:10px}}
 @media(max-width:520px){.site-header .brand b{font-size:10.5px;letter-spacing:0}}
 
-/* ==========================================================
-   オープニング演出
-   ========================================================== */
-.intro-lock body{overflow:hidden}
-#intro{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:#02060c;color:#fff;cursor:pointer;overflow:hidden;animation:introAuto .6s 8s forwards}
-@keyframes introAuto{to{opacity:0;visibility:hidden}}
-#intro canvas{position:absolute;inset:0;width:100%;height:100%}
-#intro .intro-half{position:absolute;left:0;right:0;height:50.5%;background:#02060c;z-index:0;transition:transform 1s cubic-bezier(.7,0,.2,1)}
-#intro .intro-half.top{top:0}#intro .intro-half.bot{bottom:0}
-#intro .intro-center{position:relative;z-index:2;display:grid;justify-items:center;gap:14px;text-align:center;padding:0 20px}
-#intro .intro-mark{width:96px;height:96px;opacity:0}
-#intro .intro-mark .stroke{fill:none;stroke:#ffb45c;stroke-width:2.2;stroke-dasharray:420;stroke-dashoffset:420}
-#intro .intro-mark .fill{fill:url(#introGrad);opacity:0}
-#intro .intro-mark text{fill:#1a0a00;font:800 26px "Noto Serif JP",serif;opacity:0}
-#intro .intro-name{margin:0;font-size:clamp(20px,3.4vw,34px);font-weight:800;letter-spacing:.08em;display:flex;flex-wrap:wrap;justify-content:center}
-#intro .intro-name span{display:inline-block;opacity:0;transform:translateY(14px);filter:blur(6px)}
-#intro .intro-tag{margin:0;font-size:clamp(13px,1.6vw,16px);color:#ffb45c;letter-spacing:.24em;opacity:0}
-#intro .intro-line{position:absolute;left:50%;top:50%;width:0;height:2px;background:linear-gradient(90deg,transparent,#ffb45c,#fff,#ffb45c,transparent);transform:translate(-50%,-50%);z-index:3;opacity:0}
-#intro .intro-count{position:absolute;left:24px;bottom:22px;z-index:3;font-size:12px;color:#93a6b9;letter-spacing:.1em;opacity:0}
-#intro .intro-count b{color:#ffb45c;font-size:20px;font-variant-numeric:tabular-nums;margin-right:4px}
-#intro .intro-skip{position:absolute;right:20px;bottom:18px;z-index:4;padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#d6e1ec;font:700 12px "Noto Sans JP",sans-serif;cursor:pointer}
-#intro .intro-skip:hover{border-color:#ff7a1a;color:#fff}
-#intro.play .intro-count{animation:fIn .5s .2s forwards}
-#intro.play .intro-mark{animation:fIn .3s 1.5s forwards}
-#intro.play .intro-mark .stroke{animation:draw 1s 1.5s cubic-bezier(.6,0,.3,1) forwards}
-#intro.play .intro-mark .fill{animation:fIn .5s 2.3s forwards}
-#intro.play .intro-mark text{animation:fIn .4s 2.5s forwards}
-#intro.play .intro-name span{animation:nameIn .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(2.3s + var(--i) * 45ms)}
-#intro.play .intro-tag{animation:fIn .7s 3.1s forwards}
-@keyframes fIn{to{opacity:1}}
-@keyframes draw{to{stroke-dashoffset:0}}
-@keyframes nameIn{to{opacity:1;transform:none;filter:none}}
-#intro.out{pointer-events:none;background:transparent}
-#intro.out canvas,#intro.out .intro-center,#intro.out .intro-count,#intro.out .intro-skip{opacity:0;transition:opacity .35s}
-#intro.out .intro-line{animation:lineOut .9s forwards}
-@keyframes lineOut{0%{opacity:1;width:0}40%{opacity:1;width:100%}100%{opacity:0;width:100%}}
-#intro.out .intro-half.top{transform:translateY(-101%);transition-delay:.3s}
-#intro.out .intro-half.bot{transform:translateY(101%);transition-delay:.3s}
-@media(prefers-reduced-motion:reduce){#intro{display:none}}
 .replay-intro{all:unset;cursor:pointer;margin-left:14px;font-size:10px;color:var(--p-dim);text-decoration:underline;text-underline-offset:3px}
 .replay-intro:hover{color:var(--p-acc2)}
-#intro.out .intro-count{animation:none;opacity:0}
