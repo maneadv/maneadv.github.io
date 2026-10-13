@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://maneadv.github.io/sitemap.xml
