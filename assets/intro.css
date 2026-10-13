@@ -4,7 +4,7 @@
 .intro-lock body{overflow:hidden}
 #intro{position:fixed;inset:0;z-index:1000;background:#02060c;color:#fff;cursor:pointer;overflow:hidden;--hole:0px;animation:introAuto .6s 10s forwards}
 @keyframes introAuto{to{opacity:0;visibility:hidden}}
-#intro.open{-webkit-mask:radial-gradient(circle at 50% 50%,transparent var(--hole),#000 calc(var(--hole) + 2px));mask:radial-gradient(circle at 50% 50%,transparent var(--hole),#000 calc(var(--hole) + 2px))}
+#intro.open{-webkit-mask:radial-gradient(circle at var(--hx,50%) var(--hy,50%),transparent var(--hole),#000 calc(var(--hole) + 90px));mask:radial-gradient(circle at var(--hx,50%) var(--hy,50%),transparent var(--hole),#000 calc(var(--hole) + 90px))}
 #intro.skip{transition:opacity .45s;opacity:0}
 .intro-stage{position:absolute;inset:0}
 .intro-stage.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
@@ -13,7 +13,7 @@
 .intro-flash{position:absolute;inset:0;z-index:5;background:radial-gradient(circle,#fff 0%,#ffe2b8 30%,rgba(255,122,26,.6) 60%,transparent 80%);opacity:0;pointer-events:none}
 .intro-flash.go{animation:flash .9s ease-out}
 @keyframes flash{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
-.intro-cap{position:absolute;left:0;right:0;top:9%;z-index:3;margin:0;text-align:center;font:800 clamp(18px,3vw,30px)/1.3 "Noto Serif JP",serif;letter-spacing:.3em;color:#ffe2b8;text-shadow:0 0 24px rgba(255,140,50,.8);opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
+.intro-cap{position:absolute;left:0;right:0;top:8%;z-index:3;margin:0;text-align:center;font:800 clamp(18px,3vw,30px)/1.3 "Noto Serif JP",serif;letter-spacing:.3em;color:#ffe2b8;text-shadow:0 0 24px rgba(255,140,50,.8);opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
 .intro-cap.on{opacity:1;transform:none}
 .intro-count{position:absolute;left:0;right:0;bottom:9%;z-index:3;display:grid;justify-items:center;opacity:0;transform:scale(.9);transition:opacity .35s,transform .35s}
 .intro-count.on{opacity:1;transform:none}
@@ -38,3 +38,8 @@
 .intro-skip{position:absolute;right:20px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:6;padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#e6edf4;font:700 12px "Noto Sans JP",sans-serif;cursor:pointer;backdrop-filter:blur(6px)}
 .intro-skip:hover{border-color:#ff7a1a;color:#fff}
 @media(prefers-reduced-motion:reduce){#intro{display:none}}
+.intro-logo-shape{box-shadow:none}
+.intro-logo{filter:drop-shadow(0 0 22px rgba(255,255,255,.7)) drop-shadow(0 0 60px rgba(255,140,50,.9))}
+.intro-name span{text-shadow:0 2px 3px rgba(40,12,0,.95),0 0 10px rgba(40,12,0,.9),0 0 26px rgba(80,25,0,.8)!important}
+.intro-tag{color:#fff!important;text-shadow:0 1px 3px rgba(40,12,0,.95),0 0 10px rgba(40,12,0,.9)!important}
+.intro-center{background:radial-gradient(ellipse 60% 22% at 50% 62%,rgba(30,8,0,.35),transparent 70%)}
