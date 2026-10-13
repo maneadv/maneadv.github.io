@@ -393,3 +393,19 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 /* トップ：夜景動画の見せ方 */
 .hero-video{object-position:58% 60%}
 .hero-video-shade{background:linear-gradient(90deg,rgba(3,8,15,.9) 0%,rgba(3,8,15,.66) 40%,rgba(3,8,15,.22) 70%,rgba(3,8,15,.45) 100%),linear-gradient(to bottom,rgba(3,8,15,.15),transparent 55%,#07111f 100%)!important}
+
+/* 背景音楽ボタン */
+.bgm-btn{display:inline-flex;align-items:center;gap:8px;margin-left:auto;margin-right:14px;padding:7px 12px;border-radius:999px;border:1px solid var(--p-line);background:rgba(255,255,255,.04);color:var(--p-dim);font:700 12px "Noto Sans JP",sans-serif;cursor:pointer;white-space:nowrap}
+.bgm-btn:hover{border-color:var(--p-acc);color:#fff}
+.bgm-btn.on{border-color:var(--p-acc);color:var(--p-acc2)}
+.bgm-btn.wait{animation:bgmPulse 1.6s ease-in-out infinite}
+@keyframes bgmPulse{50%{border-color:var(--p-acc)}}
+.bgm-eq{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
+.bgm-eq i{width:3px;height:4px;border-radius:1px;background:currentColor}
+.bgm-btn.on .bgm-eq i{animation:eq .9s ease-in-out infinite}
+.bgm-btn.on .bgm-eq i:nth-child(2){animation-delay:-.3s}.bgm-btn.on .bgm-eq i:nth-child(3){animation-delay:-.6s}.bgm-btn.on .bgm-eq i:nth-child(4){animation-delay:-.15s}
+@keyframes eq{0%,100%{height:3px}50%{height:14px}}
+@media(max-width:1000px){.bgm-btn{margin-right:6px}}
+@media(max-width:520px){.bgm-btn .bgm-label{display:none}.bgm-btn{padding:8px 10px}}
+@media(prefers-reduced-motion:reduce){.bgm-btn.on .bgm-eq i{animation:none;height:10px}}
+@media(max-width:520px){.site-header .brand b{font-size:10.5px;letter-spacing:0}}
