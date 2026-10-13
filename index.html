@@ -15,6 +15,16 @@
   <link rel="stylesheet" href="assets/fun.css">
 </head>
 <body data-page="top">
+  <div id="intro" role="presentation">
+    <div class="intro-half top"></div><div class="intro-half bot"></div><canvas aria-hidden="true"></canvas>
+    <div class="intro-center"><svg class="intro-mark" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="introGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffad5c"/><stop offset="1" stop-color="#d55d08"/></linearGradient></defs><polygon class="fill" points="50,4 97,96 71,96 50,54 29,96 3,96"/><polygon class="stroke" points="50,4 97,96 71,96 50,54 29,96 3,96"/><text x="50" y="86" text-anchor="middle">M</text></svg>
+      <p class="intro-name"><span style="--i:0">株</span><span style="--i:1">式</span><span style="--i:2">会</span><span style="--i:3">社</span><span style="--i:4">マ</span><span style="--i:5">ネ</span><span style="--i:6">ー</span><span style="--i:7">ジ</span><span style="--i:8">メ</span><span style="--i:9">ン</span><span style="--i:10">ト</span><span style="--i:11">ア</span><span style="--i:12">ド</span><span style="--i:13">バ</span><span style="--i:14">イ</span><span style="--i:15">ザ</span><span style="--i:16">ー</span><span style="--i:17">ズ</span></p>
+      <p class="intro-tag">経営の相談に、確かな解決策を。</p></div>
+    <i class="intro-line" aria-hidden="true"></i>
+    <p class="intro-count" aria-hidden="true"><b class="intro-num">0</b>社超の代理店ネットワーク</p>
+    <button class="intro-skip" type="button">スキップ</button>
+  </div>
+  <script>try{if(sessionStorage.getItem("ma-intro")||matchMedia("(prefers-reduced-motion: reduce)").matches){document.getElementById("intro").remove()}else{document.documentElement.classList.add("intro-lock")}}catch(e){}</script>
   <a class="skip" href="#main">本文へ移動</a>
   <div class="scroll-universe" aria-hidden="true"><div class="cosmic-layer cosmic-stars"></div><div class="cosmic-layer cosmic-nebula"></div><div class="cosmic-orbit orbit-one"></div><div class="cosmic-orbit orbit-two"></div><div class="cosmic-planet"></div></div>
   <header class="site-header" id="top">
@@ -142,7 +152,7 @@
       <div class="foot-col"><h2>事業内容</h2><ul><li><a href="business/index.html#keiei">経営・事業の支援</a></li><li><a href="business/index.html#cost">コスト削減・店舗支援</a></li><li><a href="business/index.html#hanro">商材・販路の拡大</a></li><li><a href="business/index.html#seisaku">制作・IT</a></li><li><a href="business/index.html#renkei">連携事業</a></li></ul></div>
       <div class="foot-col foot-wide"><h2>各事業</h2><ul class="two"><li><a href="business/management.html">企業支援・経営サポート</a></li><li><a href="business/experts.html">専門家連携・行政書士業務</a></li><li><a href="business/hr.html">人材・採用支援</a></li><li><a href="business/alliance.html">事業連携・協業</a></li><li><a href="business/newbiz.html">新規事業開発</a></li><li><a href="business/tsushin.html">通信・電話関連</a></li><li><a href="business/tenpo.html">店舗運営支援</a></li><li><a href="business/cost.html">固定費・仕入れ削減</a></li><li><a href="business/eisei.html">衛生・環境関連商材</a></li><li><a href="business/shozai.html">商材開拓・代理店展開</a></li><li><a href="business/global.html">海外・輸出・国際ネットワーク</a></li><li><a href="business/region.html">地域活性化</a></li><li><a href="business/produce.html">企画・制作・プロデュース</a></li><li><a href="business/it.html">AI・システム開発</a></li><li><a href="business/reuse.html">リユース・買取</a></li><li><a href="business/ieshimai.html">家じまい・不動産支援</a></li><li><a href="business/care.html">医療・介護 総合支援</a></li></ul></div>
     </div>
-    <div class="container copyright"><span>© 株式会社マネージメントアドバイザーズ</span><span>Management Advisers Co., Ltd.</span></div>
+    <div class="container copyright"><span>© 株式会社マネージメントアドバイザーズ<button type="button" class="replay-intro" onclick="try{sessionStorage.removeItem('ma-intro')}catch(e){};location.href='index.html'">オープニングをもう一度見る</button></span><span>Management Advisers Co., Ltd.</span></div>
   </footer>
   <a class="to-top" href="#top" aria-label="ページの先頭へ">↑</a>
   <script src="assets/site.js"></script>
@@ -151,5 +161,6 @@
   <script src="assets/fun.js"></script>
   <script src="assets/scheme.js"></script>
   <script src="assets/bgm.js"></script>
+  <script src="assets/intro.js"></script>
 </body>
 </html>
