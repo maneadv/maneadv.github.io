@@ -5,7 +5,7 @@
 (()=>{
 const btn=document.querySelector('.bgm-btn');if(!btn)return;
 const base=btn.dataset.src;const a=new Audio();a.loop=true;a.preload='none';
-a.src=base+(a.canPlayType('audio/ogg; codecs="opus"')?'bgm.ogg':'bgm.mp3');
+a.src=base+(a.canPlayType('audio/ogg; codecs="opus"')?'bgm2.ogg':'bgm2.mp3');
 const TARGET=0.32;let fading=null;
 const get=k=>{try{return localStorage.getItem(k)}catch(_){return null}},set=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
 const sget=k=>{try{return sessionStorage.getItem(k)}catch(_){return null}},sset=(k,v)=>{try{sessionStorage.setItem(k,v)}catch(_){}};
