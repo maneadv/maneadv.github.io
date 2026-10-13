@@ -38,8 +38,9 @@ const showGate=()=>{
   gate.querySelector('.mute').addEventListener('click',open(false));
   gate.addEventListener('click',e=>e.stopPropagation());
 };
-// 音楽を止めると決めている人には流さない
-if(!bgm||bgm.off()){run();return}
+if(!bgm){run();return}
+// 以前ヘッダーで音楽を切った人には自動では流さず、案内から選んでもらう
+if(bgm.off()){showGate();return}
 // まず自動で流してみる。止められたら案内を出す
 let decided=false;
 const t=setTimeout(()=>{if(!decided){decided=true;showGate()}},2500);
