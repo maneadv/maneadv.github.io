@@ -16,6 +16,9 @@ const stop=()=>{fade(0,500,()=>a.pause());ui(false)};
 btn.addEventListener('click',()=>{if(btn.classList.contains('on')){stop();set('ma-bgm','off')}else{set('ma-bgm','on');play()}});
 addEventListener('pagehide',()=>{if(!a.paused)sset('ma-bgm-t',String(a.currentTime))});
 ui(false);
+// オープニングから呼び出せるようにする
+window.maBgm={play:()=>play().then(ok=>{if(ok)set('ma-bgm','on');return ok}),stop:()=>{if(!a.paused)stop()},off:()=>get('ma-bgm')==='off',audio:a};
+if(document.getElementById('intro'))a.preload='auto';
 // 前のページで流していた場合は、続きから流す（ブラウザが止めた場合は最初の操作で流す）
 if(get('ma-bgm')==='on'){play().then(ok=>{if(ok)return;btn.classList.add('wait');const go=e=>{if(e.target.closest&&e.target.closest('.bgm-btn'))return;play();btn.classList.remove('wait');removeEventListener('pointerdown',go,true);removeEventListener('keydown',go,true)};addEventListener('pointerdown',go,true);addEventListener('keydown',go,true)})}
 })();

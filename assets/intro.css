@@ -3,7 +3,8 @@
    足さずに引く：黒・細い金の線・柔らかな日の出・明朝体
    ========================================================== */
 .intro-lock body{overflow:hidden}
-#intro{--line:56%;--gold:#e9c78f;--gold2:#c8954f;position:fixed;inset:0;z-index:1000;background:#030406;color:#fff;cursor:pointer;overflow:hidden;animation:introAuto .8s 11s forwards}
+#intro{--line:56%;--gold:#e9c78f;--gold2:#c8954f;position:fixed;inset:0;z-index:1000;background:#030406;color:#fff;cursor:pointer;overflow:hidden}
+#intro.run{animation:introAuto .8s 12s forwards}
 @keyframes introAuto{to{opacity:0;visibility:hidden}}
 #intro.skip{transition:opacity .6s ease;opacity:0}
 
@@ -76,6 +77,20 @@
 .intro-skip{position:absolute;right:22px;bottom:calc(9vh + 14px);z-index:7;padding:7px 16px;border-radius:999px;border:1px solid rgba(233,199,143,.35);background:transparent;color:rgba(243,230,210,.8);font:500 11px "Noto Sans JP",sans-serif;letter-spacing:.2em;cursor:pointer}
 .intro-skip:hover{border-color:var(--gold);color:#fff}
 #intro.s7 .intro-skip{opacity:0;transition:opacity .4s}
+
+/* 音楽の案内（ブラウザが自動再生を止めたときだけ出る） */
+.ci-gate{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#030406;cursor:default;transition:opacity .9s ease}
+.ci-gate[hidden]{display:none}
+.ci-gate.out{opacity:0;pointer-events:none}
+.ci-gate p{margin:0;font:500 clamp(12px,1.3vw,14px)/1.8 "Noto Serif JP",serif;letter-spacing:.45em;padding-left:.45em;color:rgba(243,230,210,.7);text-align:center}
+.ci-gate .go{position:relative;padding:16px 40px;border:1px solid rgba(233,199,143,.55);background:transparent;color:#f3e6d2;font:500 clamp(14px,1.6vw,17px) "Noto Serif JP",serif;letter-spacing:.4em;padding-left:calc(40px + .4em);cursor:pointer;transition:background .4s,border-color .4s,color .4s}
+.ci-gate .go::before{content:"";position:absolute;inset:-6px;border:1px solid rgba(233,199,143,.18);animation:gatePulse 2.4s ease-in-out infinite}
+@keyframes gatePulse{50%{inset:-12px;opacity:0}}
+.ci-gate .go:hover{background:rgba(233,199,143,.08);border-color:var(--gold);color:#fff}
+.ci-gate .mute{background:none;border:0;color:rgba(243,230,210,.45);font:500 12px "Noto Sans JP",sans-serif;letter-spacing:.3em;cursor:pointer;text-decoration:underline;text-underline-offset:6px}
+.ci-gate .mute:hover{color:rgba(243,230,210,.85)}
+.ci-gate .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff3dc,#f6a65a 60%,transparent 70%);box-shadow:0 0 24px 6px rgba(246,166,90,.35)}
+#intro.gate .intro-skip{opacity:0;pointer-events:none}
 
 @media(max-width:720px){
   #intro{--line:54%}
