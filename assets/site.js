@@ -20,7 +20,7 @@ document.querySelectorAll('.console-tabs button').forEach(button=>button.addEven
 
 const counter=document.querySelector('[data-count]');
 const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(counter){if(reduced){counter.textContent='5,000+'}else{let start;const animate=time=>{start??=time;const progress=Math.min((time-start)/1100,1);counter.textContent=Math.floor(5000*(1-Math.pow(1-progress,3))).toLocaleString()+'+';if(progress<1)requestAnimationFrame(animate)};requestAnimationFrame(animate)}}
+if(counter){if(reduced){counter.textContent='5,000'}else{let start;const animate=time=>{start??=time;const progress=Math.min((time-start)/1100,1);counter.textContent=Math.floor(5000*(1-Math.pow(1-progress,3))).toLocaleString();if(progress<1)requestAnimationFrame(animate)};requestAnimationFrame(animate)}}
 
 const revealTargets=document.querySelectorAll('.section .container,.network-proof .container');
 if(!reduced&&'IntersectionObserver'in window){revealTargets.forEach(el=>el.classList.add('reveal'));const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.1});revealTargets.forEach(el=>observer.observe(el))}

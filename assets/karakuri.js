@@ -43,7 +43,9 @@ if(!reduced&&'IntersectionObserver'in window){
 if(fine&&!reduced){
   const ring=document.createElement('div');ring.className='cursor-ring';ring.setAttribute('aria-hidden','true');
   const dot=document.createElement('div');dot.className='cursor-dot';dot.setAttribute('aria-hidden','true');
-  document.body.append(ring,dot);
+  ring.style.opacity='0';dot.style.opacity='0';document.body.append(ring,dot);
+  addEventListener('pointermove',()=>{ring.style.opacity='';dot.style.opacity=''},{once:true,passive:true});
+  document.addEventListener('mouseleave',()=>{ring.style.opacity='0';dot.style.opacity='0'});document.addEventListener('mouseenter',()=>{ring.style.opacity='';dot.style.opacity=''});
   let x=innerWidth/2,y=innerHeight/2,rx=x,ry=y;
   addEventListener('pointermove',e=>{x=e.clientX;y=e.clientY;dot.style.transform=`translate(${x}px,${y}px)`;ring.classList.toggle('on-link',!!e.target.closest('a,button,[role=tab],.flip,.ticker span,input,select,textarea'))},{passive:true});
   const loop=()=>{rx+=(x-rx)*.18;ry+=(y-ry)*.18;ring.style.transform=`translate(${rx}px,${ry}px)`;requestAnimationFrame(loop)};loop();

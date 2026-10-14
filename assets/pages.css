@@ -428,3 +428,13 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 .recruit-appeal span{font-size:.92rem;line-height:1.7;opacity:.9}
 .info-table small{opacity:.75}
 .contact-info small{opacity:.75}
+
+/* 社名の改行位置（スマホ） */
+.co-kind{display:inline}
+@media(max-width:520px){.site-header .brand b .co-kind{display:block;font-size:.86em;opacity:.85;line-height:1.2}}
+/* 会社概要の事業内容 */
+.biz-row{display:block;padding:4px 0}.biz-row+.biz-row{border-top:1px dashed rgba(255,255,255,.08)}
+.biz-row b{display:block;color:#ffb15e;font-weight:600;font-size:.95em}.biz-row span{display:block;line-height:1.8}
+/* 404 */
+.nf{min-height:56vh;display:flex;align-items:center}.nf-box{text-align:center}.nf-box h1{font-size:clamp(20px,3vw,30px);line-height:1.6;margin:10px 0 14px}
+.nf-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:22px}
