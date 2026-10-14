@@ -17,7 +17,7 @@ btn.addEventListener('click',()=>{if(btn.classList.contains('on')){stop();set('m
 addEventListener('pagehide',()=>{if(!a.paused)sset('ma-bgm-t',String(a.currentTime))});
 ui(false);
 // オープニングから呼び出せるようにする
-window.maBgm={play:(f)=>play(f).then(ok=>{if(ok)set('ma-bgm','on');return ok}),stop:()=>{if(!a.paused)stop()},off:()=>get('ma-bgm')==='off',audio:a};
+window.maBgm={play:(f)=>play(f).then(ok=>{if(ok)set('ma-bgm','on');return ok}),stop:()=>{if(!a.paused)stop()},unlock:()=>{if(!a.paused)return;a.muted=true;a.play().then(()=>{a.pause();a.muted=false;try{a.currentTime=0}catch(_){}}).catch(()=>{a.muted=false})},off:()=>get('ma-bgm')==='off',audio:a};
 if(document.getElementById('intro'))a.preload='auto';
 // 前のページで流していた場合は、続きから流す（ブラウザが止めた場合は最初の操作で流す）
 if(get('ma-bgm')==='on'){play().then(ok=>{if(ok)return;btn.classList.add('wait');const go=e=>{if(e.target.closest&&e.target.closest('.bgm-btn'))return;play();btn.classList.remove('wait');removeEventListener('pointerdown',go,true);removeEventListener('keydown',go,true)};addEventListener('pointerdown',go,true);addEventListener('keydown',go,true)})}

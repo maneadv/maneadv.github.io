@@ -412,3 +412,5 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 
 .replay-intro{all:unset;cursor:pointer;margin-left:14px;font-size:10px;color:var(--p-dim);text-decoration:underline;text-underline-offset:3px}
 .replay-intro:hover{color:var(--p-acc2)}
+
+.map-credit{display:block;margin-top:4px;font-size:10px;opacity:.55;letter-spacing:.04em}

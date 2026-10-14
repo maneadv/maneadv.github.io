@@ -1,88 +1,62 @@
 /* ==========================================================
-   オープニング Version 4「夜明け」— 映画のタイトル風
-   足さずに引く：黒・細い金の線・柔らかな日の出・明朝体
+   オープニング Version 7「夜明け」— 粒子・宇宙・大阪・夜明け（音付き）
    ========================================================== */
 .intro-lock body{overflow:hidden}
-#intro{--line:56%;--gold:#e9c78f;--gold2:#c8954f;position:fixed;inset:0;z-index:1000;background:#030406;color:#fff;cursor:pointer;overflow:hidden}
-#intro.run{animation:introAuto .8s 20s forwards}
+#intro{position:fixed;inset:0;z-index:1000;background:#000;color:#fff;cursor:pointer;overflow:hidden}
+#intro.run{animation:introAuto .8s 26s forwards}
 @keyframes introAuto{to{opacity:0;visibility:hidden}}
 #intro.skip{transition:opacity .6s ease;opacity:0}
+#intro.exit{transition:opacity 1s ease,transform 1.1s cubic-bezier(.5,0,.2,1);opacity:0;transform:scale(1.06)}
 
-/* 上下の半分（最後にここから開く） */
-.ci-top,.ci-bot{position:absolute;left:0;right:0;overflow:hidden;transition:transform 1.25s cubic-bezier(.77,0,.18,1)}
-.ci-top{top:0;height:var(--line);background:#030406}
-.ci-bot{bottom:0;top:var(--line);background:#020304}
-#intro.s7 .ci-top{transform:translateY(-101%)}
-#intro.s7 .ci-bot{transform:translateY(101%)}
-
-/* 空：地平線の近くだけ、ほんのり朝焼け */
-.ci-sky{position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 100%,rgba(232,140,60,.42),rgba(150,70,60,.18) 40%,rgba(40,30,60,.10) 65%,transparent 80%);opacity:0;transition:opacity 5s ease}
-#intro.s3 .ci-sky{opacity:1}
-/* 太陽：光の筋は使わず、柔らかい円とにじみだけ */
-.ci-sun{position:absolute;left:50%;bottom:0;width:min(22vw,180px);aspect-ratio:1;border-radius:50%;transform:translate(-50%,72%);opacity:0;
-  background:radial-gradient(circle at 50% 50%,#fff8ec 0%,#ffe1b0 38%,#f6a65a 70%,rgba(240,130,50,0) 72%);
-  box-shadow:0 0 60px 18px rgba(255,170,90,.35),0 0 180px 60px rgba(240,120,50,.18);
-  transition:transform 7s cubic-bezier(.25,.6,.2,1),opacity 2.4s ease}
-#intro.s3 .ci-sun{opacity:1;transform:translate(-50%,56%)}
-/* 水面の映り込み */
-.ci-reflect{position:absolute;left:50%;top:0;width:min(30vw,260px);height:42%;transform:translateX(-50%);opacity:0;transition:opacity 3.5s ease 1.5s;
-  background:repeating-linear-gradient(180deg,rgba(255,200,140,.55) 0 2px,transparent 2px 7px);
-  -webkit-mask:radial-gradient(ellipse 50% 100% at 50% 0,#000 0%,transparent 75%);mask:radial-gradient(ellipse 50% 100% at 50% 0,#000 0%,transparent 75%);
-  animation:shimmer 2.4s ease-in-out infinite}
-#intro.s3 .ci-reflect{opacity:.55}
-@keyframes shimmer{50%{transform:translateX(-50%) scaleX(.86)}}
-
-/* 地平線の金の線 */
-.ci-line{position:absolute;left:50%;top:var(--line);height:1px;width:0;transform:translate(-50%,-50%);z-index:3;
-  background:linear-gradient(90deg,transparent,rgba(233,199,143,.25) 12%,var(--gold) 50%,rgba(233,199,143,.25) 88%,transparent);
-  box-shadow:0 0 10px rgba(233,199,143,.6);transition:width 2.4s cubic-bezier(.65,0,.2,1),opacity .8s}
-#intro.s2 .ci-line{width:min(86vw,1100px)}
-#intro.s7 .ci-line{width:100vw;box-shadow:0 0 22px 2px rgba(255,220,170,.9);opacity:0;transition:width .7s ease,opacity .9s ease .5s,box-shadow .4s}
-
-/* 映画の黒帯 */
-.ci-bars i{position:absolute;left:0;right:0;height:9vh;background:#000;z-index:5;transition:transform 1.1s cubic-bezier(.65,0,.2,1)}
-.ci-bars .t{top:0;transform:translateY(-100%)}.ci-bars .b{bottom:0;transform:translateY(100%)}
-#intro.s1 .ci-bars i{transform:none}
-#intro.s7 .ci-bars .t{transform:translateY(-100%)}#intro.s7 .ci-bars .b{transform:translateY(100%)}
+/* 層の順番：街の映像 → 夜明けの色 → 絵（粒子・地球） → 白 → 文字 → 黒帯 */
+.op-city{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform-origin:50% 50%;z-index:1}
+.op-night{position:absolute;inset:0;z-index:1;background:#02040c;opacity:.5;pointer-events:none}
+.op-dawn{display:none;position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;
+  background:linear-gradient(0deg,rgba(255,138,52,.45) 0%,rgba(255,120,70,.30) 22%,rgba(200,96,120,.16) 45%,rgba(90,100,170,.10) 70%,rgba(20,30,80,0) 100%)}
+.op-dawn::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(255,190,120,.32),transparent 70%)}
+.op-cv{position:absolute;inset:0;width:100%;height:100%;z-index:3;transform-origin:50% 50%}
+.op-white{position:absolute;inset:0;z-index:4;background:#fff;opacity:0;pointer-events:none}
 
 /* 文字 */
-.ci-text{position:absolute;inset:0;z-index:4;pointer-events:none}
-.ci-lead{position:absolute;left:0;right:0;top:calc(var(--line) - 27%);margin:0;text-align:center;font:400 clamp(15px,1.9vw,21px)/1.6 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.55em;padding-left:.55em;color:#efe3cf;opacity:0;transform:translateY(8px);transition:opacity 1.4s ease,transform 1.8s ease}
-#intro.s4 .ci-lead{opacity:1;transform:none}
-#intro.s4b .ci-lead,#intro.s5 .ci-lead{opacity:0;transform:translateY(-6px);transition-duration:1.1s}
-#intro.s4b .ci-lead.two{opacity:1;transform:none;transition-duration:1.4s,1.8s;transition-delay:.6s}
-#intro.s5 .ci-lead.two{opacity:0;transform:translateY(-6px);transition-duration:1.1s;transition-delay:0s}
-.ci-mark{position:absolute;left:50%;top:calc(var(--line) - 30%);visibility:hidden;width:clamp(40px,4.4vw,56px);transform:translate(-50%,-30%);overflow:visible;opacity:0;transition:opacity .5s ease}
-#intro.s5 .ci-mark{opacity:1;visibility:visible}
-.ci-mark polygon{fill:none;stroke:var(--gold);stroke-width:1.2;stroke-dasharray:330;stroke-dashoffset:330;transition:stroke-dashoffset 1.8s cubic-bezier(.6,0,.2,1)}
-.ci-mark .f{fill:url(#ciGold);stroke:none;opacity:0;transition:opacity 1.2s ease 1.2s}
-#intro.s5 .ci-mark polygon{stroke-dashoffset:0}#intro.s5 .ci-mark .f{opacity:1}
-.ci-name{position:absolute;left:0;right:0;top:calc(var(--line) + 5%);margin:0;padding:0 16px;text-align:center;font:500 clamp(20px,2.9vw,36px)/1.5 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.5em;visibility:hidden;transition:letter-spacing 3.4s cubic-bezier(.2,.7,.2,1)}
-#intro.s5 .ci-name{visibility:visible}
-.ci-name span{display:inline-block;opacity:0;transform:translateY(8px);
-  background:linear-gradient(180deg,#fbf3e4 0%,#ecd6ae 60%,#d6b27a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  transition:opacity 1.3s ease,transform 1.5s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i) * 70ms)}
-#intro.s5 .ci-name{letter-spacing:.26em}
-#intro.s5 .ci-name span{opacity:1;transform:none}
-.ci-tag{position:absolute;left:0;right:0;top:calc(var(--line) + 20%);margin:0;text-align:center;font:400 clamp(12px,1.25vw,14px)/1.6 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.7em;padding-left:.7em;color:rgba(239,227,207,.72);opacity:0;transition:opacity 1.6s ease}
-#intro.s6 .ci-tag{opacity:1}
-.ci-en{position:absolute;left:0;right:0;top:calc(var(--line) + 13.5%);margin:0;text-align:center;font:italic 400 clamp(13px,1.35vw,17px)/1.4 "Cormorant Garamond",serif;letter-spacing:.32em;padding-left:.32em;color:rgba(214,178,122,.85);opacity:0;transition:opacity 2s ease .9s}
-#intro.s5 .ci-en{opacity:1}
-#intro.s7 .ci-text{opacity:0;transition:opacity .6s ease}
+.op-l1{position:absolute;left:0;right:0;top:50%;z-index:5;margin:0;transform:translateY(-50%);text-align:center;
+  font:400 clamp(20px,3vw,40px)/1.5 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.7em;padding-left:.7em;color:#fff6e8;
+  text-shadow:0 0 24px rgba(255,170,90,.55),0 2px 18px rgba(0,0,0,.55);opacity:0;transition:opacity 1.6s ease,letter-spacing 3s cubic-bezier(.2,.7,.2,1)}
+#intro.l1 .op-l1{opacity:1;letter-spacing:.42em}
+#intro.l1out .op-l1{opacity:0;transition:opacity .45s ease}
+.op-final{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,3vh,34px);pointer-events:none}
+.op-big{margin:0;text-align:center;font:600 clamp(30px,6vw,86px)/1.35 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.08em;color:#fff;opacity:0;
+  text-shadow:0 0 30px rgba(255,150,60,.75),0 0 80px rgba(255,110,30,.45),0 4px 24px rgba(0,0,0,.6)}
+.op-big .o{color:#ffb15e}
+.op-big br{display:none}
+#intro.boom .op-big{animation:boomIn .5s cubic-bezier(.2,1.4,.3,1) forwards}
+@keyframes boomIn{0%{opacity:0;transform:scale(2.4);filter:blur(10px)}35%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1)}}
+#intro.boom{animation:shake .55s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(5px,-3px)}30%,50%,70%{transform:translate(-9px,4px)}40%,60%{transform:translate(9px,-4px)}}
+#intro.boom .op-flash{animation:flash .5s ease-out forwards}
+.op-flash{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff,rgba(255,200,140,.6) 40%,rgba(255,140,50,0) 75%);opacity:0;pointer-events:none}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+.op-co{display:flex;align-items:center;gap:14px;opacity:0;transform:translateY(8px);transition:opacity 1.2s ease,transform 1.2s ease}
+.op-co svg{width:clamp(26px,2.6vw,34px)}
+.op-co span{font:500 clamp(13px,1.5vw,18px) "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;color:#f1e3c9}
+#intro.co .op-co{opacity:1;transform:none}
+.op-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,.15) 70%,transparent)}
+#intro.boom .op-shade{opacity:1}
 
-/* フィルムの粒子と周辺減光 */
-.ci-grain{position:absolute;inset:-50%;z-index:6;pointer-events:none;opacity:.07;
+/* 映画の黒帯・粒子感・周辺減光 */
+.ci-bars i{position:absolute;left:0;right:0;height:8vh;background:#000;z-index:6;transition:transform 1.1s cubic-bezier(.65,0,.2,1)}
+.ci-bars .t{top:0;transform:translateY(-100%)}.ci-bars .b{bottom:0;transform:translateY(100%)}
+#intro.s1 .ci-bars i{transform:none}
+#intro.boom .ci-bars .t{transform:translateY(-100%)}#intro.boom .ci-bars .b{transform:translateY(100%)}
+.ci-grain{position:absolute;inset:-50%;z-index:6;pointer-events:none;opacity:.06;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation:grain .5s steps(4) infinite}
+}
+#intro.boom .ci-grain{display:none}
 @keyframes grain{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
-.ci-vig{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.6) 100%)}
-#intro.s7 .ci-grain,#intro.s7 .ci-vig{opacity:0;transition:opacity .8s}
+.ci-vig{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 50%,rgba(0,0,0,.55) 100%)}
 
-.intro-skip{position:absolute;right:22px;bottom:calc(9vh + 14px);z-index:7;padding:7px 16px;border-radius:999px;border:1px solid rgba(233,199,143,.35);background:transparent;color:rgba(243,230,210,.8);font:400 11px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer}
-.intro-skip:hover{border-color:var(--gold);color:#fff}
-#intro.s7 .intro-skip{opacity:0;transition:opacity .4s}
-
-/* 音楽の案内（ブラウザが自動再生を止めたときだけ出る） */
+.intro-skip{position:absolute;right:22px;bottom:calc(8vh + 14px);z-index:7;padding:7px 16px;border-radius:999px;border:1px solid rgba(233,199,143,.35);background:rgba(0,0,0,.25);color:rgba(243,230,210,.85);font:400 11px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer}
+.intro-skip:hover{border-color:#e9c78f;color:#fff}
+#intro.boom .intro-skip{bottom:22px}
 .ci-gate{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#030406;cursor:default;transition:opacity .9s ease}
 .ci-gate[hidden]{display:none}
 .ci-gate.out{opacity:0;pointer-events:none}
@@ -95,13 +69,10 @@
 .ci-gate .mute:hover{color:rgba(243,230,210,.85)}
 .ci-gate .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff3dc,#f6a65a 60%,transparent 70%);box-shadow:0 0 24px 6px rgba(246,166,90,.35)}
 #intro.gate .intro-skip{opacity:0;pointer-events:none}
-
 @media(max-width:720px){
-  #intro{--line:54%}
-  .ci-sun{width:34vw}.ci-reflect{width:46vw}
-  .ci-name{letter-spacing:.3em;font-size:16.5px;padding:0 10px}#intro.s5 .ci-name{letter-spacing:.12em}
-  .ci-tag{letter-spacing:.4em;top:calc(var(--line) + 19%)}
-  .ci-en{top:calc(var(--line) + 13.5%);letter-spacing:.2em}
-  .ci-lead{letter-spacing:.3em}
+  .op-l1{letter-spacing:.4em;padding-left:.4em}#intro.l1 .op-l1{letter-spacing:.22em}
+  .op-big{font-size:clamp(28px,8.6vw,44px);letter-spacing:.04em}
+  .op-big br{display:inline}
+  .op-co span{letter-spacing:.12em;font-size:12.5px}
 }
 @media(prefers-reduced-motion:reduce){#intro{display:none}}
