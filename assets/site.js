@@ -50,3 +50,6 @@ const requestProgress=()=>{if(!progressTick){progressTick=true;requestAnimationF
 
 document.querySelectorAll('.mega-toggle').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();const box=b.closest('.has-mega');const open=box.classList.toggle('open');b.setAttribute('aria-expanded',String(open))}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.has-mega.open').forEach(x=>{x.classList.remove('open');x.querySelector('.mega-toggle')?.setAttribute('aria-expanded','false')})});
+
+/* フッター：スマホでは折りたたむ（パソコンでは常に開く） */
+(()=>{const mq=matchMedia('(max-width:720px)');const ds=[...document.querySelectorAll('footer details.foot-col')];const set=()=>ds.forEach(d=>{d.open=!mq.matches});set();mq.addEventListener?mq.addEventListener('change',set):mq.addListener(set);ds.forEach(d=>d.querySelector('summary').addEventListener('click',e=>{if(!mq.matches)e.preventDefault()}))})();

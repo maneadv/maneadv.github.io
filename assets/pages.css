@@ -438,3 +438,32 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 /* 404 */
 .nf{min-height:56vh;display:flex;align-items:center}.nf-box{text-align:center}.nf-box h1{font-size:clamp(20px,3vw,30px);line-height:1.6;margin:10px 0 14px}
 .nf-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:22px}
+
+/* 正式ロゴ */
+.brand-logo{width:40px;height:40px;flex:none;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(255,120,30,.25))}
+@media(max-width:720px){.brand-logo{width:34px;height:34px}}
+
+/* 代表あいさつ */
+.greeting h2{font-family:"Noto Serif JP",serif;font-size:clamp(22px,3vw,32px);line-height:1.6;margin:8px 0 26px}
+.greeting-body p{line-height:2.05;margin:0 0 1.2em;opacity:.92}
+.greeting-sign{margin-top:30px;text-align:right;line-height:1.9}.greeting-sign span{display:block;font-size:.88em;opacity:.75}.greeting-sign b{font-family:"Noto Serif JP",serif;font-size:1.2em;letter-spacing:.12em}
+/* 地図 */
+.map-title{font-size:20px;margin:42px 0 6px}.map-note{margin:0 0 14px;opacity:.8}
+.map-embed{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.12);margin-top:14px;background:#0d1626}
+.map-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0;filter:grayscale(.25) contrast(1.05)}
+.contact-copy .map-embed{aspect-ratio:4/3}
+/* フッターの折りたたみ（スマホ） */
+footer details.foot-col>summary{list-style:none;cursor:default}
+footer details.foot-col>summary::-webkit-details-marker{display:none}
+footer details.foot-col>summary h2{display:inline}
+@media(max-width:720px){
+  footer details.foot-col{border-top:1px solid rgba(255,255,255,.12);padding:4px 0}
+  footer details.foot-col>summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+  footer details.foot-col>summary::after{content:"＋";font-size:16px;opacity:.7}
+  footer details.foot-col[open]>summary::after{content:"－"}
+  footer details.foot-col>summary h2{margin:0}
+}
+
+.footer-brand b .co-kind{display:block;font-size:.85em;opacity:.8}
+.footer-brand b{white-space:nowrap}
+@media(max-width:720px){footer .foot-grid{row-gap:0}footer details.foot-col{margin:0!important;min-height:0!important}footer details.foot-col:not([open]){padding-bottom:0}footer details.foot-col>ul{margin-top:0}}

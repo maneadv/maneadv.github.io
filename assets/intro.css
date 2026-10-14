@@ -36,7 +36,7 @@
 .op-flash{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff,rgba(255,200,140,.6) 40%,rgba(255,140,50,0) 75%);opacity:0;pointer-events:none}
 @keyframes flash{0%{opacity:.95}100%{opacity:0}}
 .op-co{display:flex;align-items:center;gap:14px;opacity:0;transform:translateY(8px);transition:opacity 1.2s ease,transform 1.2s ease}
-.op-co svg{width:clamp(26px,2.6vw,34px)}
+.op-co img{width:clamp(30px,3vw,42px);height:auto}
 .op-co span{font:500 clamp(13px,1.5vw,18px) "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;color:#f1e3c9}
 #intro.co .op-co{opacity:1;transform:none}
 .op-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,.15) 70%,transparent)}
