@@ -414,3 +414,11 @@ canvas.plinko{display:block;width:100%;height:360px;cursor:pointer}
 .replay-intro:hover{color:var(--p-acc2)}
 
 .map-credit{display:block;margin-top:4px;font-size:10px;opacity:.55;letter-spacing:.04em}
+.success .tel-big{display:inline-block;margin-top:8px;font-size:1.25em;font-weight:700;color:#ff8a2a;text-decoration:none}
+/* スマホで押しやすく（見た目はそのまま、押せる範囲を広げる） */
+@media(max-width:720px){
+  .sat::after{content:"";position:absolute;inset:-16px;border-radius:50%}
+  .agree a{display:inline-block;padding:10px 2px}
+  .typewriter .tw-keys{grid-template-columns:repeat(5,1fr);gap:8px}
+  .typewriter .tw-keys button{font-size:16px;min-height:44px}
+}

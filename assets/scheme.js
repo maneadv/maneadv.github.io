@@ -1,6 +1,6 @@
 /* ==========================================================
    販路の仕組み（図＋からくり）
-   メーカー・販売元 → 当社 → 全国約5,000社の提携代理店 → 協力店 → お客さま
+   メーカー・販売元 → 当社 → 全国5,000社超の提携代理店 → 協力店 → お客さま
    ========================================================== */
 (()=>{
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -25,13 +25,13 @@ const build=root=>{
   <div class="sch-board"><canvas class="sch-cv" aria-hidden="true"></canvas>
     <div class="sch-node n-maker"><b>メーカー・販売元</b><span>商材・サービスをお預かり</span></div>
     <div class="sch-node n-ma"><span class="sch-gear" aria-hidden="true">⚙</span><b>マネージメントアドバイザーズ</b><span>選定・助言・販促支援</span></div>
-    <div class="sch-node n-agency"><b>提携代理店　約5,000社</b><span>北海道から沖縄まで</span></div>
+    <div class="sch-node n-agency"><b>提携代理店　5,000社超</b><span>北海道から沖縄まで</span></div>
     <div class="sch-node n-custa"><em>ルートA</em><b>お客さま</b><span>代理店が直接ご提案</span></div>
     <div class="sch-node n-coop"><em>ルートB</em><b>協力店</b><span>顧客を抱える企業さま</span></div>
     <div class="sch-node n-custb"><b>協力店のお客さま</b><span>協力店の名前でご提案</span></div>
     <span class="sch-count" aria-live="polite"></span>
   </div>
-  <ol class="sch-steps"><li data-s="0"><b>お預かり</b>メーカー・販売元から商材・サービスを預かる</li><li data-s="1"><b>探す</b>全国約5,000社から、関心を持つ代理店を探す</li><li data-s="2"><b>2つのルートで届ける</b>直接お客さまへ／協力店のお客さまへ</li><li data-s="3"><b>助言する</b>結果を見て、メーカー・代理店に改善を助言する</li></ol>
+  <ol class="sch-steps"><li data-s="0"><b>お預かり</b>メーカー・販売元から商材・サービスを預かる</li><li data-s="1"><b>探す</b>全国5,000社超の代理店から、関心を持つ代理店を探す</li><li data-s="2"><b>2つのルートで届ける</b>直接お客さまへ／協力店のお客さまへ</li><li data-s="3"><b>助言する</b>結果を見て、メーカー・代理店に改善を助言する</li></ol>
   <p class="sch-msg" aria-live="polite">${mode==='full'?'商材を選んで「預けてみる」を押すと、販路が広がる様子を見られます。':'ボタンを押すと、販路が広がる様子を見られます。'}</p>`;
   const cv=$('.sch-cv',root),board=$('.sch-board',root),msg=$('.sch-msg',root),cnt=$('.sch-count',root),steps=$$('.sch-steps li',root);
   let ctx,W,H,vertical,pos={},dots=[],packets=[],pulses=[],phase=-1,prod=0,running=false,scan=-1,matched=0;
@@ -69,7 +69,7 @@ const build=root=>{
   const run=async()=>{if(running)return;running=true;$('.sch-go',root).disabled=true;dots.forEach(d=>{d.match=false;d.lit=0;d.seen=false});cnt.textContent='';matched=0;
     const name=PRODUCTS[prod][0];
     setStep(0);say(`メーカー・販売元から「${name}」をお預かりします。`);$('.n-maker',root).classList.add('glow');await send(pos.maker,pos.ma,{box:true,v:.015});$('.n-maker',root).classList.remove('glow');
-    setStep(1);$('.n-ma',root).classList.add('spin');say(`全国約5,000社の提携代理店から、「${name}」に関心を持つ企業を探しています…`);
+    setStep(1);$('.n-ma',root).classList.add('spin');say(`全国5,000社超の提携代理店から、「${name}」に関心を持つ企業を探しています…`);
     for(let s=0;s<=1;s+=.02){scan=s;dots.forEach(d=>{if(Math.abs((1-d.x)-s)<.03){d.lit=1;if(!d.seen){d.seen=true;if(Math.random()<.22){d.match=true;matched++}}}});cnt.textContent=`関心あり：${matched}社（イメージ）`;await wait(28)}scan=-1;$('.n-ma',root).classList.remove('spin');
     const hits=dots.filter(d=>d.match);
     setStep(2);say('ルートAは代理店から直接お客さまへ。ルートBは協力店の名前で、協力店のお客さまへご提案します。');

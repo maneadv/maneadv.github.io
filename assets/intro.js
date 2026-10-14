@@ -1,5 +1,5 @@
 /* ==========================================================
-   オープニング Version 7「夜明け」（約19秒・音付き）
+   オープニング Version 8「夜明け」（約19秒・音付き）
    0.8s  地平線の先に小さなオレンジの点
    1.0s  あらゆる方向から光の粒子が集まる
    4.2s  弾け飛んでホワイトアウト
@@ -45,21 +45,22 @@ let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/214748364
 const cv=ov.querySelector('.op-cv'),ctx=cv.getContext('2d');
 const night=ov.querySelector('.op-night'),vid=ov.querySelector('.op-city'),dawn=ov.querySelector('.op-dawn'),white=ov.querySelector('.op-white');
 let W=0,H=0,M=0,X=0,DPR=1;
-const resize=()=>{DPR=Math.min(devicePixelRatio||1,1.5);W=innerWidth;H=innerHeight;M=Math.min(W,H);X=Math.max(W,H);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)};
+const resize=()=>{DPR=Math.min(devicePixelRatio||1,innerWidth<700?1.25:1.5);W=innerWidth;H=innerHeight;M=Math.min(W,H);X=Math.max(W,H);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)};
 resize();addEventListener('resize',resize);
 const small=()=>W<700;
 
 /* ---------- 粒子（すべて初期値だけ持ち、位置は時刻から計算） ---------- */
-const NG=matchMedia('(max-width:700px)').matches?520:900;
+const NG=matchMedia('(max-width:700px)').matches?420:900;
 const G=[];for(let i=0;i<NG;i++){const a=rnd()*Math.PI*2,d=.65+rnd()*.9,off=(rnd()-.5)*2.0;G.push({a,d,off,t0:1.0+Math.pow(i/NG,.85)*2.7+rnd()*.15,du:.75+rnd()*.7,c:rnd()})}
 const NB=NG+300;const B=[];for(let i=0;i<NB;i++){B.push({a:rnd()*Math.PI*2,v:.35+Math.pow(rnd(),1.6)*2.2,k:1.6+rnd()*2.5,c:rnd(),w:.6+rnd()*1.6})}
-const NS=matchMedia('(max-width:700px)').matches?420:700;
+const NS=matchMedia('(max-width:700px)').matches?360:700;
 const S=[];for(let i=0;i<NS;i++){S.push({r:.04+Math.pow(rnd(),.7)*.8,a:rnd()*Math.PI*2,sp:.7+rnd()*.8,c:rnd()})}
 const NST=420;const ST=[];for(let i=0;i<NST;i++){ST.push({x:(rnd()*2-1),y:(rnd()*2-1),z:rnd(),m:rnd()})}
 const NF=360;const F=[];for(let i=0;i<NF;i++){F.push({a:rnd()*Math.PI*2,v:.3+Math.pow(rnd(),1.4)*1.9,k:2+rnd()*2,c:rnd()})}
 const col=(c,al)=>c<.45?`rgba(255,${150+Math.round(c*120)},${60+Math.round(c*80)},${al})`:c<.8?`rgba(255,214,150,${al})`:`rgba(255,250,235,${al})`;
 
 /* ---------- 地図の点 ---------- */
+{const port=innerHeight>innerWidth*1.05,ext=vid.canPlayType('video/webm; codecs="vp9"')?'webm':'mp4';vid.src=base+'osaka-dawn-'+(port?'p':'l')+'.'+ext;vid.load()}
 let geo=null;
 fetch(base+'intro-geo.json').then(r=>r.json()).then(d=>{
   const mk=(L,sp)=>{const n=L.b.length,buckets=[];for(let b=0;b<10;b++)buckets.push([]);
@@ -80,19 +81,26 @@ const cam=T=>{
 };
 const drawLayer=(L,alpha,c,size)=>{
   if(alpha<=0.01)return;const s0=Math.sin(c.la),c0=Math.cos(c.la),cx=W/2,cy=H/2,R=c.R,h=size/2;
-  for(let b=0;b<10;b++){const P=L[b];if(!P.n)continue;ctx.fillStyle=PAL[b];ctx.globalAlpha=alpha*(.32+.68*b/9);
-    for(let i=0;i<P.n;i++){const dl=P.lo[i]-c.lo,cd=Math.cos(dl),cc=P.c[i];
+  const round=size>2.2;
+  for(let b=0;b<10;b++){const P=L[b];if(!P.n)continue;ctx.fillStyle=PAL[b];
+    for(let g2=0;g2<(round?3:1);g2++){
+    ctx.globalAlpha=alpha*(.32+.68*b/9)*(round?(.78+.22*Math.sin(curT*(4+g2*1.7)+b*1.3+g2*2.1)):1);
+    if(round)ctx.beginPath();
+    for(let i=g2;i<P.n;i+=(round?3:1)){const dl=P.lo[i]-c.lo,cd=Math.cos(dl),cc=P.c[i];
       if(s0*P.sl[i]+c0*cc*cd<0)continue;
       const x=cx+R*cc*Math.sin(dl);if(x<-8||x>W+8)continue;
       const y=cy-R*(c0*P.sl[i]-s0*cc*cd);if(y<-8||y>H+8)continue;
-      ctx.fillRect(x-h,y-h,size,size)}}
+      if(round){ctx.moveTo(x+h,y);ctx.arc(x,y,h,0,6.283)}else ctx.fillRect(x-h,y-h,size,size)}
+    if(round)ctx.fill()}}
   ctx.globalAlpha=1;
 };
 const proj=(c,la,lo)=>{const s0=Math.sin(c.la),c0=Math.cos(c.la),dl=lo-c.lo;return {x:W/2+c.R*Math.cos(la)*Math.sin(dl),y:H/2-c.R*(c0*Math.sin(la)-s0*Math.cos(la)*Math.cos(dl))}};
 
 /* ---------- 描画 ---------- */
 const HY=()=>H*.56;
+let curT=0;
 function frame(T){
+  curT=T;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
   ctx.clearRect(0,0,W,H);
   const cx=W/2,cy=HY();
@@ -105,10 +113,10 @@ function frame(T){
     const paths=[];for(let q=0;q<12;q++)paths.push(new Path2D());
     for(const p of G){const u=(T-p.t0)/p.du;if(u<0)continue;if(u>=1){arrived++;continue}
       const sx=cx+Math.cos(p.a)*p.d*X,sy=cy+Math.sin(p.a)*p.d*X;
-      const qx=(sx+cx)/2-Math.sin(p.a)*p.off*p.d*X*.5,qy=(sy+cy)/2+Math.cos(p.a)*p.off*p.d*X*.5;
-      const pt=v=>{v=v*v*(3-2*v);const m=1-v;return [m*m*sx+2*m*v*qx+v*v*cx,m*m*sy+2*m*v*qy+v*v*cy]};
-      const [x1,y1]=pt(Math.max(0,u-.07)),[x2,y2]=pt(u);
-      const q=(p.c<.45?0:p.c<.8?1:2)*4+Math.min(3,Math.floor(u*4));paths[q].moveTo(x1,y1);paths[q].lineTo(x2,y2)}
+      const tw=(1.6+Math.abs(p.off)*1.6)*(p.off<0?-1:1);
+      const pt=v=>{const e=v*v*(3-2*v),r=p.d*X*(1-e),an=p.a+tw*e;return [cx+Math.cos(an)*r,cy+Math.sin(an)*r*.82]};
+      const q=(p.c<.45?0:p.c<.8?1:2)*4+Math.min(3,Math.floor(u*4));
+      for(let s3=0;s3<=3;s3++){const [x,y]=pt(Math.max(0,u-.09+s3*.03));s3?paths[q].lineTo(x,y):paths[q].moveTo(x,y)}}
     for(let q=0;q<12;q++){const lv=(q%4+.5)/4;ctx.strokeStyle=col([.2,.6,.9][Math.floor(q/4)],.25+.7*lv);ctx.lineWidth=.6+lv*1.6;ctx.stroke(paths[q])}
     const e=arrived/NG;
     if(T>.75){const r=(lerp(0,2.6,eo(seg(T,.75,1.2)))+e*11)*(1+.12*Math.sin(T*18)*e)+(T>3.8?Math.sin(T*70)*e*1.5:0);
@@ -195,10 +203,10 @@ function frame(T){
   if(!vOn)return;
   vid.style.opacity=va.toFixed(3);
   const dk=seg(T,12.4,15.4),dim=seg(T,15.5,15.8)*(1-seg(T,16.0,17.2)*.4);
-  vid.style.transform=`scale(${(1.28-eo(va)*.23+dk*.04).toFixed(3)})`;
+  vid.style.transform=`scale(${(1.25-eo(va)*.25).toFixed(3)})`;
   const fl=va<1?`blur(${((1-va)*8).toFixed(1)}px)`:'none';if(vid.style.filter!==fl)vid.style.filter=fl;
-  night.style.opacity=(1-(.5+.42*dk-.38*dim)).toFixed(3);
-  dawn.style.opacity=(dk*(1-dim*.35)).toFixed(3);
+  night.style.opacity=(.18-.14*dk+.45*dim).toFixed(3);
+  dawn.style.opacity=(dk*.35*(1-dim*.35)).toFixed(3);
 }
 
 /* ---------- 進行 ---------- */
