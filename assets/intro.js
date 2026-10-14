@@ -18,7 +18,7 @@ let ended=false,started=false,withMusic=false,raf=0;
 const bgm=window.maBgm;
 const base=ov.dataset.base||'assets/';
 const au=new Audio();au.preload='auto';
-au.src=base+(au.canPlayType('audio/ogg; codecs="opus"')?'intro-sound.ogg':'intro-sound.mp3');
+au.src=base+(au.canPlayType('audio/ogg; codecs="opus"')?'intro-sound.ogg':'intro-sound.mp3')+'?v=30';
 const heroV=document.querySelector('.hero-video');
 const fadeAudio=(a,ms,done)=>{const v0=a.volume,st=performance.now();const f=()=>{const k=Math.min(1,(performance.now()-st)/ms);a.volume=v0*(1-k);if(k<1)requestAnimationFrame(f);else{a.pause();done&&done()}};f()};
 const finish=()=>{
