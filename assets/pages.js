@@ -176,3 +176,9 @@ if(lock){
   addEventListener('scroll',upd,{passive:true});upd();
 }
 })();
+/* v41 業務内容の一覧：区分で絞り込む */
+(()=>{const tree=document.querySelector('.svc-tree');if(!tree)return;const btns=[...tree.querySelectorAll('.svc-filter')];
+  btns.forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true';btns.forEach(x=>x.setAttribute('aria-pressed','false'));if(on)b.setAttribute('aria-pressed','true');const tag=on?b.dataset.tag:null;
+    tree.querySelectorAll('.tree-small li').forEach(li=>li.classList.toggle('dim',!!tag&&li.dataset.tag!==tag));
+    tree.querySelectorAll('.tree-mid').forEach(m=>m.classList.toggle('empty',!!tag&&!m.querySelector('.tree-small li:not(.dim)')));
+    tree.querySelectorAll('.tree-big').forEach(d=>{const has=!tag||d.querySelector('.tree-mid:not(.empty)');d.hidden=!has;if(tag&&has)d.open=true})}))})();
