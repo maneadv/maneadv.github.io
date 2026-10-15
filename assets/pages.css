@@ -467,3 +467,24 @@ footer details.foot-col>summary h2{display:inline}
 .footer-brand b .co-kind{display:block;font-size:.85em;opacity:.8}
 .footer-brand b{white-space:nowrap}
 @media(max-width:720px){footer .foot-grid{row-gap:0}footer details.foot-col{margin:0!important;min-height:0!important}footer details.foot-col:not([open]){padding-bottom:0}footer details.foot-col>ul{margin-top:0}}
+
+/* ===== 見やすさの調整（v36） ===== */
+.button.primary,.nav-cta,.button.primary.slot-go,.button.primary.submit{background:linear-gradient(135deg,#c2560a,#a84505)!important;color:#fff!important}
+.button.primary:hover,.nav-cta:hover{background:linear-gradient(135deg,#b04c07,#963c03)!important}
+.button.primary span,.nav-cta span{color:#fff!important}
+.brand small{font-size:11px!important}
+.copyright,.copyright span,.replay-intro{font-size:12px!important}
+.mcard small,.orbit-core-node small,.hero-time,.hero-time b,.panel-label,.console-top span,.console-top i,.sch-node em{font-size:11px!important}
+label>span{font-size:11px!important;background:#b5341f!important;color:#fff!important}
+.contact .kicker,.contact-copy .kicker{color:#a84505!important}
+/* 見やすさの追加調整（v36） */
+@media(max-width:520px){.site-header .brand b{font-size:12px!important}.site-header .brand b .co-kind{font-size:11px!important}}
+.footer-brand b .co-kind{font-size:11px!important}
+.cat-node i,.cat-node span{font-size:11px!important}
+.future-stats span{font-size:11px!important;color:#aebccb!important}
+.console-tabs button span{color:#93a6b9!important}
+.seal-hint{color:#7a5c33!important}
+.tablet .tab-head span{color:#a84505!important}
+.console-tabs button span{font-size:11px!important}
+@media(max-width:400px){.site-header .brand b{font-size:12px!important;line-height:1.3!important;white-space:normal}.site-header .brand b .co-kind{font-size:10.5px!important}.site-header .brand b .co-tail{display:block}}
+@media(min-width:401px) and (max-width:520px){.site-header .brand b{white-space:nowrap}}

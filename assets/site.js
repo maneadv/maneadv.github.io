@@ -53,3 +53,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 
 /* フッター：スマホでは折りたたむ（パソコンでは常に開く） */
 (()=>{const mq=matchMedia('(max-width:720px)');const ds=[...document.querySelectorAll('footer details.foot-col')];const set=()=>ds.forEach(d=>{d.open=!mq.matches});set();mq.addEventListener?mq.addEventListener('change',set):mq.addListener(set);ds.forEach(d=>d.querySelector('summary').addEventListener('click',e=>{if(!mq.matches)e.preventDefault()}))})();
+
+/* 通信量を節約する設定の端末では、トップの動画を止めて静止画にする */
+(()=>{const c=navigator.connection;if(!(c&&(c.saveData||/2g/.test(c.effectiveType||''))))return;document.querySelectorAll('video.hero-video,video.page-hero-bg').forEach(v=>{v.removeAttribute('autoplay');v.pause();v.preload='none'})})();
