@@ -36,7 +36,6 @@ document.querySelector('#contact-form')?.addEventListener('submit',async e=>{e.p
   fd.append('お名前',v('name'));fd.append('会社名',v('company'));fd.append('メールアドレス',v('email'));fd.append('電話番号',v('tel'));fd.append('相談したい内容',topic);fd.append('ご相談内容',v('message'));
   fd.append('email',v('email'));fd.append('_replyto',v('email'));
   fd.append('_subject','【ホームページからのご相談】'+v('name')+'様（'+topic+'）');fd.append('_template','table');fd.append('_captcha','false');
-  fd.append('_autoresponse','このたびは株式会社マネージメントアドバイザーズへお問い合わせいただき、ありがとうございます。内容を確認のうえ、担当者よりご連絡いたします（受付時間 10:00〜17:00）。お急ぎの場合は 06-6355-0777 までお電話ください。');
   let sent=false;
   try{const r=await fetch('https://formsubmit.co/ajax/'+f.dataset.mail,{method:'POST',headers:{Accept:'application/json'},body:fd});const j=await r.json().catch(()=>({}));sent=r.ok&&String(j.success)==='true'}catch(_){}
   btn.disabled=false;btn.innerHTML=label;
