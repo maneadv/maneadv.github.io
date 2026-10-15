@@ -161,7 +161,7 @@ if(ft&&!reduced){
 const form=$('#contact-form');
 if(page==='contact'&&form){
   const req=$$('[required]',form),fill=$('.gauge-fill'),plane=$('.gauge-plane'),txt=$('.gauge-text b');
-  const upd=()=>{const ok=req.filter(el=>el.type==='checkbox'?el.checked:el.value.trim()&&el.checkValidity()).length;const pc=Math.round(ok/req.length*100);fill.style.width=pc+'%';plane.style.left=`calc(${pc}% - 12px)`;txt.textContent=pc;$('.gauge').classList.toggle('full',pc===100)};
+  const upd=()=>{const picks=['1','2','3'].filter(l=>form.querySelector(`.chips[data-level="${l}"] .chip.on`)).length;const ok=req.filter(el=>el.type==='checkbox'?el.checked:el.value.trim()&&el.checkValidity()).length+picks;const pc=Math.round(ok/(req.length+3)*100);fill.style.width=pc+'%';plane.style.left=`calc(${pc}% - 12px)`;txt.textContent=pc;$('.gauge').classList.toggle('full',pc===100)};
   form.addEventListener('input',upd);form.addEventListener('change',upd);setTimeout(upd,50);
   form.addEventListener('submit',()=>{if(reduced)return;const r=form.getBoundingClientRect();const p=document.createElement('span');p.className='paper-plane';p.textContent='✈';document.body.append(p);form.classList.add('folding');
     p.animate([{transform:`translate(${r.left+r.width/2}px,${r.top+r.height/2}px) scale(.4) rotate(0deg)`,opacity:0},{transform:`translate(${r.left+r.width/2}px,${r.top+r.height/2}px) scale(2) rotate(-10deg)`,opacity:1,offset:.25},{transform:`translate(${innerWidth+80}px,${r.top-260}px) scale(1) rotate(-25deg)`,opacity:1}],{duration:1400,easing:'cubic-bezier(.5,0,.3,1)'}).onfinish=()=>p.remove();

@@ -25,25 +25,61 @@ if(counter){if(reduced){counter.textContent='5,000'}else{let start;const animate
 const revealTargets=document.querySelectorAll('.section .container,.network-proof .container');
 if(!reduced&&'IntersectionObserver'in window){revealTargets.forEach(el=>el.classList.add('reveal'));const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.1});revealTargets.forEach(el=>observer.observe(el))}
 
-/* お問い合わせ：送信サービス（FormSubmit）で info@ へ直接送る。失敗したときはメールアプリで送る */
+/* お問い合わせ：大分類→中分類→小分類を押して選ぶ */
+(()=>{const f=document.querySelector('#contact-form');if(!f||!window.MA_TREE)return;
+  const T=window.MA_TREE,st={c:null,b:null,s:new Set()};
+  const lv=n=>f.querySelector(`.chips[data-level="${n}"]`),step=n=>f.querySelector(`.pick[data-step="${n}"]`);
+  const chip=(label,on,fn)=>{const b=document.createElement('button');b.type='button';b.className='chip'+(on?' on':'');b.textContent=label;b.setAttribute('aria-pressed',String(!!on));b.addEventListener('click',fn);return b};
+  const cat=()=>T.find(c=>c.id===st.c),biz=()=>cat()&&cat().items.find(b=>b.id===st.b);
+  const render=()=>{
+    const l1=lv(1);l1.innerHTML='';T.forEach(c=>l1.append(chip(c.name,st.c===c.id,()=>{if(st.c!==c.id){st.c=c.id;st.b=null;st.s.clear()}render();step(2).scrollIntoView({behavior:'smooth',block:'nearest'})})));
+    const c=cat();step(2).hidden=!c;const l2=lv(2);l2.innerHTML='';
+    if(c)c.items.forEach(b=>l2.append(chip(b.name,st.b===b.id,()=>{if(st.b!==b.id){st.b=b.id;st.s.clear()}render();step(3).scrollIntoView({behavior:'smooth',block:'nearest'})})));
+    const b=biz();step(3).hidden=!b;const l3=lv(3);l3.innerHTML='';
+    if(b)b.subs.forEach(t=>l3.append(chip(t,st.s.has(t),()=>{st.s.has(t)?st.s.delete(t):st.s.add(t);render()})));
+    f.querySelector('#f-topic').value=c?[c.name,b&&b.name].filter(Boolean).join(' ＞ '):'';
+    const sum=f.querySelector('.pick-summary');
+    if(c&&b&&st.s.size){sum.hidden=false;sum.innerHTML='<b>選んだ内容</b>'+[c.name,b.name].join(' ＞ ')+'<br>'+[...st.s].map(x=>'・'+x).join('<br>')}else sum.hidden=true;
+    [1,2,3].forEach(n=>{const e=step(n).querySelector('.pick-err');if(e&&((n===1&&c)||(n===2&&b)||(n===3&&st.s.size)))e.hidden=true});
+    f.dispatchEvent(new Event('change'));
+  };
+  // ほかのページから来たとき：分野を自動で選ぶ
+  window.maPick=id=>{for(const c of T){if(c.id===id){st.c=c.id;st.b=null;st.s.clear();render();return true}const b=c.items.find(x=>x.id===id);if(b){st.c=c.id;st.b=b.id;st.s.clear();render();return true}}return false};
+  render();
+  const fromHash=()=>{const k=decodeURIComponent(location.hash.slice(1));if(k)window.maPick(k)};fromHash();addEventListener('hashchange',fromHash);
+  // 相談メモ・課題スロットから来たとき：項目を自動で選び、残りは追加欄へ
+  try{const m=sessionStorage.getItem('ma-prefill');if(m){sessionStorage.removeItem('ma-prefill');const b=biz();const rest=[];
+    m.split('\n').forEach(line=>{const t=line.replace(/^・/,'').trim();if(b&&b.subs.includes(t))st.s.add(t);else if(t&&!/^【.*】について相談したいです。$/.test(t))rest.push(line)});
+    render();const ta=f.querySelector('#f-msg');if(rest.length&&ta)ta.value=rest.join('\n')}}catch(_){}
+  // 「特になし」
+  const none=f.querySelector('.none-chip'),ta=f.querySelector('#f-msg');
+  const setNone=on=>{none.classList.toggle('on',on);none.setAttribute('aria-pressed',String(on));ta.disabled=on;if(on)ta.value='';ta.placeholder=on?'特になし':'ご状況やご希望など、自由にご記入ください（なければ「特になし」を押してください）'};
+  none.addEventListener('click',()=>setNone(!none.classList.contains('on')));
+  // 送信前の確認（足りないところへ案内する）
+  f.addEventListener('submit',e=>{let bad=null;
+    if(!st.c)bad=1;else if(!st.b)bad=2;else if(!st.s.size)bad=3;
+    if(bad){e.preventDefault();e.stopImmediatePropagation();const s=step(bad);s.hidden=false;s.querySelector('.pick-err').hidden=false;s.scrollIntoView({behavior:'smooth',block:'center'});return}
+    const req=[...f.querySelectorAll('input[required]')].find(x=>x.type==='checkbox'?!x.checked:!x.value.trim()||!x.checkValidity());
+    if(req){e.preventDefault();e.stopImmediatePropagation();req.reportValidity&&req.reportValidity();req.focus();return}
+  },true);
+  window.maFormState=()=>({cat:cat()&&cat().name,biz:biz()&&biz().name,subs:[...st.s],none:none.classList.contains('on')});
+  window.maFormReset=()=>{st.c=null;st.b=null;st.s.clear();setNone(false);render()};
+})();
+
+/* お問い合わせ：Googleの受付（記録・通知・自動返信）へ送る。失敗したときはメールアプリで送る */
 document.querySelector('#contact-form')?.addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;
-  const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();const tp=f.elements.topic;const topic=tp&&tp.selectedIndex>0?tp.options[tp.selectedIndex].text:'';
+  const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();
   if(v('_honey'))return;
+  const S=window.maFormState?window.maFormState():{};const topic=v('topic');
+  const extra=S.none?'特になし':(v('message')||'特になし');
+  const body='【ご相談の分野】'+topic+'\n【くわしい内容】'+(S.subs||[]).join('、')+'\n【追加で伝えたいこと】\n'+extra;
   const btn=f.querySelector('.submit'),ok=f.querySelector('.success'),ng=f.querySelector('.send-error');
-  const txt=`【お問い合わせ内容】\nお名前：${v('name')}\n会社名：${v('company')}\nメール：${v('email')}\n電話：${v('tel')}\nご相談：${topic}\n${v('message')}`;
+  const txt=`【お問い合わせ内容】\nお名前：${v('name')}\n会社名：${v('company')}\nメール：${v('email')}\n電話：${v('tel')}\n${body}`;
   btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='送信しています…';ok.hidden=true;ng.hidden=true;
-  const fd=new FormData();
-  fd.append('お名前',v('name'));fd.append('会社名',v('company'));fd.append('メールアドレス',v('email'));fd.append('電話番号',v('tel'));fd.append('相談したい内容',topic);fd.append('ご相談内容',v('message'));
-  fd.append('email',v('email'));fd.append('_replyto',v('email'));
-  fd.append('_subject','【ホームページからのご相談】'+v('name')+'様（'+topic+'）');fd.append('_template','table');fd.append('_captcha','false');
   let sent=false;
-  if(f.dataset.gas){ // Googleの受付（記録・通知・自動返信）
-    try{const body=new URLSearchParams({name:v('name'),company:v('company'),email:v('email'),tel:v('tel'),topic:topic,message:v('message'),_honey:v('_honey')});
-      const r=await fetch(f.dataset.gas,{method:'POST',body});const j=await r.json().catch(()=>({}));sent=!!j.ok}catch(_){}
-  }else
-  try{const r=await fetch('https://formsubmit.co/ajax/'+f.dataset.mail,{method:'POST',headers:{Accept:'application/json'},body:fd});const j=await r.json().catch(()=>({}));sent=r.ok&&String(j.success)==='true'}catch(_){}
+  if(f.dataset.gas){try{const r=await fetch(f.dataset.gas,{method:'POST',body:new URLSearchParams({name:v('name'),company:v('company'),email:v('email'),tel:v('tel'),topic:topic+(S.subs&&S.subs.length?'（'+S.subs.join('、')+'）':''),message:body,_honey:v('_honey')})});const j=await r.json().catch(()=>({}));sent=!!j.ok}catch(_){}}
   btn.disabled=false;btn.innerHTML=label;
-  if(sent){ok.hidden=false;f.querySelectorAll('input:not([type=checkbox]):not([name=_honey]),textarea').forEach(x=>x.value='');if(tp)tp.selectedIndex=0;ok.scrollIntoView({behavior:'smooth',block:'nearest'});return}
+  if(sent){ok.hidden=false;f.querySelectorAll('input:not([type=checkbox]):not([name=_honey]):not([type=hidden]),textarea').forEach(x=>x.value='');window.maFormReset&&window.maFormReset();ok.scrollIntoView({behavior:'smooth',block:'nearest'});return}
   try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(_){}
   ng.hidden=false;ng.scrollIntoView({behavior:'smooth',block:'nearest'});
   ng.querySelector('.send-mail').onclick=()=>{location.href='mailto:'+f.dataset.mail+'?subject='+encodeURIComponent('【ホームページからのご相談】'+v('name')+'様')+'&body='+encodeURIComponent(txt)};

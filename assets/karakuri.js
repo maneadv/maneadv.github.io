@@ -162,13 +162,8 @@ if(slot){
   result.addEventListener('click',e=>{if(!e.target.closest('.slot-go')||!current)return;try{sessionStorage.setItem('ma-prefill',`【課題スロットより】${current.issue}。${current.biz}（${current.sup}）について相談したいです。`)}catch(_){}});
 }
 
-/* ---------- 7. お問い合わせフォームへの自動入力 ---------- */
-(()=>{const f=$('#contact-form');if(!f)return;const sel=f.querySelector('select[name=topic]'),ta=f.querySelector('textarea[name=message]');
-  const apply=()=>{const k=decodeURIComponent(location.hash.slice(1));if(k&&sel&&[...sel.options].some(o=>o.value===k)){sel.value=k;const o=sel.selectedOptions[0];if(ta&&!ta.value)ta.value=`【${o.textContent}】について相談したいです。`}};
-  apply();addEventListener('hashchange',apply);
-  try{const m=sessionStorage.getItem('ma-prefill');if(m&&ta){ta.value=m;sessionStorage.removeItem('ma-prefill')}}catch(_){}
-})();
-$$('.issue-grid a[data-topic]').forEach(a=>a.addEventListener('click',()=>{const sel=$('#contact-form select[name=topic]');if(sel)sel.value=a.dataset.topic;const ta=$('#contact-form textarea[name=message]');if(ta&&!ta.value)ta.value=`【${a.querySelector('b').textContent}】について相談したいです。`}));
+/* ---------- 7. お問い合わせフォームへの自動入力（site.js の maPick を使う） ---------- */
+$$('.issue-grid a[data-topic]').forEach(a=>a.addEventListener('click',()=>{window.maPick&&window.maPick(a.dataset.topic)}));
 
 /* ---------- 8. 裏返る事業カード ---------- */
 const backs=[

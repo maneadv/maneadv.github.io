@@ -494,3 +494,22 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .send-error{margin-top:14px;padding:14px;border:1px solid #e3a199;background:#fdf1ef;color:#7a2a20;font-size:13px;text-align:center;line-height:1.8}
 .send-error .button{min-height:40px;margin-top:8px;border:1px solid #b5341f;background:#fff;color:#b5341f}
 .submit[disabled]{opacity:.7;cursor:wait}
+/* ===== お問い合わせ：押して選ぶフォーム ===== */
+#contact-form fieldset.pick{border:0;margin:0 0 22px;padding:0}
+#contact-form fieldset.pick[hidden]{display:none}
+#contact-form .pick legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:15px;color:#13202f;margin-bottom:12px;padding:0}
+#contact-form .pick legend i{font-style:normal;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#a84505;color:#fff;font-size:13px}
+#contact-form .pick legend span{color:#fff;background:#b5341f;font-size:11px;padding:2px 7px}
+#contact-form .pick legend small{font-weight:500;font-size:12px;color:#5d6b79}
+#contact-form .chips{display:flex;flex-wrap:wrap;gap:8px}
+#contact-form .chip{appearance:none;border:1.5px solid #cbd6e1;background:#fff;color:#1d2b3a;font:600 14px/1.4 "Noto Sans JP",sans-serif;padding:10px 14px;border-radius:999px;cursor:pointer;min-height:44px;text-align:left;transition:background .15s,border-color .15s,color .15s}
+#contact-form .chip:hover{border-color:#c2560a}
+#contact-form .chip.on{background:#a84505;border-color:#a84505;color:#fff}
+#contact-form .chip.on::before{content:"✓ "}
+#contact-form .chips[data-level="3"] .chip{border-radius:10px}
+#contact-form .none-chip{margin-bottom:10px}
+#contact-form textarea:disabled{background:#f1f4f7;color:#8a96a3}
+#contact-form .pick-err{margin:8px 0 0;color:#b5341f;font-size:13px;font-weight:700}
+#contact-form .pick-summary{margin:0 0 22px;padding:14px 16px;border-left:4px solid #a84505;background:#fff7f0;color:#3a2a1c;font-size:14px;line-height:1.8}
+#contact-form .pick-summary b{display:block;color:#a84505;margin-bottom:4px}
+@media(max-width:720px){#contact-form .chip{font-size:14px;padding:10px 12px;width:100%}#contact-form .chips[data-level="1"] .chip,#contact-form .chips[data-level="2"] .chip{width:100%}#contact-form .none-chip{width:auto!important}}
