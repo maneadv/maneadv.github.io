@@ -488,3 +488,9 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .console-tabs button span{font-size:11px!important}
 @media(max-width:400px){.site-header .brand b{font-size:12px!important;line-height:1.3!important;white-space:normal}.site-header .brand b .co-kind{font-size:10.5px!important}.site-header .brand b .co-tail{display:block}}
 @media(min-width:401px) and (max-width:520px){.site-header .brand b{white-space:nowrap}}
+
+/* お問い合わせ送信 */
+.hp-field{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+.send-error{margin-top:14px;padding:14px;border:1px solid #e3a199;background:#fdf1ef;color:#7a2a20;font-size:13px;text-align:center;line-height:1.8}
+.send-error .button{min-height:40px;margin-top:8px;border:1px solid #b5341f;background:#fff;color:#b5341f}
+.submit[disabled]{opacity:.7;cursor:wait}

@@ -25,7 +25,26 @@ if(counter){if(reduced){counter.textContent='5,000'}else{let start;const animate
 const revealTargets=document.querySelectorAll('.section .container,.network-proof .container');
 if(!reduced&&'IntersectionObserver'in window){revealTargets.forEach(el=>el.classList.add('reveal'));const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.1});revealTargets.forEach(el=>observer.observe(el))}
 
-document.querySelector('#contact-form')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();const tp=f.elements.topic;const txt=`【お問い合わせ内容】\nお名前：${v('name')}\n会社名：${v('company')}\nメール：${v('email')}\n電話：${v('tel')}\nご相談：${tp&&tp.selectedIndex>0?tp.options[tp.selectedIndex].text:''}\n${v('message')}`;try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(_){}const to=f.dataset.mail;if(to){location.href='mailto:'+to+'?subject='+encodeURIComponent('【ホームページからのご相談】'+v('name')+'様')+'&body='+encodeURIComponent(txt)}const success=f.querySelector('.success');success.hidden=false;success.scrollIntoView({behavior:'smooth',block:'nearest'})});
+/* お問い合わせ：送信サービス（FormSubmit）で info@ へ直接送る。失敗したときはメールアプリで送る */
+document.querySelector('#contact-form')?.addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;
+  const v=n=>(f.elements[n]&&f.elements[n].value||'').trim();const tp=f.elements.topic;const topic=tp&&tp.selectedIndex>0?tp.options[tp.selectedIndex].text:'';
+  if(v('_honey'))return;
+  const btn=f.querySelector('.submit'),ok=f.querySelector('.success'),ng=f.querySelector('.send-error');
+  const txt=`【お問い合わせ内容】\nお名前：${v('name')}\n会社名：${v('company')}\nメール：${v('email')}\n電話：${v('tel')}\nご相談：${topic}\n${v('message')}`;
+  btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='送信しています…';ok.hidden=true;ng.hidden=true;
+  const fd=new FormData();
+  fd.append('お名前',v('name'));fd.append('会社名',v('company'));fd.append('メールアドレス',v('email'));fd.append('電話番号',v('tel'));fd.append('相談したい内容',topic);fd.append('ご相談内容',v('message'));
+  fd.append('email',v('email'));fd.append('_replyto',v('email'));
+  fd.append('_subject','【ホームページからのご相談】'+v('name')+'様（'+topic+'）');fd.append('_template','table');fd.append('_captcha','false');
+  fd.append('_autoresponse','このたびは株式会社マネージメントアドバイザーズへお問い合わせいただき、ありがとうございます。内容を確認のうえ、担当者よりご連絡いたします（受付時間 10:00〜17:00）。お急ぎの場合は 06-6355-0777 までお電話ください。');
+  let sent=false;
+  try{const r=await fetch('https://formsubmit.co/ajax/'+f.dataset.mail,{method:'POST',headers:{Accept:'application/json'},body:fd});const j=await r.json().catch(()=>({}));sent=r.ok&&String(j.success)==='true'}catch(_){}
+  btn.disabled=false;btn.innerHTML=label;
+  if(sent){ok.hidden=false;f.querySelectorAll('input:not([type=checkbox]):not([name=_honey]),textarea').forEach(x=>x.value='');if(tp)tp.selectedIndex=0;ok.scrollIntoView({behavior:'smooth',block:'nearest'});return}
+  try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(_){}
+  ng.hidden=false;ng.scrollIntoView({behavior:'smooth',block:'nearest'});
+  ng.querySelector('.send-mail').onclick=()=>{location.href='mailto:'+f.dataset.mail+'?subject='+encodeURIComponent('【ホームページからのご相談】'+v('name')+'様')+'&body='+encodeURIComponent(txt)};
+});
 
 // 粒子の描画は karakuri.js に移動
 const tilt=document.querySelector('.tilt-surface');
