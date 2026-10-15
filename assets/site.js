@@ -37,6 +37,10 @@ document.querySelector('#contact-form')?.addEventListener('submit',async e=>{e.p
   fd.append('email',v('email'));fd.append('_replyto',v('email'));
   fd.append('_subject','【ホームページからのご相談】'+v('name')+'様（'+topic+'）');fd.append('_template','table');fd.append('_captcha','false');
   let sent=false;
+  if(f.dataset.gas){ // Googleの受付（記録・通知・自動返信）
+    try{const body=new URLSearchParams({name:v('name'),company:v('company'),email:v('email'),tel:v('tel'),topic:topic,message:v('message'),_honey:v('_honey')});
+      const r=await fetch(f.dataset.gas,{method:'POST',body});const j=await r.json().catch(()=>({}));sent=!!j.ok}catch(_){}
+  }else
   try{const r=await fetch('https://formsubmit.co/ajax/'+f.dataset.mail,{method:'POST',headers:{Accept:'application/json'},body:fd});const j=await r.json().catch(()=>({}));sent=r.ok&&String(j.success)==='true'}catch(_){}
   btn.disabled=false;btn.innerHTML=label;
   if(sent){ok.hidden=false;f.querySelectorAll('input:not([type=checkbox]):not([name=_honey]),textarea').forEach(x=>x.value='');if(tp)tp.selectedIndex=0;ok.scrollIntoView({behavior:'smooth',block:'nearest'});return}
