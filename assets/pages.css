@@ -607,3 +607,20 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .page-hero:has(.page-hero-bg[poster*="hero-recruit"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-recruit"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
 .page-hero:has(.page-hero-bg[poster*="hero-recruit"]) .hero-emblem{display:none}
 @media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-recruit"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-recruit"]{object-position:80% 50%}}
+
+/* 会社概要：支給写真（夕暮れの街とオフィス） */
+.page-hero:has(.page-hero-bg[poster*="hero-company"]){padding:96px 0 84px}
+.page-hero-bg[poster*="hero-company"]{opacity:.8;object-fit:cover;object-position:55% 55%}
+.page-hero:has(.page-hero-bg[poster*="hero-company"])::after{background:linear-gradient(90deg,rgba(5,11,20,.7) 0%,rgba(5,11,20,.35) 45%,rgba(5,11,20,.1) 100%),linear-gradient(to bottom,transparent 55%,var(--p-bg))}
+.page-hero:has(.page-hero-bg[poster*="hero-company"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-company"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
+.page-hero:has(.page-hero-bg[poster*="hero-company"]) .hero-emblem{display:none}
+@media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-company"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-company"]{object-position:62% 50%}}
+
+/* お問い合わせ：支給写真（夜景の見える会議室） */
+.page-hero:has(.page-hero-bg[poster*="hero-contact"]){padding:96px 0 84px}
+.page-hero-bg[poster*="hero-contact"]{opacity:.8;object-fit:cover;object-position:68% 55%}
+.page-hero:has(.page-hero-bg[poster*="hero-contact"])::after{background:linear-gradient(90deg,rgba(5,11,20,.7) 0%,rgba(5,11,20,.35) 45%,rgba(5,11,20,.1) 100%),linear-gradient(to bottom,transparent 55%,var(--p-bg))}
+.page-hero:has(.page-hero-bg[poster*="hero-contact"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-contact"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
+.page-hero:has(.page-hero-bg[poster*="hero-contact"]) .hero-emblem{display:none}
+@media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-contact"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-contact"]{object-position:74% 50%}}
+
