@@ -583,3 +583,9 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .blk ul.svc-list,.detail-main ul.svc-list{padding:0!important;margin:0!important}
 .svc-list li{padding:0!important;margin:0!important;background:none!important;border:0!important}
 .svc-list li::before{display:none!important}
+/* 私たちについて：支給写真を少しはっきり見せる */
+.page-hero:has(.page-hero-bg[poster*="hero-about"]){padding:96px 0 84px}
+.page-hero-bg[poster*="hero-about"]{opacity:.72;object-fit:cover;object-position:40% 55%}
+.page-hero:has(.page-hero-bg[poster*="hero-about"])::after{background:linear-gradient(90deg,rgba(5,11,20,.86) 0%,rgba(5,11,20,.55) 45%,rgba(5,11,20,.25) 100%),linear-gradient(to bottom,transparent 55%,var(--p-bg))}
+.page-hero:has(.page-hero-bg[poster*="hero-about"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-about"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
+@media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-about"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-about"]{object-position:28% 50%}}
