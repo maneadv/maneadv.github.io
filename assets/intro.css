@@ -76,3 +76,10 @@
   .op-co span{letter-spacing:.12em;font-size:12.5px}
 }
 @media(prefers-reduced-motion:reduce){#intro{display:none}}
+/* 写真の上でも読めるように、文字の後ろに淡い影 */
+.op-l1::before{content:"";position:absolute;left:8%;right:8%;top:-60%;bottom:-60%;z-index:-1;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(2,4,12,.62),rgba(2,4,12,.25) 60%,transparent 75%);pointer-events:none}
+.op-l1{text-shadow:0 0 18px rgba(255,170,90,.5),0 2px 10px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8)}
+@media(max-width:720px){.op-l1::before{left:0;right:0}}
+/* 文字は空の位置に置き、城と重ならないようにする */
+.op-l1{top:22%}
+@media(max-width:720px){.op-l1{top:19%}}
