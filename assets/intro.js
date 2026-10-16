@@ -60,7 +60,9 @@ const NF=360;const F=[];for(let i=0;i<NF;i++){F.push({a:rnd()*Math.PI*2,v:.3+Mat
 const col=(c,al)=>c<.45?`rgba(255,${150+Math.round(c*120)},${60+Math.round(c*80)},${al})`:c<.8?`rgba(255,214,150,${al})`:`rgba(255,250,235,${al})`;
 
 /* ---------- 地図の点 ---------- */
-{const port=innerHeight>innerWidth*1.05,ext=vid.canPlayType('video/webm; codecs="vp9"')?'webm':'mp4';vid.src=base+'osaka-dawn-'+(port?'p':'l')+'.'+ext+'?v=42c';vid.load()}
+{const port=innerHeight>innerWidth*1.05,nm=base+'osaka-dawn-'+(port?'p':'l'),apple=/iP(hone|ad|od)|Macintosh/.test(navigator.userAgent)&&!/Chrome|Android/.test(navigator.userAgent),ext=(!apple&&vid.canPlayType('video/webm; codecs="vp9"')==='probably')?'webm':'mp4';
+ vid.poster=nm+'.jpg?v=43';vid.style.background='#02040c url('+nm+'.jpg?v=43) center/cover no-repeat';(new Image()).src=nm+'.jpg?v=43';
+ vid.src=nm+'.'+ext+'?v=43';vid.load();vid.addEventListener('error',()=>{vid.removeAttribute('src')},{once:true})}
 let geo=null;
 fetch(base+'intro-geo.json').then(r=>r.json()).then(d=>{
   const mk=(L,sp)=>{const n=L.b.length,buckets=[];for(let b=0;b<10;b++)buckets.push([]);
