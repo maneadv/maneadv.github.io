@@ -592,3 +592,18 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .page-hero-bg[poster*="hero-biz"]{object-position:60% 55%}
 @media(max-width:760px){.page-hero-bg[poster*="hero-biz"]{object-position:82% 50%}}
 .page-hero:has(.page-hero-bg[poster*="hero-biz"]) .hero-emblem{display:none}
+/* 代理店・パートナー募集：支給写真（夜景を見る二人） */
+.page-hero:has(.page-hero-bg[poster*="hero-agency"]){padding:96px 0 84px}
+.page-hero-bg[poster*="hero-agency"]{opacity:.8;object-fit:cover;object-position:70% 55%}
+.page-hero:has(.page-hero-bg[poster*="hero-agency"])::after{background:linear-gradient(90deg,rgba(5,11,20,.7) 0%,rgba(5,11,20,.35) 45%,rgba(5,11,20,.1) 100%),linear-gradient(to bottom,transparent 55%,var(--p-bg))}
+.page-hero:has(.page-hero-bg[poster*="hero-agency"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-agency"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
+.page-hero:has(.page-hero-bg[poster*="hero-agency"]) .hero-emblem{display:none}
+@media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-agency"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-agency"]{object-position:84% 50%}}
+
+/* 採用情報：支給写真（夕焼けの街を見る三人） */
+.page-hero:has(.page-hero-bg[poster*="hero-recruit"]){padding:96px 0 84px}
+.page-hero-bg[poster*="hero-recruit"]{opacity:.8;object-fit:cover;object-position:72% 55%}
+.page-hero:has(.page-hero-bg[poster*="hero-recruit"])::after{background:linear-gradient(90deg,rgba(5,11,20,.7) 0%,rgba(5,11,20,.35) 45%,rgba(5,11,20,.1) 100%),linear-gradient(to bottom,transparent 55%,var(--p-bg))}
+.page-hero:has(.page-hero-bg[poster*="hero-recruit"]) h1,.page-hero:has(.page-hero-bg[poster*="hero-recruit"]) .page-lead{text-shadow:0 2px 14px rgba(0,0,0,.75)}
+.page-hero:has(.page-hero-bg[poster*="hero-recruit"]) .hero-emblem{display:none}
+@media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-recruit"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-recruit"]{object-position:80% 50%}}
