@@ -7,6 +7,10 @@
 const ov=document.getElementById('intro');if(!ov)return;
 const root=document.documentElement;
 const v=ov.querySelector('.op-video');
+// 縦長の画面（スマホ）は縦の映像、横長（パソコン）は横の映像
+{const port=innerHeight>innerWidth,sfx=port?'-p':'',q='?v='+(v.dataset.v||'1'),apple=/iP(hone|ad|od)|Macintosh/.test(navigator.userAgent)&&!/Chrome|Android/.test(navigator.userAgent);
+ const ext=(!apple&&!v.canPlayType('video/mp4; codecs="avc1.42E01E"')&&v.canPlayType('video/webm; codecs="vp9"'))?'webm':'mp4';
+ if(port)ov.classList.add('port');v.poster='assets/opening-poster'+sfx+'.jpg'+q;v.src='assets/opening'+sfx+'.'+ext+q;v.load()}
 const bgm=window.maBgm;
 const heroV=document.querySelector('.hero-video');
 let ended=false,started=false,withSound=false;
