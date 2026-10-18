@@ -21,15 +21,17 @@ if(!forced&&matchMedia('(prefers-reduced-motion: reduce)').matches){finish();ret
 root.classList.add('intro-lock');
 if(heroV){heroV.pause();heroV.removeAttribute('autoplay')}
 
-const CO_AT=19.2;
+// 文字を出す時刻（映像の再生位置・秒）
+const CUES=[[17.0,'l1'],[20.6,'l1out'],[21.4,'big'],[23.2,'co']];
 const showCo=()=>ov.classList.add('co');
+let raf=0;const cue=()=>{const t=v.currentTime;for(const [at,c] of CUES){if(t>=at)ov.classList.add(c)}if(!ended)raf=requestAnimationFrame(cue)};
 const run=()=>{if(started)return;started=true;ov.classList.remove('gate');ov.classList.add('run');
-  v.addEventListener('timeupdate',()=>{if(v.currentTime>=CO_AT)showCo()});
+  raf=requestAnimationFrame(cue);
   // 最後に社名を見せてから終える
-  v.addEventListener('ended',()=>{showCo();setTimeout(finish,2200)},{once:true});
+  v.addEventListener('ended',()=>{ov.classList.add('big');showCo();setTimeout(finish,2400)},{once:true});
   // 映像が止まったまま進まないときの保険
   setTimeout(()=>{if(!ended&&(v.paused||v.currentTime<.2))finish()},9000);
-  setTimeout(finish,33000);
+  setTimeout(finish,38000);
   addEventListener('keydown',e=>{if(['Escape','Enter',' '].includes(e.key))finish()},{once:true})};
 ov.querySelector('.intro-skip').addEventListener('click',e=>{e.stopPropagation();finish()});
 

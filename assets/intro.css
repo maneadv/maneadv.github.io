@@ -25,6 +25,18 @@
 .ci-gate .mute:hover{color:rgba(243,230,210,.85)}
 .ci-gate .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff3dc,#f6a65a 60%,transparent 70%);box-shadow:0 0 24px 6px rgba(246,166,90,.35)}
 @media(prefers-reduced-motion:reduce){#intro:not(.force){display:none}}
+/* 後から重ねる文字 */
+.op-l1,.op-big{position:absolute;left:0;right:0;z-index:5;margin:0;text-align:center;pointer-events:none;font-family:"Shippori Mincho","Noto Serif JP",serif}
+.op-l1{top:26%;font-weight:400;font-size:clamp(20px,3vw,40px);line-height:1.5;letter-spacing:.7em;padding-left:.7em;color:#fff6e8;opacity:0;
+  text-shadow:0 0 24px rgba(255,170,90,.55),0 2px 14px rgba(0,0,0,.75);transition:opacity 1.6s ease,letter-spacing 3.2s cubic-bezier(.2,.7,.2,1)}
+#intro.l1 .op-l1{opacity:1;letter-spacing:.42em}
+#intro.l1out .op-l1{opacity:0;transition:opacity .6s ease}
+.op-big{top:20%;font-weight:600;font-size:clamp(28px,5.4vw,78px);line-height:1.35;letter-spacing:.08em;color:#fff;opacity:0;
+  text-shadow:0 0 30px rgba(255,150,60,.7),0 0 80px rgba(255,110,30,.4),0 4px 24px rgba(0,0,0,.65)}
+.op-big .o{color:#ffb15e}
+.op-big br{display:none}
+#intro.big .op-big{animation:bigIn 1.1s cubic-bezier(.2,1,.3,1) forwards}
+@keyframes bigIn{0%{opacity:0;transform:scale(1.25);filter:blur(10px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1)}}
 /* 最後に社名 */
 .op-co{position:absolute;left:0;right:0;top:76%;z-index:5;display:flex;align-items:center;justify-content:center;gap:16px;opacity:0;transform:translateY(10px);transition:opacity 1.2s ease,transform 1.2s ease;pointer-events:none}
 .op-co img{width:clamp(36px,3.4vw,52px);height:auto;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
@@ -32,6 +44,10 @@
 #intro.co .op-co{opacity:1;transform:none}
 #intro.co .op-video{filter:brightness(.82);transition:filter 1.2s ease}
 @media (max-aspect-ratio:1/1){
+  .op-l1{top:auto;bottom:calc(50% + 48vw + 22px);font-size:clamp(17px,5vw,24px);letter-spacing:.4em;padding-left:.4em}
+  #intro.l1 .op-l1{letter-spacing:.2em}
+  .op-big{top:auto;bottom:calc(50% + 48vw + 18px);font-size:clamp(26px,8.4vw,40px);letter-spacing:.04em}
+  .op-big br{display:inline}
   .op-co{top:calc(50% + 48vw + 18px);flex-direction:column;gap:10px}
   .op-co span{font-size:clamp(15px,4.6vw,20px);letter-spacing:.08em}
 }
