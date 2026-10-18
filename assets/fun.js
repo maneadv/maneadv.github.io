@@ -240,7 +240,8 @@ FUN.care=s=>{
 };
 
 /* ---------- 事業ページへ組み込む ---------- */
-$$('.fun-blk').forEach(b=>{const id=b.dataset.fun,stage=$('.fun-stage',b);if(FUN[id])FUN[id](stage)});
+const whenShown=(el,fn)=>{const d=el.closest('details:not([open])');if(!d){fn();return}const h=()=>{if(d.open){d.removeEventListener('toggle',h);requestAnimationFrame(()=>whenShown(el,fn))}};d.addEventListener('toggle',h)};
+$$('.fun-blk').forEach(b=>{const id=b.dataset.fun,stage=$('.fun-stage',b);if(FUN[id])whenShown(stage,()=>FUN[id](stage))});
 
 /* ==========================================================
    各ページ下部のからくり
@@ -276,5 +277,5 @@ BF.contact=s=>{const L=['ご相談、お待ちしています。','相談内容�
 BF.privacy=s=>{s.innerHTML=`<div class="shredder"><div class="sheet"><b>不要になった書類</b><span>氏名・住所・電話番号 …</span><span>───────</span><span>───────</span></div><div class="sh-body"><i></i></div><div class="strips"></div></div><div class="bf-copy"><b>不要になった個人情報は、確実に処分します。</b><button type="button" class="karakuri-btn sh-go"><span class="knob">▼</span>シュレッダーにかける</button></div>`;
   const sh=$('.shredder',s),strips=$('.strips',s);$('.sh-go',s).onclick=()=>{sh.classList.remove('run');strips.innerHTML='';void sh.offsetWidth;sh.classList.add('run');for(let i=0;i<14;i++){const st=document.createElement('i');st.style.left=(i*7+4)+'%';st.style.animationDelay=(900+i*40)+'ms';strips.append(st)}}};
 
-const bf=$('.bottom-fun');if(bf){const k=bf.dataset.bfun;if(BF[k])BF[k]($('.bf-stage',bf))}
+const bf=$('.bottom-fun');if(bf){const k=bf.dataset.bfun,st=$('.bf-stage',bf);if(BF[k])whenShown(st,()=>BF[k](st))}
 })();

@@ -624,3 +624,49 @@ label>span{font-size:11px!important;background:#b5341f!important;color:#fff!impo
 .page-hero:has(.page-hero-bg[poster*="hero-contact"]) .hero-emblem{display:none}
 @media(max-width:760px){.page-hero:has(.page-hero-bg[poster*="hero-contact"]){padding:60px 0 54px}.page-hero-bg[poster*="hero-contact"]{object-position:74% 50%}}
 
+
+/* v51 タップで開く枠 */
+details.fold{border:1px solid var(--p-line);border-radius:14px;background:rgba(255,255,255,.03);margin:14px 0;overflow:hidden}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;color:#fff;font-weight:700;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{background:rgba(255,255,255,.04)}
+details.fold>summary:focus-visible{outline:2px solid var(--p-acc2);outline-offset:-2px}
+.fold-t{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.fold-sub{flex:none;font-size:12px;font-weight:500;color:var(--p-dim)}
+.fold-i{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--p-line);position:relative}
+.fold-i::before,.fold-i::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:2px;margin:-1px 0 0 -5.5px;background:var(--p-acc2);border-radius:2px;transition:transform .3s}
+.fold-i::after{transform:rotate(90deg)}
+details.fold[open]>summary .fold-i::after{transform:rotate(0)}
+details.fold[open]>summary .fold-i{background:rgba(255,122,26,.12);border-color:rgba(255,138,61,.6)}
+.fold-body{padding:4px 18px 18px;animation:foldIn .35s ease}
+@keyframes foldIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+/* 見出し型（ブロックの見出しがそのまま開閉ボタン） */
+.blk>details.h2-fold,.bottom-fun details.h2-fold,.policy details.h2-fold{border:0;background:none;margin:0;border-radius:0}
+.blk>details.h2-fold>summary{padding:0;font-size:20px}
+.blk>details.h2-fold>summary .fold-t::before{content:"";width:4px;height:20px;border-radius:2px;background:var(--p-acc);flex:none}
+.blk>details.h2-fold>.fold-body{padding:16px 0 0}
+.blk:has(>details.h2-fold:not([open])){padding-top:20px;padding-bottom:20px}
+.policy details.pol-fold{border-bottom:1px solid var(--p-line)}
+.policy details.pol-fold>summary{padding:16px 0;font-size:16px}
+.policy details.pol-fold>.fold-body{padding:0 0 16px}
+.bottom-fun details.bf-fold>summary{padding:6px 0;font-size:clamp(18px,2.2vw,22px)}
+.bottom-fun details.bf-fold>.fold-body{padding:10px 0 0}
+/* 対応業務の区分ごとの開閉 */
+details.svc-group{border:1px solid var(--p-line);border-radius:12px;padding:0;margin-top:12px;background:rgba(255,255,255,.02)}
+details.svc-group>summary{display:flex;align-items:center;gap:10px;padding:12px 14px}
+details.svc-group>summary h3{flex:1;margin:0!important}
+details.svc-group>.svc-list{padding:0 14px 14px}
+/* 読みもの・からくりの帯 */
+details.read-fold{background:none;border:0;margin:6px 0 0}
+details.read-fold>summary{padding:10px 0;color:var(--p-acc2);font-size:14px}
+details.read-fold>summary .fold-i{width:24px;height:24px}
+details.read-fold[open]>summary{display:none}
+details.read-fold>.fold-body{padding:0}
+details.bar-fold{margin:18px 0}
+details.cat-fold>summary .cat-ic,.fold-t i{font-style:normal;color:var(--p-acc)}
+details.grid-fold{margin-top:4px}
+@media(max-width:760px){
+  details.fold>summary{padding:13px 14px;font-size:14.5px}
+  .fold-body{padding:2px 14px 14px}
+  .blk>details.h2-fold>summary{font-size:18px}
+}

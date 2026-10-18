@@ -114,3 +114,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 
 /* 通信量を節約する設定の端末では、トップの動画を止めて静止画にする */
 (()=>{const c=navigator.connection;if(!(c&&(c.saveData||/2g/.test(c.effectiveType||''))))return;document.querySelectorAll('video.hero-video,video.page-hero-bg').forEach(v=>{v.removeAttribute('autoplay');v.pause();v.preload='none'})})();
+/* タップで開く枠（ページが縦に長くなりすぎないように） */
+(()=>{const folds=[...document.querySelectorAll('details.fold')];if(!folds.length)return;
+  const pc=matchMedia('(min-width: 761px)').matches;
+  folds.forEach(d=>{if(pc&&d.dataset.pcopen)d.open=true;
+    d.addEventListener('toggle',()=>{if(d.open){setTimeout(()=>dispatchEvent(new Event('resize')),30)}})});
+  const openTo=()=>{const id=decodeURIComponent(location.hash.slice(1));if(!id)return;const el=document.getElementById(id);if(!el)return;
+    let p=el.closest('details');while(p){p.open=true;p=p.parentElement&&p.parentElement.closest('details')}
+    el.querySelectorAll(':scope > details.fold, :scope > * > details.fold').forEach(d=>d.open=true)};
+  openTo();addEventListener('hashchange',openTo);
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href*="#"]');if(a&&a.pathname===location.pathname)setTimeout(openTo,0)})})();
