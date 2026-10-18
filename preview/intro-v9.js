@@ -71,14 +71,18 @@ const col=(c,al)=>c<.45?`rgba(255,${150+Math.round(c*120)},${60+Math.round(c*80)
 /* ---------- 地図の点 ---------- */
 {const port=innerHeight>innerWidth*1.05,nm=base+'osaka-dawn-'+(port?'p':'l'),apple=/iP(hone|ad|od)|Macintosh/.test(navigator.userAgent)&&!/Chrome|Android/.test(navigator.userAgent),ext=(!apple&&vid.canPlayType('video/webm; codecs="vp9"')==='probably')?'webm':'mp4';
  vid.poster=nm+'.jpg?v=43';vid.style.background='#02040c url('+nm+'.jpg?v=43) center/cover no-repeat';(new Image()).src=nm+'.jpg?v=43';
- vid.src=PB+'c5-'+OR+'.'+PX;vid.load();
- vid.addEventListener('error',()=>{vid.addEventListener('error',()=>{vid.removeAttribute('src')},{once:true});vid.src=nm+'.'+ext+'?v=43';vid.load()},{once:true})}
+ /* 新素材 c5（webm→mp4の順に試す）→ 無ければ現行の街の映像 */
+ const c5=[...new Set([PB+'c5-'+OR+'.'+PX,PB+'c5-'+OR+'.mp4'])].concat([nm+'.'+ext+'?v=43']);let c5i=0;
+ const c5next=()=>{if(c5i>=c5.length){vid.removeAttribute('src');return}vid.src=c5[c5i++];vid.load()};
+ vid.addEventListener('error',()=>c5next());c5next()}
 /* ---------- 背景映像（新素材）：場面ごとに開始・終了時刻を固定 ---------- */
 const PL={};
 [['c1',0.0,4.45],['c3',4.85,6.8],['c4',6.7,12.4]].forEach(([id,a,b])=>{
   const v=document.createElement('video');v.className='op-plate op-plate-'+id;v.muted=true;v.playsInline=true;v.preload='auto';
   const o={v,a,b,ok:false};v.addEventListener('loadeddata',()=>{o.ok=true},{once:true});
-  v.src=PB+id+'-'+OR+'.'+PX;ov.insertBefore(v,ov.querySelector('.op-cv'));PL[id]=o});
+  const srcs=[...new Set([PB+id+'-'+OR+'.'+PX,PB+id+'-'+OR+'.mp4'])];let si=0;
+  v.addEventListener('error',()=>{if(++si<srcs.length){v.src=srcs[si];v.load()}});
+  v.src=srcs[0];ov.insertBefore(v,ov.querySelector('.op-cv'));PL[id]=o});
 const on=(id,T)=>{const o=PL[id];return !!(o&&o.ok&&T>=o.a&&T<o.b)};
 const syncPlate=(o,T)=>{const v=o.v,act=o.ok&&T>=o.a&&T<o.b;
   if(!act){if(v.style.display!=='none'){v.style.display='none';v.pause()}return}
