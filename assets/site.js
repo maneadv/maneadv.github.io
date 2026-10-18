@@ -77,7 +77,7 @@ document.querySelector('#contact-form')?.addEventListener('submit',async e=>{e.p
   const txt=`【お問い合わせ内容】\nお名前：${v('name')}\n会社名：${v('company')}\nメール：${v('email')}\n電話：${v('tel')}\n${body}`;
   btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='送信しています…';ok.hidden=true;ng.hidden=true;
   let sent=false;
-  if(f.dataset.gas){try{const r=await fetch(f.dataset.gas,{method:'POST',body:new URLSearchParams({name:v('name'),company:v('company'),email:v('email'),tel:v('tel'),topic:topic+(S.subs&&S.subs.length?'（'+S.subs.join('、')+'）':''),message:body,_honey:v('_honey')})});const j=await r.json().catch(()=>({}));sent=!!j.ok}catch(_){}}
+  if(f.dataset.gas){try{const r=await fetch(f.dataset.gas,{method:'POST',body:new URLSearchParams({name:v('name'),company:v('company'),email:v('email'),tel:v('tel'),topic:topic+(S.subs&&S.subs.length?'（'+S.subs.join('、')+'）':''),subs:(S.subs||[]).join('、'),cat:topic,message:body,_honey:v('_honey')})});const j=await r.json().catch(()=>({}));sent=!!j.ok}catch(_){}}
   btn.disabled=false;btn.innerHTML=label;
   if(sent){ok.hidden=false;f.querySelectorAll('input:not([type=checkbox]):not([name=_honey]):not([type=hidden]),textarea').forEach(x=>x.value='');window.maFormReset&&window.maFormReset();ok.scrollIntoView({behavior:'smooth',block:'nearest'});return}
   try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(_){}
