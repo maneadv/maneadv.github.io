@@ -24,7 +24,7 @@
 .ci-gate .mute{background:none;border:0;color:rgba(243,230,210,.5);font:400 12px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer;text-decoration:underline;text-underline-offset:6px}
 .ci-gate .mute:hover{color:rgba(243,230,210,.85)}
 .ci-gate .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff3dc,#f6a65a 60%,transparent 70%);box-shadow:0 0 24px 6px rgba(246,166,90,.35)}
-@media(prefers-reduced-motion:reduce){#intro{display:none}}
+@media(prefers-reduced-motion:reduce){#intro:not(.force){display:none}}
 /* 最後に社名 */
 .op-co{position:absolute;left:0;right:0;top:76%;z-index:5;display:flex;align-items:center;justify-content:center;gap:16px;opacity:0;transform:translateY(10px);transition:opacity 1.2s ease,transform 1.2s ease;pointer-events:none}
 .op-co img{width:clamp(36px,3.4vw,52px);height:auto;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}

@@ -16,7 +16,8 @@ const finish=()=>{if(ended)return;ended=true;
   ov.classList.add('exit');fadeOut(900);
   setTimeout(()=>{try{v.pause()}catch(_){}root.classList.remove('intro-lock');ov.remove();if(heroV)heroV.play().catch(()=>{})},1000);
   if(withSound&&bgm)setTimeout(()=>bgm.play(true),700)};
-if(matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
+const forced=ov.classList.contains('force');try{sessionStorage.removeItem('ma-intro-force')}catch(_){}
+if(!forced&&matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
 root.classList.add('intro-lock');
 if(heroV){heroV.pause();heroV.removeAttribute('autoplay')}
 
