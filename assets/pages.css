@@ -670,3 +670,38 @@ details.grid-fold{margin-top:4px}
   .fold-body{padding:2px 14px 14px}
   .blk>details.h2-fold>summary{font-size:18px}
 }
+/* v53 オープニングを見るボタン（音楽ボタンの左） */
+.op-btn{display:inline-flex;align-items:center;gap:7px;margin-left:auto;margin-right:8px;padding:7px 12px;border-radius:999px;border:1px solid var(--p-line);background:rgba(255,255,255,.04);color:var(--p-dim);font:700 12px "Noto Sans JP",sans-serif;cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s}
+.op-btn:hover{border-color:var(--p-acc);color:#fff}
+.op-btn:focus-visible{outline:2px solid var(--p-acc2);outline-offset:2px}
+.op-ic{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--p-acc);color:#1a0a00;font-size:8px;padding-left:2px;box-sizing:border-box}
+.op-btn+.bgm-btn{margin-left:0}
+@media(max-width:1440px){.op-btn .op-label{display:none}.op-btn{padding:7px 9px}}
+@media(max-width:400px){.op-btn{margin-right:4px;padding:7px 8px}}
+/* 1001〜1280px：ヘッダーが横にはみ出さないよう詰める */
+@media(min-width:1001px) and (max-width:1280px){
+  .site-header .bgm-btn .bgm-label{display:none}
+  .site-header .bgm-btn{padding:7px 9px;margin-right:10px}
+  .site-header nav{gap:2px!important}
+  .site-header nav a{padding-left:8px!important;padding-right:8px!important;font-size:13px!important}
+  .site-header nav .nav-cta{padding-left:16px!important;padding-right:16px!important}
+  .brand small{display:none}
+}
+@media(min-width:1001px) and (max-width:1120px){.brand b{font-size:14px}.brand-logo{width:34px;height:34px}}
+/* スマホ：見出し帯のボタンはメニュー内へ */
+.nav-op{display:none}
+@media(max-width:1000px){
+  .site-header .op-btn{display:none}
+  .site-header .bgm-btn{margin-left:auto}
+  .nav-op{display:flex!important;align-items:center;gap:10px;color:var(--p-acc2)!important;background:none;border:0;font:inherit;cursor:pointer;text-align:left}
+}
+.site-header .op-btn .op-label{display:none}.site-header .op-btn{padding:7px 9px}
+
+@media(min-width:1001px) and (max-width:1180px){
+  .site-header nav > a:first-child{display:none!important}
+  .site-header nav a{padding-left:6px!important;padding-right:6px!important;font-size:12.5px!important}
+  .site-header .bgm-btn{margin-right:6px}.site-header .op-btn{margin-right:4px}
+}
+.hero-op{display:inline-flex;align-items:center;gap:10px;margin-top:16px;padding:6px 2px;background:none;border:0;color:rgba(255,255,255,.82);font:600 14px "Noto Sans JP",sans-serif;cursor:pointer;border-bottom:1px solid rgba(255,138,61,.5)}
+.hero-op:hover{color:#fff;border-bottom-color:var(--p-acc)}
+.hero-op .op-ic{width:22px;height:22px;font-size:9px}

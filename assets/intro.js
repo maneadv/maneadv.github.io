@@ -20,11 +20,15 @@ if(matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
 root.classList.add('intro-lock');
 if(heroV){heroV.pause();heroV.removeAttribute('autoplay')}
 
+const CO_AT=19.2;
+const showCo=()=>ov.classList.add('co');
 const run=()=>{if(started)return;started=true;ov.classList.remove('gate');ov.classList.add('run');
-  v.addEventListener('ended',finish,{once:true});
+  v.addEventListener('timeupdate',()=>{if(v.currentTime>=CO_AT)showCo()});
+  // 最後に社名を見せてから終える
+  v.addEventListener('ended',()=>{showCo();setTimeout(finish,2200)},{once:true});
   // 映像が止まったまま進まないときの保険
   setTimeout(()=>{if(!ended&&(v.paused||v.currentTime<.2))finish()},9000);
-  setTimeout(finish,30000);
+  setTimeout(finish,33000);
   addEventListener('keydown',e=>{if(['Escape','Enter',' '].includes(e.key))finish()},{once:true})};
 ov.querySelector('.intro-skip').addEventListener('click',e=>{e.stopPropagation();finish()});
 
