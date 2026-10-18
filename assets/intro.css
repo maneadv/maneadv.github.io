@@ -1,85 +1,27 @@
 /* ==========================================================
-   オープニング Version 7「夜明け」— 粒子・宇宙・大阪・夜明け（音付き）
+   オープニング Version 9（支給映像）
    ========================================================== */
 .intro-lock body{overflow:hidden}
-#intro{position:fixed;inset:0;z-index:1000;background:#000;color:#fff;cursor:pointer;overflow:hidden}
-#intro.run{animation:introAuto .8s 26s forwards}
-@keyframes introAuto{to{opacity:0;visibility:hidden}}
-#intro.skip{transition:opacity .6s ease;opacity:0}
-#intro.exit{transition:opacity 1s ease,transform 1.1s cubic-bezier(.5,0,.2,1);opacity:0;transform:scale(1.06)}
-
-/* 層の順番：街の映像 → 夜明けの色 → 絵（粒子・地球） → 白 → 文字 → 黒帯 */
-.op-city{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform-origin:50% 50%;z-index:1}
-.op-night{position:absolute;inset:0;z-index:1;background:#02040c;opacity:.5;pointer-events:none}
-.op-dawn{display:none;position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;
-  background:linear-gradient(0deg,rgba(255,138,52,.45) 0%,rgba(255,120,70,.30) 22%,rgba(200,96,120,.16) 45%,rgba(90,100,170,.10) 70%,rgba(20,30,80,0) 100%)}
-.op-dawn::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(255,190,120,.32),transparent 70%)}
-.op-cv{position:absolute;inset:0;width:100%;height:100%;z-index:3;transform-origin:50% 50%}
-.op-white{position:absolute;inset:0;z-index:4;background:#fff;opacity:0;pointer-events:none}
-
-/* 文字 */
-.op-l1{position:absolute;left:0;right:0;top:50%;z-index:5;margin:0;transform:translateY(-50%);text-align:center;
-  font:400 clamp(20px,3vw,40px)/1.5 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.7em;padding-left:.7em;color:#fff6e8;
-  text-shadow:0 0 24px rgba(255,170,90,.55),0 2px 18px rgba(0,0,0,.55);opacity:0;transition:opacity 1.6s ease,letter-spacing 3s cubic-bezier(.2,.7,.2,1)}
-#intro.l1 .op-l1{opacity:1;letter-spacing:.42em}
-#intro.l1out .op-l1{opacity:0;transition:opacity .45s ease}
-.op-final{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,3vh,34px);pointer-events:none}
-.op-big{margin:0;text-align:center;font:600 clamp(30px,6vw,86px)/1.35 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.08em;color:#fff;opacity:0;
-  text-shadow:0 0 30px rgba(255,150,60,.75),0 0 80px rgba(255,110,30,.45),0 4px 24px rgba(0,0,0,.6)}
-.op-big .o{color:#ffb15e}
-.op-big br{display:none}
-#intro.boom .op-big{animation:boomIn .5s cubic-bezier(.2,1.4,.3,1) forwards}
-@keyframes boomIn{0%{opacity:0;transform:scale(2.4);filter:blur(10px)}35%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1)}}
-#intro.boom{animation:shake .55s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(5px,-3px)}30%,50%,70%{transform:translate(-9px,4px)}40%,60%{transform:translate(9px,-4px)}}
-#intro.boom .op-flash{animation:flash .5s ease-out forwards}
-.op-flash{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff,rgba(255,200,140,.6) 40%,rgba(255,140,50,0) 75%);opacity:0;pointer-events:none}
-@keyframes flash{0%{opacity:.95}100%{opacity:0}}
-.op-co{display:flex;align-items:center;gap:14px;opacity:0;transform:translateY(8px);transition:opacity 1.2s ease,transform 1.2s ease}
-.op-co img{width:clamp(30px,3vw,42px);height:auto}
-.op-co span{font:500 clamp(13px,1.5vw,18px) "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;color:#f1e3c9}
-#intro.co .op-co{opacity:1;transform:none}
-.op-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,.15) 70%,transparent)}
-#intro.boom .op-shade{opacity:1}
-
-/* 映画の黒帯・粒子感・周辺減光 */
-.ci-bars i{position:absolute;left:0;right:0;height:8vh;background:#000;z-index:6;transition:transform 1.1s cubic-bezier(.65,0,.2,1)}
-.ci-bars .t{top:0;transform:translateY(-100%)}.ci-bars .b{bottom:0;transform:translateY(100%)}
-#intro.s1 .ci-bars i{transform:none}
-#intro.boom .ci-bars .t{transform:translateY(-100%)}#intro.boom .ci-bars .b{transform:translateY(100%)}
-.ci-grain{position:absolute;inset:-50%;z-index:6;pointer-events:none;opacity:.06;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+#intro{position:fixed;inset:0;z-index:1000;background:#000;color:#fff;overflow:hidden;transition:opacity 1s ease}
+#intro.exit{opacity:0;pointer-events:none}
+.op-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+/* 縦長の画面：文字が切れないよう、映像の中央部分を大きめに見せる */
+@media (max-aspect-ratio:1/1){
+  .op-video{inset:auto;left:50%;top:50%;width:170vw;height:calc(170vw * 9 / 16);transform:translate(-50%,-50%);object-fit:cover}
+  #intro::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,#000 0,transparent calc(50% - 48vw),transparent calc(50% + 48vw),#000 100%)}
 }
-#intro.boom .ci-grain{display:none}
-@keyframes grain{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
-.ci-vig{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 50%,rgba(0,0,0,.55) 100%)}
-
-.intro-skip{position:absolute;right:22px;bottom:calc(8vh + 14px);z-index:7;padding:7px 16px;border-radius:999px;border:1px solid rgba(233,199,143,.35);background:rgba(0,0,0,.25);color:rgba(243,230,210,.85);font:400 11px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer}
+.intro-skip{position:absolute;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:7;padding:8px 18px;border-radius:999px;border:1px solid rgba(233,199,143,.4);background:rgba(0,0,0,.35);color:rgba(243,230,210,.9);font:400 12px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer}
 .intro-skip:hover{border-color:#e9c78f;color:#fff}
-#intro.boom .intro-skip{bottom:22px}
-.ci-gate{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#030406;cursor:default;transition:opacity .9s ease}
+#intro.gate .intro-skip{opacity:0;pointer-events:none}
+.ci-gate{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#030406;transition:opacity .8s ease}
 .ci-gate[hidden]{display:none}
 .ci-gate.out{opacity:0;pointer-events:none}
 .ci-gate p{margin:0;font:400 clamp(13px,1.3vw,15px)/1.8 "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.45em;padding-left:.45em;color:rgba(243,230,210,.7);text-align:center}
 .ci-gate .go{position:relative;padding:16px 40px;border:1px solid rgba(233,199,143,.55);background:transparent;color:#f3e6d2;font:500 clamp(14px,1.6vw,17px) "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.5em;padding-left:calc(40px + .4em);cursor:pointer;transition:background .4s,border-color .4s,color .4s}
 .ci-gate .go::before{content:"";position:absolute;inset:-6px;border:1px solid rgba(233,199,143,.18);animation:gatePulse 2.4s ease-in-out infinite}
 @keyframes gatePulse{50%{inset:-12px;opacity:0}}
-.ci-gate .go:hover{background:rgba(233,199,143,.08);border-color:var(--gold);color:#fff}
-.ci-gate .mute{background:none;border:0;color:rgba(243,230,210,.45);font:400 12px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer;text-decoration:underline;text-underline-offset:6px}
+.ci-gate .go:hover{background:rgba(233,199,143,.08);border-color:#e9c78f;color:#fff}
+.ci-gate .mute{background:none;border:0;color:rgba(243,230,210,.5);font:400 12px "Shippori Mincho","Noto Serif JP",serif;letter-spacing:.3em;cursor:pointer;text-decoration:underline;text-underline-offset:6px}
 .ci-gate .mute:hover{color:rgba(243,230,210,.85)}
 .ci-gate .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff3dc,#f6a65a 60%,transparent 70%);box-shadow:0 0 24px 6px rgba(246,166,90,.35)}
-#intro.gate .intro-skip{opacity:0;pointer-events:none}
-@media(max-width:720px){
-  .op-l1{letter-spacing:.4em;padding-left:.4em}#intro.l1 .op-l1{letter-spacing:.22em}
-  .op-big{font-size:clamp(28px,8.6vw,44px);letter-spacing:.04em}
-  .op-big br{display:inline}
-  .op-co span{letter-spacing:.12em;font-size:12.5px}
-}
 @media(prefers-reduced-motion:reduce){#intro{display:none}}
-/* 写真の上でも読めるように、文字の後ろに淡い影 */
-.op-l1::before{content:"";position:absolute;left:8%;right:8%;top:-60%;bottom:-60%;z-index:-1;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(2,4,12,.62),rgba(2,4,12,.25) 60%,transparent 75%);pointer-events:none}
-.op-l1{text-shadow:0 0 18px rgba(255,170,90,.5),0 2px 10px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8)}
-@media(max-width:720px){.op-l1::before{left:0;right:0}}
-/* 文字は空の位置に置き、城と重ならないようにする */
-.op-l1{top:22%}
-@media(max-width:720px){.op-l1{top:19%}}
