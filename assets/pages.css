@@ -705,3 +705,30 @@ details.grid-fold{margin-top:4px}
 .hero-op{display:inline-flex;align-items:center;gap:10px;margin-top:16px;padding:6px 2px;background:none;border:0;color:rgba(255,255,255,.82);font:600 14px "Noto Sans JP",sans-serif;cursor:pointer;border-bottom:1px solid rgba(255,138,61,.5)}
 .hero-op:hover{color:#fff;border-bottom-color:var(--p-acc)}
 .hero-op .op-ic{width:22px;height:22px;font-size:9px}
+
+/* v66 スマホでのかくつき対策（重い効果を止める） */
+html.lite .cosmic-nebula,html.lite .cosmic-orbit,html.lite .cosmic-planet{display:none!important}
+html.lite .cosmic-stars{animation:none!important;transform:none!important;will-change:auto!important}
+html.lite .cosmic-layer{will-change:auto!important}
+html.lite .site-header,html.lite .site-header.scrolled,html.lite .mega,html.lite .memo-basket,html.lite .console,html.lite .hero-console,html.lite .slot-box,html.lite .blk,html.lite .tree-big{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.lite .site-header{background:rgba(6,12,22,.94)!important}
+html.lite .business-symbol,html.lite .service-icon,html.lite .issue-grid i,html.lite .orbit,html.lite .stage-scan,html.lite .stage-node i,html.lite .stage-line,html.lite .data-pulse,html.lite .future-copy .eyebrow span,html.lite .scroll-cue span,html.lite .cosmic-zone.is-current .business-symbol,html.lite .cosmic-zone.is-current .service-icon,html.lite .cosmic-zone.is-current .issue-grid i,html.lite .cosmic-zone.is-current .flow-grid li span,html.lite .cosmic-zone.is-current .service-number,html.lite .hero-emblem .ring{animation:none!important}
+html.lite .issue-strip:after,html.lite .flow:after,html.lite .businesses:after,html.lite .services:after,html.lite .strengths:after,html.lite .cases:after{display:none!important}
+html.lite .hero-video{transform:none!important}
+html.lite .future-grid{animation:none!important}
+html.lite .ticker-row{will-change:transform}
+html.lite .page-hero-bg{filter:none!important}
+html.lite .motion-canvas{display:none!important}
+html.lite .future-glow{filter:none!important;opacity:.6}
+html.lite .orbit-system,html.lite .orbit{animation:none!important}
+html.lite .tilt-surface{transform:none!important}
+html.lite .cursor-ring,html.lite .cursor-dot{display:none!important}
+html.lite body,html.lite a,html.lite button{cursor:auto}
+html.lite a,html.lite button,html.lite [role=tab]{cursor:pointer}
+html.lite .site-header{will-change:transform;transform:translateZ(0)}
+html.lite .brand-logo{filter:none!important}
+html.lite .scroll-universe .cosmic-stars{display:none!important}
+html.lite .magnet{transform:none!important}
+html.lite .future-grid,html.lite .future-glow{display:none!important}
+html.lite .hero-video-wrap{will-change:transform;transform:translateZ(0)}
+html.lite .hero{contain:paint}

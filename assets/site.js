@@ -103,7 +103,7 @@ const stage=document.querySelector('.motion-stage');
 document.querySelectorAll('.scene-controls button').forEach(button=>button.addEventListener('click',()=>{const index=Number(button.dataset.scene),scene=scenes[index];document.querySelectorAll('.scene-controls button').forEach(item=>{item.classList.toggle('active',item===button);item.setAttribute('aria-selected',String(item===button))});stage.animate([{opacity:.45,transform:'scale(.985)'},{opacity:1,transform:'scale(1)'}],{duration:420,easing:'ease-out'});stage.dataset.scene=index;stage.querySelector('.scene-number').textContent=scene.number;stage.querySelector('.stage-caption small').textContent=scene.label;stage.querySelector('.stage-caption strong').textContent=scene.title;stage.querySelector('.stage-caption p').textContent=scene.text;stage.querySelectorAll('.stage-node span').forEach((node,i)=>node.textContent=scene.nodes[i])}));
 
 const progressRail=document.querySelector('.scroll-progress'),zones=[...document.querySelectorAll('.cosmic-zone')];let progressTick=false;
-const updateProgress=()=>{progressTick=false;const max=Math.max(document.documentElement.scrollHeight-innerHeight,1),page=Math.min(Math.max(scrollY/max,0),1);document.documentElement.style.setProperty('--page-progress',`${page*100}%`);let current=null,nearest=Infinity;zones.forEach(zone=>{const rect=zone.getBoundingClientRect(),distance=Math.abs(rect.top+rect.height/2-innerHeight/2);if(distance<nearest){nearest=distance;current=zone}});zones.forEach(zone=>zone.classList.toggle('is-current',zone===current));if(current&&progressRail)progressRail.querySelector('i').textContent=current.dataset.chapter};
+const updateProgress=()=>{progressTick=false;const max=Math.max(document.documentElement.scrollHeight-innerHeight,1),page=Math.min(Math.max(scrollY/max,0),1);let current=null,nearest=Infinity;zones.forEach(zone=>{const rect=zone.getBoundingClientRect(),distance=Math.abs(rect.top+rect.height/2-innerHeight/2);if(distance<nearest){nearest=distance;current=zone}});zones.forEach(zone=>zone.classList.toggle('is-current',zone===current));if(current&&progressRail)progressRail.querySelector('i').textContent=current.dataset.chapter};
 const requestProgress=()=>{if(!progressTick){progressTick=true;requestAnimationFrame(updateProgress)}};if(!reduced){addEventListener('scroll',requestProgress,{passive:true});addEventListener('resize',requestProgress,{passive:true});updateProgress()}
 
 document.querySelectorAll('.mega-toggle').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();const box=b.closest('.has-mega');const open=box.classList.toggle('open');b.setAttribute('aria-expanded',String(open))}));
@@ -124,3 +124,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
     el.querySelectorAll(':scope > details.fold, :scope > * > details.fold').forEach(d=>d.open=true)};
   openTo();addEventListener('hashchange',openTo);
   document.addEventListener('click',e=>{const a=e.target.closest('a[href*="#"]');if(a&&a.pathname===location.pathname)setTimeout(openTo,0)})})();
+
+/* 映像が画面の外に出たら止めて、スマホの負担を減らす */
+(()=>{const vs=[...document.querySelectorAll('video.hero-video,video.page-hero-bg')];if(!vs.length||!('IntersectionObserver'in window))return;
+  const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(document.getElementById('intro'))return;if(e.isIntersecting){v.play&&v.play().catch(()=>{})}else{v.pause&&v.pause()}}),{threshold:0});
+  vs.forEach(v=>io.observe(v))})();
+
+/* 動きが重い端末は自動で軽い表示に切り替える（最初の数秒の描画速度で判定） */
+(()=>{const d=document.documentElement;if(d.classList.contains('lite'))return;let f=0,slow=0,t0=performance.now(),last=t0;
+  const step=n=>{const dt=n-last;last=n;if(dt>40)slow++;f++;if(n-t0<4000)requestAnimationFrame(step);else{if(f/((n-t0)/1000)<40||slow>f*.3){d.classList.add('lite');try{localStorage.setItem('ma-lite','1')}catch(_){}}}};
+  setTimeout(()=>{if(document.hidden||document.getElementById('intro'))return;t0=last=performance.now();requestAnimationFrame(step)},1500)})();

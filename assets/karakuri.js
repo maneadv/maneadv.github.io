@@ -18,13 +18,13 @@ if(video){
   video.addEventListener('play',setLabel);video.addEventListener('pause',setLabel);
   // 映像の時間帯を表示（昼→夕暮れ→昼の往復）
   const clock=$('.hero-time b');
-  if(clock){const tick=()=>{const d=video.duration||20,t=video.currentTime%d,ph=t<d/2?t/(d/2):2-t/(d/2);const min=Math.round((19+ph*4.5)*60);clock.textContent=String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');requestAnimationFrame(tick)};requestAnimationFrame(tick);}
+  if(clock){let last='';const tick=()=>{if(scrollY<innerHeight*1.2&&!document.hidden){const d=video.duration||20,t=video.currentTime%d,ph=t<d/2?t/(d/2):2-t/(d/2);const min=Math.round((19+ph*4.5)*60);const txt=String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');if(txt!==last){clock.textContent=txt;last=txt}}setTimeout(tick,500)};tick();}
   if(!reduced){
     let mx=0,my=0,sy=0,queued=false;
     const apply=()=>{queued=false;video.style.setProperty('--vx',(mx*-14)+'px');video.style.setProperty('--vy',(my*-10+sy*.18)+'px');video.style.setProperty('--vs',1+Math.min(sy,700)/700*.08);};
     const q=()=>{if(!queued){queued=true;requestAnimationFrame(apply)}};
     if(fine)hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect();mx=(e.clientX-r.left)/r.width-.5;my=(e.clientY-r.top)/r.height-.5;q();});
-    addEventListener('scroll',()=>{sy=Math.max(0,scrollY);if(sy<1000)q();},{passive:true});
+    if(fine)addEventListener('scroll',()=>{sy=Math.max(0,scrollY);if(sy<1000)q();},{passive:true});
   }
 }
 
@@ -40,7 +40,7 @@ if(!reduced&&'IntersectionObserver'in window){
 }
 
 /* ---------- 3. カーソルリング・吸着ボタン・波紋 ---------- */
-if(fine&&!reduced){
+if(fine&&!reduced&&!document.documentElement.classList.contains('lite')){
   const ring=document.createElement('div');ring.className='cursor-ring';ring.setAttribute('aria-hidden','true');
   const dot=document.createElement('div');dot.className='cursor-dot';dot.setAttribute('aria-hidden','true');
   ring.style.opacity='0';dot.style.opacity='0';document.body.append(ring,dot);
@@ -190,7 +190,7 @@ $$('.business-grid article').forEach((a,i)=>{
 
 /* ---------- 9. メイン画面の粒子：カーソルに集まってつながる ---------- */
 const cv=$('.motion-canvas');
-if(cv&&!reduced){
+if(cv&&!reduced&&!document.documentElement.classList.contains('lite')){
   const ctx=cv.getContext('2d');let w=0,h=0,ps=[],m={x:-999,y:-999},bursts=[];
   const rs=()=>{const b=cv.getBoundingClientRect(),r=Math.min(devicePixelRatio||1,2);w=b.width;h=b.height;cv.width=w*r;cv.height=h*r;ctx.setTransform(r,0,0,r,0,0);ps=Array.from({length:Math.min(110,Math.floor(w/12))},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.35,vy:-(.15+Math.random()*.45),r:.6+Math.random()*1.6,a:.18+Math.random()*.45}))};
   rs();addEventListener('resize',rs,{passive:true});
@@ -198,7 +198,7 @@ if(cv&&!reduced){
   hero.addEventListener('pointerleave',()=>{m.x=m.y=-999});
   hero.addEventListener('click',e=>{if(e.target.closest('a,button'))return;const b=cv.getBoundingClientRect();bursts.push({x:e.clientX-b.left,y:e.clientY-b.top,t:0});ps.forEach(p=>{const dx=p.x-(e.clientX-b.left),dy=p.y-(e.clientY-b.top),d=Math.hypot(dx,dy)||1;if(d<260){p.vx+=dx/d*2.4;p.vy+=dy/d*2.4}})});
   let visible=true;if('IntersectionObserver'in window)new IntersectionObserver(es=>{visible=es[0].isIntersecting}).observe(hero);
-  const draw=()=>{requestAnimationFrame(draw);if(!visible)return;ctx.clearRect(0,0,w,h);
+  const draw=()=>{if(document.documentElement.classList.contains('lite')){ctx.clearRect(0,0,w,h);return}requestAnimationFrame(draw);if(!visible)return;ctx.clearRect(0,0,w,h);
     ps.forEach(p=>{const dx=m.x-p.x,dy=m.y-p.y,d=Math.hypot(dx,dy);if(d<180){p.vx+=dx/d*.035;p.vy+=dy/d*.035}
       p.vx*=.97;p.vy=p.vy*.97-.012;p.x+=p.vx;p.y+=p.vy;if(p.y<-10){p.y=h+10;p.x=Math.random()*w}if(p.x<-10)p.x=w+10;if(p.x>w+10)p.x=-10;if(p.y>h+20)p.y=-5;
       ctx.beginPath();ctx.fillStyle=`rgba(255,150,70,${p.a})`;ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();

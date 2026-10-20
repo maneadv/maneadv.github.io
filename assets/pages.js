@@ -20,7 +20,7 @@ if(sc&&!reduced){
 }
 const em=$('.hero-emblem');
 if(em&&!reduced){
-  addEventListener('scroll',()=>{em.style.setProperty('--spin',(scrollY*.35)+'deg')},{passive:true});
+  if(matchMedia('(pointer:fine)').matches)addEventListener('scroll',()=>{em.style.setProperty('--spin',(scrollY*.35)+'deg')},{passive:true});
   if(fine)em.parentElement.addEventListener('pointermove',e=>{const r=em.parentElement.getBoundingClientRect();em.style.setProperty('--ex',((e.clientX-r.left)/r.width-.5)*18+'px');em.style.setProperty('--ey',((e.clientY-r.top)/r.height-.5)*12+'px')});
 }
 
