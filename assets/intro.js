@@ -31,6 +31,8 @@ const showCo=()=>ov.classList.add('co');
 let raf=0;const cue=()=>{const t=v.currentTime;for(const [at,c] of CUES){if(t>=at)ov.classList.add(c)}if(!ended)raf=requestAnimationFrame(cue)};
 const run=()=>{if(started)return;started=true;ov.classList.remove('gate');ov.classList.add('run');
   raf=requestAnimationFrame(cue);
+  // 再生中の描画が遅ければ、文字の演出を軽くする
+  (()=>{let f=0,slow=0,last=0,t0=0;const st=n=>{if(!t0){t0=last=n}else{if(n-last>45)slow++;last=n}f++;if(n-t0<3000&&!ended)requestAnimationFrame(st);else if(f&&slow>f*.25)root.classList.add('lite')};setTimeout(()=>requestAnimationFrame(st),1200)})();
   // 最後に社名を見せてから終える
   v.addEventListener('ended',()=>{ov.classList.add('big');showCo();setTimeout(finish,2400)},{once:true});
   // 映像が止まったまま進まないときの保険

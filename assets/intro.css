@@ -88,3 +88,18 @@ html.lite #intro.co .op-video{filter:none}
 html.lite .op-co img{filter:none}
 html.lite .op-l1{transition:opacity 1.2s ease}
 html.lite .op-l1,html.lite .op-big,html.lite .op-co .co-name{text-shadow:0 0 18px rgba(255,150,60,.6),0 2px 10px rgba(0,0,0,.85)}
+/* オープニング中は裏のページを描かない（性能の低いパソコンでもなめらかにする） */
+html.intro-lock body>*:not(#intro):not(script){visibility:hidden!important}
+html.intro-lock body>*:not(#intro) *{animation-play-state:paused!important}
+#intro .op-video{will-change:transform;transform:translateZ(0)}
+/* 文字の演出を軽くする（見た目はほぼ同じ） */
+.op-l1,#intro.l1 .op-l1{letter-spacing:.16em;transition:opacity 1.4s ease,transform 3s cubic-bezier(.2,.7,.2,1)}
+.op-l1{transform:scale(1.08)}
+#intro.l1 .op-l1{transform:none}
+#intro.port .op-l1,#intro.port.l1 .op-l1{letter-spacing:.08em}
+@keyframes bigIn{0%{opacity:0;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+.op-l1,.op-big,.op-co .co-name{text-shadow:0 0 24px rgba(255,150,60,.65),0 2px 12px rgba(0,0,0,.85)!important}
+.op-l1,.op-big,.op-co{will-change:opacity,transform}
+#intro.co .op-video{filter:none!important}
+.op-co img{filter:drop-shadow(0 0 14px rgba(255,140,50,.5))}
+html.lite .op-co img{filter:none}
