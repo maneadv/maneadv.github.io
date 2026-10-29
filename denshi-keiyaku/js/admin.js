@@ -1245,7 +1245,13 @@ const yenJ = n => { n = Number(n); return n >= 1e8 && n % 1e8 === 0 ? (n / 1e8) 
 function numText(key, s) {
   const tax = s.tax ? `（${s.tax}）` : '';
   const min = s.min ? `（ただし最低${yenJ(s.min)}円）` : '';
-  if (s.mode === 'amount') return s.amt === '' || s.amt == null ? '' : `${s.unit === 'なし' ? '金' : s.unit}${yen(s.amt)}円${tax}`;
+  if (s.mode === 'amount') {
+    if (s.amt === '' || s.amt == null) return '';
+    const a = Number(s.amt), tr = Number(s.tr || 10), pre = s.unit === 'なし' ? '金' : s.unit;
+    if (s.both && s.tax === '税別') return `${pre}${yen(a)}円（税別。消費税${tr}%を含めると${yen(a + Math.floor(a * tr / 100))}円）`;
+    if (s.both && s.tax === '税込') return `${pre}${yen(a)}円（税込。うち消費税${tr}% ${yen(Math.floor(a * tr / (100 + tr)))}円）`;
+    return `${pre}${yen(a)}円${tax}`;
+  }
   if (s.mode === 'rate') return s.rate === '' || s.rate == null ? '' : `${s.base || '○○'}の${s.rate}%${tax}${min}`;
   if (s.mode === 'tier') {
     const rows = s.tiers.filter(t => t.rate !== '');
@@ -1286,7 +1292,9 @@ function enhanceNumbers(root, attr) {
     inp.insertAdjacentElement('afterend', box);
     const put = () => { const t = numText(key, s); if (t) { inp.value = t; inp.dispatchEvent(new Event('input', { bubbles: true })); } };
     const draw = () => {
-      const tax = `<select data-k="tax">${['税別', '税込', '非課税', ''].map(x => `<option value="${x}" ${s.tax === x ? 'selected' : ''}>${x || '税の表示なし'}</option>`).join('')}</select>`;
+      const tax = `<div class="seg tax">${[['税別', '税別（外税）'], ['税込', '税込（内税）'], ['非課税', '非課税'], ['', '表示なし']].map(([v, l]) => `<button type="button" data-tax="${v}" class="${s.tax === v ? 'on' : ''}">${l}</button>`).join('')}</div>`
+        + (s.mode === 'amount' && (s.tax === '税別' || s.tax === '税込') ? `<label class="ck"><input type="checkbox" data-k="both" ${s.both ? 'checked' : ''}>${s.tax === '税別' ? '税込金額も書く' : '消費税額も書く'}</label>
+          <select data-k="tr">${['10', '8'].map(x => `<option value="${x}" ${String(s.tr || 10) === x ? 'selected' : ''}>消費税${x}%${x === '8' ? '（軽減税率）' : ''}</option>`).join('')}</select>` : '');
       let h = '';
       if (kind === 'period') {
         h = `<input type="number" min="0" data-k="n" value="${esc(s.n)}" class="n">
@@ -1313,6 +1321,7 @@ function enhanceNumbers(root, attr) {
       const rd = el => { const r = el.nextElementSibling && el.nextElementSibling.classList.contains('rd') ? el.nextElementSibling : null; if (r) r.textContent = el.value >= 10000 ? '＝' + yenJ(el.value) + '円' : ''; };
       box.querySelectorAll('[data-k="amt"],[data-k="min"],[data-f="upto"]').forEach(el => { const sp = document.createElement('span'); sp.className = 'rd'; el.after(sp); rd(el); el.addEventListener('input', () => rd(el)); });
       box.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { s.mode = b.dataset.mode; draw(); put(); });
+      box.querySelectorAll('[data-tax]').forEach(b => b.onclick = () => { s.tax = b.dataset.tax; draw(); put(); });
       box.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
         s[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; put();
       }));
