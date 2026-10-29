@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>電子契約 管理画面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="loginView" class="login hidden">
+  <div class="brand" style="color:var(--ink);justify-content:center;margin-bottom:16px;font-size:20px"><i></i>電子契約 管理画面</div>
+  <div class="card">
+    <label style="margin-top:0">メールアドレス</label>
+    <input id="lEmail" type="email" autocomplete="username">
+    <label>パスワード</label>
+    <input id="lPass" type="password" autocomplete="current-password">
+    <button class="btn primary lg" id="lBtn" style="margin-top:18px">ログイン</button>
+    <p class="muted" id="lMsg" style="margin:12px 0 0"></p>
+  </div>
+</div>
+
+<div id="mainView" class="hidden">
+  <div class="topbar"><div class="in">
+    <div class="brand"><i></i>電子契約</div>
+    <nav class="tabs">
+      <button data-go="#list">契約一覧</button>
+      <button data-go="#new">新規作成</button>
+      <button data-go="#tpl">雛形</button>
+      <button data-go="#legal">リーガルチェック</button>
+      <button data-go="#auto">自動受付</button>
+      <button data-go="#co">発行会社</button>
+      <button data-go="#set">設定</button>
+    </nav>
+    <div class="who" id="who"></div>
+  </div></div>
+  <main id="view"></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/library.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
