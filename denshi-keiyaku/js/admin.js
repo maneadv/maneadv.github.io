@@ -268,6 +268,7 @@ async function viewEdit(id) {
     $('varBox').innerHTML = ks.length ? `<div class="card" style="margin-top:12px;background:#fafbfc"><b style="font-size:14px">差し込み項目の入力</b>
       <div class="grid2">${ks.map(k => `<div><label>${esc(k)}</label><input data-var="${esc(k)}" value="${esc(vars[k] || '')}"></div>`).join('')}</div></div>` : '';
     $('varBox').querySelectorAll('[data-var]').forEach(i => i.oninput = () => { vars[i.dataset.var] = i.value; drawPrev(); });
+    enhanceNumbers($('varBox'), 'data-var');
   };
   const current = () => {
     const co = COMPANIES.find(x => x.id === $('eCo').value) || {};
@@ -440,6 +441,7 @@ function openWizard(ctx) {
     W.querySelectorAll('[data-role]').forEach(b => b.onclick = () => { st.ourRole = +b.dataset.role; st.on = {}; step2(); });
     W.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { st.stance = b.dataset.st; st.on = {}; step2(); });
     W.querySelectorAll('[data-in]').forEach(i => i.oninput = () => { st.values[i.dataset.in] = i.value; });
+    enhanceNumbers(W, 'data-in');
     const sum = () => { document.getElementById('wzSum').innerHTML = `甲：${esc((st.ourRole === 0 ? st.ourName : st.partyName) || '（未入力）')}<br>乙：${esc((st.ourRole === 1 ? st.ourName : st.partyName) || '（未入力）')}`; };
     document.getElementById('wzOur').oninput = e => { st.ourName = e.target.value; sum(); };
     document.getElementById('wzParty').oninput = e => { st.partyName = e.target.value; sum(); };
@@ -1202,3 +1204,104 @@ async function viewSettings() {
 }
 
 boot();
+
+// ================= 数字の入力補助（金額・割合・段階・期間・日付） =================
+// 差し込み項目のうち、金額・手数料・期間・日付などに入力用の小さな部品を付ける。
+// 部品で選ぶと、元の入力欄に契約書用の文章が入る（元の入力欄は直接書き換えも可能）。
+const NUM_STATE = {};
+const AMOUNT_ONLY = ['売買代金', '購入価格', '譲渡価格', '貸付金額', '払込総額', '1株あたりの払込金額', '入会金', '月会費', '年会費',
+  '作業料金', '着手金', '月額報酬', '調査費', '基本給', '時給', '最低販売価格', '顧問料'];
+const RATE_BASES = ['売上金額（税抜）', '成約した取引の売上金額（税抜）', '販売価格（税込）', '販売金額（税抜）', '削減額', '交付決定額',
+  '譲渡価格', '粗利益額', '受注金額（税抜）', '月額利用料'];
+const DEFAULT_BASE = { '紹介料': '成約した取引の売上金額（税抜）', '販売手数料': '販売価格（税込）', '手数料': '販売金額（税抜）' };
+const NO_TAX = ['売買代金', '購入価格', '貸付金額', '譲渡価格', '払込総額', '1株あたりの払込金額', '基本給', '時給', '最低販売価格'];
+function numKind(key) {
+  if (/裁判所|方法|条件|内容|場所|範囲|目的|対象|名称|区分|氏名|窓口|資産|契約$/.test(key)) return null;
+  if (AMOUNT_ONLY.includes(key)) return 'amount';
+  if (/(料|報酬|報酬額|手数料|マージン|代金|価格|金額|会費|費|手当)$/.test(key)) return 'money';
+  if (/期間$/.test(key)) return 'period';
+  if (/(日|期日)$/.test(key) && !/作業日|休日|日・/.test(key)) return 'date';
+  return null;
+}
+const yen = n => Number(n).toLocaleString('ja-JP');
+const yenJ = n => { n = Number(n); return n >= 1e8 && n % 1e8 === 0 ? (n / 1e8) + '億' : n >= 1e4 && n % 1e4 === 0 ? (n / 1e4).toLocaleString('ja-JP') + '万' : yen(n); };
+function numText(key, s) {
+  const tax = s.tax ? `（${s.tax}）` : '';
+  const min = s.min ? `（ただし最低${yenJ(s.min)}円）` : '';
+  if (s.mode === 'amount') return s.amt === '' || s.amt == null ? '' : `${s.unit === 'なし' ? '金' : s.unit}${yen(s.amt)}円${tax}`;
+  if (s.mode === 'rate') return s.rate === '' || s.rate == null ? '' : `${s.base || '○○'}の${s.rate}%${tax}${min}`;
+  if (s.mode === 'tier') {
+    const rows = s.tiers.filter(t => t.rate !== '');
+    if (!rows.length) return '';
+    let prev = null; const parts = rows.map((t, i) => {
+      const last = i === rows.length - 1 || t.upto === '';
+      const p = last ? (prev == null ? '全額' : `${yenJ(prev)}円を超える部分`) : (prev == null ? `${yenJ(t.upto)}円以下の部分` : `${yenJ(prev)}円を超え${yenJ(t.upto)}円以下の部分`);
+      prev = t.upto === '' ? prev : t.upto; return `${p}は${t.rate}%`;
+    });
+    return `${s.base || '○○'}のうち、${parts.join('、')}を合計した額${tax}${min}`;
+  }
+  if (s.mode === 'period') return s.n === '' ? '' : `${s.n}${s.u}${s.kan ? '間' : ''}`;
+  if (s.mode === 'date') { if (!s.d) return ''; const [y, m, d] = s.d.split('-').map(Number); return `${y}年${m}月${d}日`; }
+  return '';
+}
+function numInit(key, kind, cur) {
+  if (kind === 'period') {
+    const m = /^(\d+)\s*(日|週間|か月|ヶ月|年)(間?)$/.exec(cur || '');
+    return { mode: 'period', n: m ? m[1] : '', u: m ? m[2].replace('ヶ月', 'か月') : 'か月', kan: m ? !!m[3] : !/存続期間|予告期間/.test(key) };
+  }
+  if (kind === 'date') { const m = /(\d{4})年(\d{1,2})月(\d{1,2})日/.exec(cur || ''); return { mode: 'date', d: m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` : '' }; }
+  const unit = /月会費|顧問料|月額報酬|基本給/.test(key) ? '月額' : key === '年会費' ? '年額' : key === '時給' ? '1時間あたり' : 'なし';
+  return { mode: kind === 'amount' ? 'amount' : (DEFAULT_BASE[key] ? 'rate' : 'amount'), amt: '', unit, tax: NO_TAX.includes(key) ? '' : '税別',
+    rate: '', base: DEFAULT_BASE[key] || '', min: '', tiers: [{ upto: '', rate: '' }, { upto: '', rate: '' }] };
+}
+function enhanceNumbers(root, attr) {
+  if (!document.getElementById('rateBases')) {
+    const dl = document.createElement('datalist'); dl.id = 'rateBases';
+    dl.innerHTML = RATE_BASES.map(b => `<option value="${esc(b)}">`).join(''); document.body.appendChild(dl);
+  }
+  root.querySelectorAll(`input[${attr}]`).forEach(inp => {
+    const key = inp.getAttribute(attr), kind = numKind(key);
+    if (!kind || inp.dataset.numDone) return;
+    inp.dataset.numDone = '1';
+    const s = NUM_STATE[key] || (NUM_STATE[key] = numInit(key, kind, inp.value));
+    const box = document.createElement('div'); box.className = 'numbox';
+    inp.insertAdjacentElement('afterend', box);
+    const put = () => { const t = numText(key, s); if (t) { inp.value = t; inp.dispatchEvent(new Event('input', { bubbles: true })); } };
+    const draw = () => {
+      const tax = `<select data-k="tax">${['税別', '税込', '非課税', ''].map(x => `<option value="${x}" ${s.tax === x ? 'selected' : ''}>${x || '税の表示なし'}</option>`).join('')}</select>`;
+      let h = '';
+      if (kind === 'period') {
+        h = `<input type="number" min="0" data-k="n" value="${esc(s.n)}" class="n">
+          <select data-k="u">${['日', '週間', 'か月', '年'].map(x => `<option ${s.u === x ? 'selected' : ''}>${x}</option>`).join('')}</select>
+          <label class="ck"><input type="checkbox" data-k="kan" ${s.kan ? 'checked' : ''}>「間」を付ける</label>`;
+      } else if (kind === 'date') {
+        h = `<input type="date" data-k="d" value="${esc(s.d)}">`;
+      } else {
+        h = (kind === 'money' ? `<div class="seg">${[['amount', '金額'], ['rate', '割合（%）'], ['tier', '段階制']].map(([m, l]) => `<button type="button" data-mode="${m}" class="${s.mode === m ? 'on' : ''}">${l}</button>`).join('')}</div>` : '');
+        if (s.mode === 'amount') h += `<select data-k="unit">${['なし', '月額', '年額', '1件あたり', '1回あたり', '1時間あたり'].map(x => `<option value="${x}" ${s.unit === x ? 'selected' : ''}>${x === 'なし' ? '（単位なし）' : x}</option>`).join('')}</select>
+          <input type="number" min="0" data-k="amt" value="${esc(s.amt)}" class="n" placeholder="金額"> 円 ${tax}`;
+        if (s.mode === 'rate') h += `<input data-k="base" list="rateBases" value="${esc(s.base)}" placeholder="何に対して（例：売上金額）" class="b"> の
+          <input type="number" min="0" step="0.1" data-k="rate" value="${esc(s.rate)}" class="n s"> % ${tax}
+          <span class="nowrap">最低額 <input type="number" min="0" data-k="min" value="${esc(s.min)}" class="n" placeholder="なし"> 円</span>`;
+        if (s.mode === 'tier') h += `<div><input data-k="base" list="rateBases" value="${esc(s.base)}" placeholder="何に対して（例：譲渡価格）" class="b"> ${tax}</div>
+          <table class="tier">${s.tiers.map((t, i) => `<tr><td>${i ? '〜' : '0円〜'}</td>
+            <td><input type="number" min="0" data-t="${i}" data-f="upto" value="${esc(t.upto)}" class="n" placeholder="${i === s.tiers.length - 1 ? '上限なし' : '上限額'}"> 円まで</td>
+            <td><input type="number" min="0" step="0.1" data-t="${i}" data-f="rate" value="${esc(t.rate)}" class="n s"> %</td>
+            <td>${s.tiers.length > 1 ? `<button type="button" class="x" data-del="${i}">×</button>` : ''}</td></tr>`).join('')}</table>
+          <button type="button" class="btn sm" data-add>＋ 段階を追加</button>
+          <span class="nowrap">最低額 <input type="number" min="0" data-k="min" value="${esc(s.min)}" class="n" placeholder="なし"> 円</span>`;
+      }
+      box.innerHTML = h;
+      const rd = el => { const r = el.nextElementSibling && el.nextElementSibling.classList.contains('rd') ? el.nextElementSibling : null; if (r) r.textContent = el.value >= 10000 ? '＝' + yenJ(el.value) + '円' : ''; };
+      box.querySelectorAll('[data-k="amt"],[data-k="min"],[data-f="upto"]').forEach(el => { const sp = document.createElement('span'); sp.className = 'rd'; el.after(sp); rd(el); el.addEventListener('input', () => rd(el)); });
+      box.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { s.mode = b.dataset.mode; draw(); put(); });
+      box.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
+        s[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; put();
+      }));
+      box.querySelectorAll('[data-t]').forEach(el => el.oninput = () => { s.tiers[+el.dataset.t][el.dataset.f] = el.value; put(); });
+      box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { s.tiers.splice(+b.dataset.del, 1); draw(); put(); });
+      const add = box.querySelector('[data-add]'); if (add) add.onclick = () => { s.tiers.push({ upto: '', rate: '' }); draw(); };
+    };
+    draw();
+  });
+}

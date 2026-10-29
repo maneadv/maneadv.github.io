@@ -255,3 +255,14 @@ ins.d-ins{color:#1f5fd6;text-decoration:none;font-weight:700;background:#eaf1fd}
 .ce-text{margin-top:6px;white-space:normal;font-family:"Noto Serif JP",serif;font-size:14px;line-height:1.85}
 .ce-ta{margin-top:8px;min-height:140px;font-family:"Noto Serif JP",serif;line-height:1.8}
 .lib-group{margin:18px 0 0;font-size:14px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:4px}
+/* 数字の入力補助 */
+.numbox{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;padding:8px;background:#fff8ef;border:1px dashed #f0c48a;border-radius:8px;font-size:13px}
+.numbox input,.numbox select{width:auto;margin:0;padding:6px 8px;font-size:14px}
+.numbox input.n{width:120px;text-align:right}.numbox input.s{width:72px}.numbox input.b{width:220px;max-width:100%}
+.numbox .seg{display:flex;width:100%;gap:4px}.numbox .seg button{flex:1;padding:6px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-size:13px}
+.numbox .seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.numbox .ck{display:flex;align-items:center;gap:4px;margin:0;font-weight:normal}.numbox .ck input{width:auto}
+.numbox .tier{width:100%;border-collapse:collapse}.numbox .tier td{padding:3px 4px;white-space:nowrap}
+.numbox .x{border:none;background:none;color:#c62828;font-size:16px;cursor:pointer}.numbox .nowrap{white-space:nowrap}
+.btn.sm{padding:5px 10px;font-size:13px}
+.numbox .rd{color:var(--accent);font-size:12px;min-width:0}
