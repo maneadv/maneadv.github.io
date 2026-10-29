@@ -243,6 +243,16 @@ async function viewEdit(id) {
     </div>`;
   const $ = s => document.getElementById(s);
   if (c) $('eCo').value = c.company_id;
+  Object.keys(NUM_STATE).forEach(k => delete NUM_STATE[k]);
+  // 差し込み前の本文が残っていれば、それを使って編集する（金額などを入力欄で変更できる）
+  if (c && c.body_src && c.vars && Object.keys(c.vars).length) {
+    const co0 = COMPANIES.find(x => x.id === c.company_id) || {};
+    if (fillBody(c.body_src, co0, { name: c.signer_name, email: c.signer_email }, c.vars) === c.body) {
+      $('eBody').value = c.body_src;
+      Object.entries(c.vars).forEach(([k, v]) => { if (k !== '__num') vars[k] = v; });
+      Object.assign(NUM_STATE, JSON.parse(JSON.stringify(c.vars.__num || {})));
+    }
+  }
   const tplSel = $('eTpl');
   const fillTpl = () => {
     const co = $('eCo').value;
@@ -265,6 +275,7 @@ async function viewEdit(id) {
   };
   const drawVars = () => {
     const ks = customVars($('eBody').value);
+    ks.forEach(k => { if (vars[k] === undefined && LIB_DEFAULTS[k]) vars[k] = LIB_DEFAULTS[k]; });
     $('varBox').innerHTML = ks.length ? `<div class="card" style="margin-top:12px;background:#fafbfc"><b style="font-size:14px">差し込み項目の入力</b>
       <div class="grid2">${ks.map(k => `<div><label>${esc(k)}</label><input data-var="${esc(k)}" value="${esc(vars[k] || '')}"></div>`).join('')}</div></div>` : '';
     $('varBox').querySelectorAll('[data-var]').forEach(i => i.oninput = () => { vars[i.dataset.var] = i.value; drawPrev(); });
@@ -275,7 +286,9 @@ async function viewEdit(id) {
     const signer = { name: $('eName').value.trim(), email: $('eEmail').value.trim() };
     return {
       company_id: co.id, title: $('eTitle').value.trim(),
-      body: fillBody($('eBody').value, co, signer, vars),
+      body: fillBody($('eBody').value, co, signer, { ...vars, '作成日': vars['作成日'] || todayJa() }),
+      body_src: $('eBody').value,
+      vars: { ...vars, '作成日': vars['作成日'] || todayJa(), __num: JSON.parse(JSON.stringify(NUM_STATE)) },
       signer_name: signer.name, signer_email: signer.email,
       draft_review: $('eDraft').checked, fields: pkF.get(), attachments: pkA.get(),
       company_snapshot: co
@@ -327,6 +340,7 @@ async function viewEdit(id) {
       $('wizard').classList.add('hidden'); $('editMain').classList.remove('hidden');
       if (r) {
         if (r.partyName) $('eName').value = r.partyName;
+        if (r.vars) Object.assign(vars, r.vars);
         if (r.fields) { pkF = makePicker($('pkF'), 'field', r.fields.map(k => ({ ...PRESET_FIELDS.find(p => p.key === k), required: k !== 'tel' }))); drawChips(); }
         if (r.attachments) pkA = makePicker($('pkA'), 'att', r.attachments.map(k => ({ ...PRESET_ATTS.find(p => p.key === k), required: true })));
         loadBody(r.title, r.body); toast('本文を作成しました。条項ごとに確認・修正できます', 'ok');
@@ -450,8 +464,9 @@ function openWizard(ctx) {
     document.getElementById('wzCancel').onclick = () => ctx.done(null);
     document.getElementById('wzMake').onclick = () => {
       if (!st.partyName.trim()) return toast('相手方の社名・氏名を入力してください', 'err');
-      const r = buildLibraryContract(st);
-      ctx.done({ title: r.title, body: r.body, partyName: st.partyName.trim(), fields: t.fields, attachments: t.attachments });
+      const r = buildLibraryContract({ ...st, values: {} });   // 金額・期間などは差し込み項目として残し、後から変更できるようにする
+      const vals = {}; Object.entries(st.values).forEach(([k, v]) => { if (String(v || '').trim()) vals[k] = String(v).trim(); });
+      ctx.done({ title: r.title, body: r.body, vars: vals, partyName: st.partyName.trim(), fields: t.fields, attachments: t.attachments });
     };
   };
   step1();
@@ -652,8 +667,7 @@ async function viewTemplates(id) {
     </div>`;
   V.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => location.hash = '#tpl/' + tr.dataset.id);
   const libTpl = t => {
-    const role = t.fixedRole !== undefined ? t.fixedRole : 0, values = {};
-    t.inputs.forEach(i => { if (i.def) values[i.key] = i.def; });
+    const role = t.fixedRole !== undefined ? t.fixedRole : 0, values = {};   // 初期値は契約作成時に入力欄へ入る
     const r = buildLibraryContract({ type: t.id, ourRole: role, stance: 'neutral', ourName: '{{会社名}}', partyName: '{{署名者氏名}}', values, on: {} });
     return { title: t.name, company_id: null, body: r.body, draft_review: false,
       fields: (t.fields || []).map(k => ({ ...PRESET_FIELDS.find(p => p.key === k), required: k !== 'tel' })),
@@ -1203,12 +1217,12 @@ async function viewSettings() {
   $('out').onclick = async () => { await sb.auth.signOut(); ME = null; location.hash = ''; showLogin(); };
 }
 
-boot();
-
 // ================= 数字の入力補助（金額・割合・段階・期間・日付） =================
 // 差し込み項目のうち、金額・手数料・期間・日付などに入力用の小さな部品を付ける。
 // 部品で選ぶと、元の入力欄に契約書用の文章が入る（元の入力欄は直接書き換えも可能）。
 const NUM_STATE = {};
+const LIB_DEFAULTS = {};
+CONTRACT_LIBRARY.forEach(t => t.inputs.forEach(i => { if (i.def && LIB_DEFAULTS[i.key] === undefined) LIB_DEFAULTS[i.key] = i.def; }));
 const AMOUNT_ONLY = ['売買代金', '購入価格', '譲渡価格', '貸付金額', '払込総額', '1株あたりの払込金額', '入会金', '月会費', '年会費',
   '作業料金', '着手金', '月額報酬', '調査費', '基本給', '時給', '最低販売価格', '顧問料'];
 const RATE_BASES = ['売上金額（税抜）', '成約した取引の売上金額（税抜）', '販売価格（税込）', '販売金額（税抜）', '削減額', '交付決定額',
@@ -1265,6 +1279,7 @@ function enhanceNumbers(root, attr) {
     inp.dataset.numDone = '1';
     const s = NUM_STATE[key] || (NUM_STATE[key] = numInit(key, kind, inp.value));
     const box = document.createElement('div'); box.className = 'numbox';
+    if (kind === 'money' && inp.parentElement && inp.parentElement.parentElement && inp.parentElement.parentElement.classList.contains('grid2')) inp.parentElement.style.gridColumn = '1 / -1';
     inp.insertAdjacentElement('afterend', box);
     const put = () => { const t = numText(key, s); if (t) { inp.value = t; inp.dispatchEvent(new Event('input', { bubbles: true })); } };
     const draw = () => {
@@ -1305,3 +1320,6 @@ function enhanceNumbers(root, attr) {
     draw();
   });
 }
+
+boot();
+
