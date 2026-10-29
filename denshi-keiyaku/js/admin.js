@@ -381,7 +381,7 @@ function openWizard(ctx) {
   const st = { type: null, ourRole: 0, stance: 'favor', values: {}, on: {}, partyName: '', ourName: ctx.company().name || '' };
   const step1 = () => {
     W.innerHTML = `<div class="card"><h3 style="font-size:17px">① 契約書の種類を選ぶ</h3>
-      ${['一般', '雇用', 'お金・出資・M&A'].map(g => `<h4 class="lib-group">${g === '一般' ? '一般の取引' : g === '雇用' ? '雇用・人材' : 'お金・出資・M&A'}</h4>
+      ${LIB_GROUPS.map(([g, gl]) => `<h4 class="lib-group">${gl}</h4>
       <div class="lib-grid">${CONTRACT_LIBRARY.filter(t => (t.group || '一般') === g).map(t => `<button class="lib-card" data-t="${t.id}"><b>${esc(t.name)}</b><span>${esc(t.desc)}</span></button>`).join('')}</div>`).join('')}
       <div class="row" style="margin-top:14px"><button class="btn" id="wzCancel">やめる</button></div>
       <div class="muted" style="margin-top:10px">一般的な条項例をもとに作成します。重要な契約は、作成後に専門家の確認を受けてください。</div></div>`;
@@ -642,7 +642,7 @@ async function viewTemplates(id) {
       </div>
       <div class="muted" style="margin:6px 0 10px">中立的な内容で登録します。当社名は {{会社名}}、相手方は {{署名者氏名}} が自動で入ります。登録後は自由に書き換えられます。<br>
         当社に有利な内容で作りたい時は、「新規作成」→「かんたん作成」を使ってください。</div>
-      ${['一般', '雇用', 'お金・出資・M&A'].map(g => `<h4 class="lib-group">${g === '一般' ? '一般の取引' : g === '雇用' ? '雇用・人材' : 'お金・出資・M&A'}</h4>
+      ${LIB_GROUPS.map(([g, gl]) => `<h4 class="lib-group">${gl}</h4>
         <div class="lib-grid">${CONTRACT_LIBRARY.filter(t => (t.group || '一般') === g).map(t => {
           const done = TEMPLATES.some(x => x.title === t.name);
           return `<button class="lib-card" data-lib="${t.id}" ${done ? 'disabled' : ''}><b>${esc(t.name)}</b><span>${done ? '登録済み' : esc(t.desc)}</span></button>`;
@@ -653,7 +653,9 @@ async function viewTemplates(id) {
     const role = t.fixedRole !== undefined ? t.fixedRole : 0, values = {};
     t.inputs.forEach(i => { if (i.def) values[i.key] = i.def; });
     const r = buildLibraryContract({ type: t.id, ourRole: role, stance: 'neutral', ourName: '{{会社名}}', partyName: '{{署名者氏名}}', values, on: {} });
-    return { title: t.name, company_id: null, body: r.body, draft_review: false, fields: t.fields || [], attachments: t.attachments || [] };
+    return { title: t.name, company_id: null, body: r.body, draft_review: false,
+      fields: (t.fields || []).map(k => ({ ...PRESET_FIELDS.find(p => p.key === k), required: k !== 'tel' })),
+      attachments: (t.attachments || []).map(k => ({ ...PRESET_ATTS.find(p => p.key === k), required: k !== 'photo' })) };
   };
   const reload = async () => { TEMPLATES = must(await sb.from('templates').select('*').order('created_at')); viewTemplates(); };
   V.querySelectorAll('[data-lib]').forEach(b => b.onclick = async () => {
