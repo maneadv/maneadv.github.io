@@ -634,8 +634,37 @@ async function viewTemplates(id) {
     ${TEMPLATES.length ? `<table class="list"><thead><tr><th>雛形名</th><th>対象</th><th>ドラフト確認</th><th>記入項目</th><th>添付</th><th>更新</th></tr></thead><tbody>
     ${TEMPLATES.map(t => `<tr class="click" data-id="${t.id}"><td><b>${esc(t.title)}</b></td><td>${t.company_id ? esc(coName(t.company_id)) : '全社共通'}</td>
       <td>${t.draft_review ? 'あり' : '省略'}</td><td>${(t.fields || []).length}項目</td><td>${(t.attachments || []).length}項目</td><td class="muted">${fmt(t.updated_at)}</td></tr>`).join('')}
-    </tbody></table>` : '<div class="empty card">雛形はまだありません</div>'}`;
+    </tbody></table>` : '<div class="empty card">雛形はまだありません。下の「よく使う契約書」から登録できます。</div>'}
+    <div class="card" style="margin-top:18px">
+      <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 style="font-size:17px;margin:0">よく使う契約書（${CONTRACT_LIBRARY.length}種類）</h3>
+        <button class="btn primary" id="libAll">未登録の分をまとめて雛形に登録</button>
+      </div>
+      <div class="muted" style="margin:6px 0 10px">中立的な内容で登録します。当社名は {{会社名}}、相手方は {{署名者氏名}} が自動で入ります。登録後は自由に書き換えられます。<br>
+        当社に有利な内容で作りたい時は、「新規作成」→「かんたん作成」を使ってください。</div>
+      ${['一般', '雇用', 'お金・出資・M&A'].map(g => `<h4 class="lib-group">${g === '一般' ? '一般の取引' : g === '雇用' ? '雇用・人材' : 'お金・出資・M&A'}</h4>
+        <div class="lib-grid">${CONTRACT_LIBRARY.filter(t => (t.group || '一般') === g).map(t => {
+          const done = TEMPLATES.some(x => x.title === t.name);
+          return `<button class="lib-card" data-lib="${t.id}" ${done ? 'disabled' : ''}><b>${esc(t.name)}</b><span>${done ? '登録済み' : esc(t.desc)}</span></button>`;
+        }).join('')}</div>`).join('')}
+    </div>`;
   V.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => location.hash = '#tpl/' + tr.dataset.id);
+  const libTpl = t => {
+    const role = t.fixedRole !== undefined ? t.fixedRole : 0, values = {};
+    t.inputs.forEach(i => { if (i.def) values[i.key] = i.def; });
+    const r = buildLibraryContract({ type: t.id, ourRole: role, stance: 'neutral', ourName: '{{会社名}}', partyName: '{{署名者氏名}}', values, on: {} });
+    return { title: t.name, company_id: null, body: r.body, draft_review: false, fields: t.fields || [], attachments: t.attachments || [] };
+  };
+  const reload = async () => { TEMPLATES = must(await sb.from('templates').select('*').order('created_at')); viewTemplates(); };
+  V.querySelectorAll('[data-lib]').forEach(b => b.onclick = async () => {
+    const t = CONTRACT_LIBRARY.find(x => x.id === b.dataset.lib);
+    try { await run(async () => must(await sb.from('templates').insert(libTpl(t)))); toast(t.name + 'を登録しました', 'ok'); await reload(); } catch (e) { }
+  });
+  document.getElementById('libAll').onclick = async () => {
+    const rows = CONTRACT_LIBRARY.filter(t => !TEMPLATES.some(x => x.title === t.name)).map(libTpl);
+    if (!rows.length) return toast('すべて登録済みです', 'ok');
+    try { await run(async () => must(await sb.from('templates').insert(rows))); toast(rows.length + '種類を登録しました', 'ok'); await reload(); } catch (e) { }
+  };
 }
 function editTemplate(t) {
   V.innerHTML = `<div class="pagehead"><h2>${t ? '雛形の編集' : '雛形の追加'}</h2><button class="btn" onclick="location.hash='#tpl'">← 雛形一覧</button></div>
