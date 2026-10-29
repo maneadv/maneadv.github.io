@@ -275,7 +275,9 @@ async function viewEdit(id) {
   };
   const drawVars = () => {
     const ks = customVars($('eBody').value);
-    ks.forEach(k => { if (vars[k] === undefined && LIB_DEFAULTS[k]) vars[k] = LIB_DEFAULTS[k]; });
+    const tp = TEMPLATES.find(x => x.id === tplSel.value), lib = tp && CONTRACT_LIBRARY.find(l => l.name === tp.title);
+    const own = {}; if (lib) lib.inputs.forEach(i => { if (i.def) own[i.key] = i.def; });
+    ks.forEach(k => { if (vars[k] === undefined && (own[k] || LIB_DEFAULTS[k])) vars[k] = own[k] || LIB_DEFAULTS[k]; });
     $('varBox').innerHTML = ks.length ? `<div class="card" style="margin-top:12px;background:#fafbfc"><b style="font-size:14px">差し込み項目の入力</b>
       <div class="grid2">${ks.map(k => `<div><label>${esc(k)}</label><input data-var="${esc(k)}" value="${esc(vars[k] || '')}"></div>`).join('')}</div></div>` : '';
     $('varBox').querySelectorAll('[data-var]').forEach(i => i.oninput = () => { vars[i.dataset.var] = i.value; drawPrev(); });
@@ -358,6 +360,7 @@ async function viewEdit(id) {
     if (!t) return;
     if ($('eBody').value.trim() && !confirm('本文・項目を雛形の内容に置き換えます。よろしいですか？')) { tplSel.value = ''; return; }
     $('eTitle').value = t.title.replace(/（サンプル）$/, '');
+    Object.keys(vars).forEach(k => delete vars[k]); Object.keys(NUM_STATE).forEach(k => delete NUM_STATE[k]);
     $('eBody').value = t.body;
     ce = makeClauseEditor($('ceBox'), t.body, x => { $('eBody').value = x; bodyChanged(); });
     $('eDraft').checked = !!t.draft_review;
