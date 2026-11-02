@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /denshi-keiyaku/
+Disallow: /denshi-keiyaku/login.html
+Disallow: /denshi-keiyaku/sign.html
 Sitemap: https://maneadv.github.io/sitemap.xml

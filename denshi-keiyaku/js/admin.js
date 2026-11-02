@@ -1,6 +1,8 @@
 // ===== 管理画面 =====
 const V = document.getElementById('view');
-let ME = null, COMPANIES = [], TEMPLATES = [], SETTINGS = {};
+let ME = null, MYST = null, ORG = null, COMPANIES = [], TEMPLATES = [], SETTINGS = {};
+const isOp = () => !!(MYST && MYST.operator);
+const isAdmin = () => !!(ORG && ORG.role === 'admin');
 
 const PRESET_FIELDS = [
   { key: 'name', label: '契約名義人氏名', type: 'text' },
@@ -20,41 +22,168 @@ const PRESET_ATTS = [
 const FIELD_TYPES = { text: '一行', textarea: '複数行', date: '日付', tel: '電話', email: 'メール', number: '数字' };
 const ATT_KINDS = { camera: '撮影＋書類', image: '画像のみ', file: '書類ファイル' };
 
-// ---------- ログイン ----------
+// ---------- ログイン・新規登録 ----------
+const QS = new URLSearchParams(location.search);
+const SLUG = (QS.get('c') || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+let BRAND = null;   // 会社ごとのアドレス（?c=）で開いた場合の社名・ロゴ・色
+const safeLogo = u => /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(u || '') ? u : '';
+function applyBrand(b) {
+  if (b && b.color) document.documentElement.style.setProperty('--accent', b.color);
+}
+async function loadBrand() {
+  if (!SLUG || BRAND) return;
+  try { BRAND = must(await sb.rpc('org_public', { p_slug: SLUG })); } catch (e) { BRAND = null; }
+  applyBrand(BRAND);
+}
+const LOGINV = () => document.getElementById('loginView');
+function loginShell(inner) {
+  const logo = BRAND && safeLogo(BRAND.logo);
+  LOGINV().innerHTML = `<div class="login-brand">${logo ? `<img src="${logo}" alt="">` : '<i></i>'}<span>${esc(BRAND ? BRAND.name : '電子契約')}</span></div>
+    <div class="card">${inner}</div>
+    <p class="muted" style="text-align:center;margin-top:14px;font-size:12px"><a href="./">サービスのご案内</a>　<a href="terms.html" target="_blank">利用規約</a>　<a href="privacy.html" target="_blank">プライバシーポリシー</a><br>運営：株式会社マネージメントアドバイザーズ</p>`;
+}
 async function boot() {
+  await loadBrand();
   const { data } = await sb.auth.getSession();
   if (!data.session) return showLogin();
   ME = data.session.user;
-  let ok = false;
-  try { ok = must(await sb.rpc('is_staff')); } catch (e) { }
-  if (!ok) { await sb.auth.signOut(); return showLogin('このアカウントは担当者として登録されていません（手順書の「担当者の登録」を参照）'); }
-  document.getElementById('loginView').classList.add('hidden');
+  try { MYST = must(await sb.rpc('my_status')); }
+  catch (e) { await sb.auth.signOut(); return showLogin('ログイン情報を確認できませんでした。もう一度ログインしてください'); }
+  const usable = MYST.orgs.filter(o => o.status === 'active' && o.member_status === 'active');
+  if (!usable.length) return showGate();
+  let saved = null; try { saved = localStorage.getItem('org'); } catch (e) { }
+  ORG = usable.find(o => SLUG && o.slug === SLUG) || usable.find(o => o.id === saved) || usable[0];
+  try { localStorage.setItem('org', ORG.id); } catch (e) { }
+  SETTINGS = { site_url: MYST.site_url || '', ai_url: MYST.ai_url || '' };
+  LOGINV().classList.add('hidden');
   document.getElementById('mainView').classList.remove('hidden');
-  document.getElementById('who').textContent = ME.email;
+  drawHeader(usable);
   await loadMasters();
   route();
 }
-function showLogin(msg) {
-  document.getElementById('mainView').classList.add('hidden');
-  document.getElementById('loginView').classList.remove('hidden');
-  document.getElementById('lMsg').textContent = msg || '';
+function drawHeader(usable) {
+  applyBrand(ORG);
+  const logo = safeLogo(ORG.logo);
+  document.getElementById('brandBox').innerHTML = `${logo ? `<img src="${logo}" alt="">` : '<i></i>'}<span>${esc(ORG.name)}</span>`;
+  document.getElementById('who').innerHTML = (usable.length > 1
+    ? `<select id="orgSel" title="企業を切り替え">${usable.map(o => `<option value="${o.id}" ${o.id === ORG.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select> ` : '')
+    + esc(ME.email);
+  const sel = document.getElementById('orgSel');
+  if (sel) sel.onchange = () => { try { localStorage.setItem('org', sel.value); } catch (e) { } location.hash = '#list'; location.reload(); };
+  document.getElementById('opTab').classList.toggle('hidden', !isOp());
 }
-document.getElementById('lBtn').onclick = async () => {
-  const email = document.getElementById('lEmail').value.trim(), password = document.getElementById('lPass').value;
-  try { await run(async () => must(await sb.auth.signInWithPassword({ email, password }))); } catch (e) { return; }
-  boot();
-};
-document.getElementById('lPass').onkeydown = e => { if (e.key === 'Enter') document.getElementById('lBtn').click(); };
+function showLogin(msg, mode) {
+  ME = null;
+  document.getElementById('mainView').classList.add('hidden');
+  LOGINV().classList.remove('hidden');
+  mode = mode || (location.hash === '#signup' ? 'signup' : 'login');
+  loginShell(`<div class="seg2"><button data-lm="login" class="${mode === 'login' ? 'on' : ''}">ログイン</button><button data-lm="signup" class="${mode === 'signup' ? 'on' : ''}">新規登録</button></div>
+    <label>ログインID（メールアドレス）</label><input id="lEmail" type="email" autocomplete="username">
+    <label>パスワード${mode === 'signup' ? '（8文字以上）' : ''}</label><input id="lPass" type="password" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}">
+    ${mode === 'signup' ? '<label>パスワード（確認）</label><input id="lPass2" type="password" autocomplete="new-password">' : ''}
+    <button class="btn primary lg" id="lBtn" style="margin-top:18px">${mode === 'signup' ? '登録して次へ' : 'ログイン'}</button>
+    <p class="muted" id="lMsg" style="margin:12px 0 0">${esc(msg || '')}</p>
+    <p class="muted" style="margin:10px 0 0;font-size:12px">${mode === 'signup'
+      ? '登録後、メールアドレスの確認と会社情報の入力を行います。運営が承認すると、貴社専用のページが使えるようになります。担当者として招待された方も、招待メールのアドレスでここから登録してください。'
+      : 'パスワードを忘れた場合は、貴社の管理者または運営までご連絡ください。'}</p>`);
+  LOGINV().querySelectorAll('[data-lm]').forEach(b => b.onclick = () => showLogin('', b.dataset.lm));
+  const $ = s => document.getElementById(s);
+  $('lBtn').onclick = async () => {
+    const email = $('lEmail').value.trim(), password = $('lPass').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('メールアドレスを確認してください', 'err');
+    if (mode === 'signup') {
+      if (password.length < 8) return toast('パスワードは8文字以上にしてください', 'err');
+      if (password !== $('lPass2').value) return toast('確認用のパスワードが一致しません', 'err');
+      let r;
+      try { r = await run(async () => must(await sb.auth.signUp({ email, password }))); } catch (e) { return; }
+      if (!r.session) {
+        try { await run(async () => must(await sb.auth.signInWithPassword({ email, password }))); }
+        catch (e) { return showLogin('このメールアドレスは登録済みの可能性があります。ログインしてください', 'login'); }
+      }
+    } else {
+      try { await run(async () => must(await sb.auth.signInWithPassword({ email, password }))); } catch (e) { return; }
+    }
+    if (location.hash === '#signup') history.replaceState(null, '', location.pathname + location.search);
+    boot();
+  };
+  (mode === 'signup' ? $('lPass2') : $('lPass')).onkeydown = e => { if (e.key === 'Enter') $('lBtn').click(); };
+}
+const logoutBtn = '<button class="btn ghost" id="gOut" style="margin-top:10px;width:100%">ログアウト</button>';
+const bindOut = () => { const b = document.getElementById('gOut'); if (b) b.onclick = async () => { await sb.auth.signOut(); MYST = null; showLogin(); }; };
+
+// 承認前の画面（メール確認 → 会社情報の入力 → 承認待ち）
+function showGate() {
+  document.getElementById('mainView').classList.add('hidden');
+  LOGINV().classList.remove('hidden');
+  const mine = MYST.orgs.filter(o => o.member_status === 'active' || o.status !== 'active');
+  const pending = MYST.orgs.find(o => o.status === 'pending');
+  const ng = MYST.orgs.find(o => o.status === 'rejected' || o.status === 'suspended');
+  if (!MYST.verified) return gateVerify();
+  if (pending) {
+    loginShell(`<h3 style="margin:0 0 8px">承認をお待ちください</h3>
+      <div>「${esc(pending.name)}」のご利用申込みを受け付けました。運営が内容を確認して承認すると、<b>${esc(MYST.email)}</b> 宛にメールでお知らせします。</div>
+      <div class="muted" style="margin-top:10px">承認後は、このページからログインするとすぐに使えます。</div>${logoutBtn}`);
+    return bindOut();
+  }
+  if (ng && !mine.some(o => o.status === 'active')) {
+    loginShell(`<h3 style="margin:0 0 8px">${ng.status === 'suspended' ? 'ご利用を停止しています' : 'ご利用をお受けできませんでした'}</h3>
+      <div>「${esc(ng.name)}」${ng.reason ? '<br>理由：' + esc(ng.reason) : ''}</div>
+      <div class="muted" style="margin-top:10px">ご不明な点は運営までお問い合わせください。</div>${logoutBtn}`);
+    return bindOut();
+  }
+  gateApply();
+}
+function gateVerify(sent) {
+  loginShell(`<h3 style="margin:0 0 8px">メールアドレスの確認</h3>
+    <div><b>${esc(MYST.email)}</b> 宛に6桁の確認コードを送ります。</div>
+    ${sent ? `<label>確認コード</label><input id="vCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" style="font-size:22px;letter-spacing:6px;text-align:center">
+      <button class="btn primary lg" id="vOk" style="margin-top:14px">確認する</button>
+      <button class="btn ghost" id="vSend" style="margin-top:8px;width:100%">コードを再送する</button>`
+    : '<button class="btn primary lg" id="vSend" style="margin-top:14px">確認コードを送る</button>'}
+    ${logoutBtn}`);
+  bindOut();
+  const $ = s => document.getElementById(s);
+  $('vSend').onclick = async () => {
+    try { const r = await run(async () => must(await sb.rpc('account_send_code'))); if (r.verified) return boot(); toast('確認コードを送信しました', 'ok'); gateVerify(true); } catch (e) { }
+  };
+  if ($('vOk')) $('vOk').onclick = async () => {
+    try { await run(async () => must(await sb.rpc('account_verify', { p_code: $('vCode').value.trim() }))); toast('確認しました', 'ok'); boot(); } catch (e) { }
+  };
+}
+function gateApply() {
+  loginShell(`<h3 style="margin:0 0 4px">ご利用の申込み</h3>
+    <div class="muted">貴社の情報を入力してください。運営の承認後、貴社専用のページが使えるようになります。</div>
+    <label>会社名・屋号 <span class="req">必須</span></label><input id="aName" maxlength="100">
+    <label>ご担当者名 <span class="req">必須</span></label><input id="aContact" maxlength="100">
+    <label>電話番号 <span class="req">必須</span></label><input id="aTel" type="tel" maxlength="40">
+    <label>代表者（役職・氏名）</label><input id="aRep" maxlength="100" placeholder="代表取締役 〇〇 〇〇">
+    <label>所在地</label><input id="aAddr" maxlength="200">
+    <label>ホームページ</label><input id="aWeb" maxlength="200" placeholder="https://">
+    <label>貴社専用アドレスの文字（半角英数字とハイフン、3文字以上）</label>
+    <div class="row" style="flex-wrap:nowrap;gap:4px"><span class="muted" style="white-space:nowrap">…/?c=</span><input id="aSlug" maxlength="40" placeholder="例：your-company"></div>
+    <label>ご利用の目的・想定する契約</label><textarea id="aNote" maxlength="1000" style="min-height:80px" placeholder="例：業務委託契約・秘密保持契約を月10件ほど"></textarea>
+    <label class="switch" style="margin-top:12px"><input type="checkbox" id="aAgree"><span><a href="terms.html" target="_blank">利用規約</a>・<a href="privacy.html" target="_blank">プライバシーポリシー</a>に同意します</span></label>
+    <button class="btn primary lg" id="aOk" style="margin-top:14px">申し込む</button>${logoutBtn}`);
+  bindOut();
+  const $ = s => document.getElementById(s);
+  $('aOk').onclick = async () => {
+    const p = { name: $('aName').value.trim(), contact_name: $('aContact').value.trim(), tel: $('aTel').value.trim(),
+      representative: $('aRep').value.trim(), address: $('aAddr').value.trim(), website: $('aWeb').value.trim(),
+      slug: $('aSlug').value.trim(), note: $('aNote').value.trim() };
+    if (!p.name || !p.contact_name || !p.tel) return toast('会社名・ご担当者名・電話番号を入力してください', 'err');
+    if (p.slug && !/^[a-zA-Z0-9-]{3,40}$/.test(p.slug)) return toast('専用アドレスの文字は半角英数字とハイフンで3文字以上にしてください', 'err');
+    if (!$('aAgree').checked) return toast('利用規約への同意が必要です', 'err');
+    try { await run(async () => must(await sb.rpc('org_apply', { p }))); toast('申込みを受け付けました', 'ok'); boot(); } catch (e) { }
+  };
+}
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { location.hash = b.dataset.go; });
 
 async function loadMasters() {
-  const [c, t, s] = await Promise.all([
-    sb.from('companies').select('*').order('created_at'),
-    sb.from('templates').select('*').order('created_at'),
-    sb.from('app_settings').select('*')
+  const [c, t] = await Promise.all([
+    sb.from('companies').select('*').eq('org_id', ORG.id).order('created_at'),
+    sb.from('templates').select('*').or(`org_id.is.null,org_id.eq.${ORG.id}`).order('created_at')
   ]);
   COMPANIES = must(c); TEMPLATES = must(t);
-  SETTINGS = {}; must(s).forEach(r => SETTINGS[r.key] = r.value);
 }
 const coName = id => (COMPANIES.find(c => c.id === id) || {}).name || '（削除済み）';
 
@@ -64,10 +193,11 @@ function route() {
   if (!ME) return;
   const h = location.hash || '#list';
   const [p, id] = h.slice(1).split('/');
-  const tab = { list: '#list', c: '#list', new: '#new', edit: '#new', tpl: '#tpl', legal: '#legal', auto: '#auto', co: '#co', set: '#set' }[p] || '#list';
+  const tab = { list: '#list', c: '#list', new: '#new', edit: '#new', tpl: '#tpl', legal: '#legal', auto: '#auto', co: '#co', set: '#set', op: '#op' }[p] || '#list';
   document.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === tab));
   window.scrollTo(0, 0);
-  ({ list: viewList, c: viewDetail, new: viewEdit, edit: viewEdit, tpl: viewTemplates, legal: viewLegal, auto: viewIntakes, co: viewCompanies, set: viewSettings }[p] || viewList)(id);
+  if (p === 'op' && !isOp()) { location.hash = '#list'; return; }
+  ({ list: viewList, c: viewDetail, new: viewEdit, edit: viewEdit, tpl: viewTemplates, legal: viewLegal, auto: viewIntakes, co: viewCompanies, set: viewSettings, op: viewOperator }[p] || viewList)(id);
 }
 
 // ================= 契約一覧 =================
@@ -85,7 +215,7 @@ async function viewList() {
   try {
     rows = must(await sb.from('contracts')
       .select('id,contract_no,title,status,draft_review,draft_result,signer_name,signer_email,company_id,created_at,sent_at,signed_at,token_expires_at,intake_id')
-      .order('created_at', { ascending: false }).limit(1000));
+      .eq('org_id', ORG.id).order('created_at', { ascending: false }).limit(1000));
   } catch (e) { return toast(errText(e), 'err'); }
   if (!document.getElementById('listBody')) return;   // 読み込み中に別の画面へ移動した
   const draw = () => {
@@ -225,6 +355,8 @@ async function viewEdit(id) {
           <h3 style="font-size:15px">署名者の流れ</h3>
           <label class="switch"><input type="checkbox" id="eDraft" ${c && c.draft_review ? 'checked' : ''}>
             <span><b>ドラフト確認を行う</b><br><span class="muted">本契約書の前に案を確認・承認してもらう</span></span></label>
+          <label class="switch"><input type="checkbox" id="eOtp" ${c && c.require_otp ? 'checked' : ''}>
+            <span><b>確認コードを求める</b><br><span class="muted">通常は不要です。受け取る人はメールのURLを開くだけで契約できます。高額な契約などで、開くたびにメールの6桁コードで本人確認したい場合だけ選びます</span></span></label>
         </div>
         <div class="card">
           <h3 style="font-size:15px">署名者の記入項目</h3>
@@ -292,7 +424,7 @@ async function viewEdit(id) {
       body_src: $('eBody').value,
       vars: { ...vars, '作成日': vars['作成日'] || todayJa(), __num: JSON.parse(JSON.stringify(NUM_STATE)) },
       signer_name: signer.name, signer_email: signer.email,
-      draft_review: $('eDraft').checked, fields: pkF.get(), attachments: pkA.get(),
+      draft_review: $('eDraft').checked, require_otp: $('eOtp').checked, fields: pkF.get(), attachments: pkA.get(),
       company_snapshot: co
     };
   };
@@ -363,7 +495,7 @@ async function viewEdit(id) {
     Object.keys(vars).forEach(k => delete vars[k]); Object.keys(NUM_STATE).forEach(k => delete NUM_STATE[k]);
     $('eBody').value = t.body;
     ce = makeClauseEditor($('ceBox'), t.body, x => { $('eBody').value = x; bodyChanged(); });
-    $('eDraft').checked = !!t.draft_review;
+    $('eDraft').checked = !!t.draft_review; $('eOtp').checked = !!t.require_otp;
     pkF = makePicker($('pkF'), 'field', t.fields);
     pkA = makePicker($('pkA'), 'att', t.attachments);
     drawChips(); lastVarKeys = customVars(t.body).join('|'); update();
@@ -652,19 +784,20 @@ async function viewTemplates(id) {
   if (id) return editTemplate(id === 'new' ? null : TEMPLATES.find(t => t.id === id));
   V.innerHTML = `<div class="pagehead"><h2>契約書の雛形</h2><button class="btn primary" onclick="location.hash='#tpl/new'">＋ 雛形を追加</button></div>
     ${TEMPLATES.length ? `<table class="list"><thead><tr><th>雛形名</th><th>対象</th><th>ドラフト確認</th><th>記入項目</th><th>添付</th><th>更新</th></tr></thead><tbody>
-    ${TEMPLATES.map(t => `<tr class="click" data-id="${t.id}"><td><b>${esc(t.title)}</b></td><td>${t.company_id ? esc(coName(t.company_id)) : '全社共通'}</td>
+    ${TEMPLATES.map(t => `<tr class="click" data-id="${t.id}"><td><b>${esc(t.title)}</b>${t.org_id ? '' : ' <span class="badge b-draft">共通</span>'}</td><td>${t.company_id ? esc(coName(t.company_id)) : (t.org_id ? '自社の全発行会社' : '全企業共通')}</td>
       <td>${t.draft_review ? 'あり' : '省略'}</td><td>${(t.fields || []).length}項目</td><td>${(t.attachments || []).length}項目</td><td class="muted">${fmt(t.updated_at)}</td></tr>`).join('')}
     </tbody></table>` : '<div class="empty card">雛形はまだありません。下の「よく使う契約書」から登録できます。</div>'}
-    <div class="card" style="margin-top:18px">
+    ${!isOp() ? '<div class="muted" style="margin-top:12px">「共通」の雛形は全企業でそのまま使えます。書き換えたい場合は、開いて「自社用にコピー」を押してください。</div>' : ''}
+    <div class="card ${isOp() ? '' : 'hidden'}" style="margin-top:18px">
       <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h3 style="font-size:17px;margin:0">よく使う契約書（${CONTRACT_LIBRARY.length}種類）</h3>
         <button class="btn primary" id="libAll">未登録の分をまとめて雛形に登録</button>
       </div>
-      <div class="muted" style="margin:6px 0 10px">中立的な内容で登録します。当社名は {{会社名}}、相手方は {{署名者氏名}} が自動で入ります。登録後は自由に書き換えられます。<br>
+      <div class="muted" style="margin:6px 0 10px">（運営のみ）全企業共通の雛形として、中立的な内容で登録します。当社名は {{会社名}}、相手方は {{署名者氏名}} が自動で入ります。登録後は自由に書き換えられます。<br>
         当社に有利な内容で作りたい時は、「新規作成」→「かんたん作成」を使ってください。</div>
       ${LIB_GROUPS.map(([g, gl]) => `<h4 class="lib-group">${gl}</h4>
         <div class="lib-grid">${CONTRACT_LIBRARY.filter(t => (t.group || '一般') === g).map(t => {
-          const done = TEMPLATES.some(x => x.title === t.name);
+          const done = TEMPLATES.some(x => x.title === t.name && !x.org_id);
           return `<button class="lib-card" data-lib="${t.id}" ${done ? 'disabled' : ''}><b>${esc(t.name)}</b><span>${done ? '登録済み' : esc(t.desc)}</span></button>`;
         }).join('')}</div>`).join('')}
     </div>`;
@@ -672,27 +805,28 @@ async function viewTemplates(id) {
   const libTpl = t => {
     const role = t.fixedRole !== undefined ? t.fixedRole : 0, values = {};   // 初期値は契約作成時に入力欄へ入る
     const r = buildLibraryContract({ type: t.id, ourRole: role, stance: 'neutral', ourName: '{{会社名}}', partyName: '{{署名者氏名}}', values, on: {} });
-    return { title: t.name, company_id: null, body: r.body, draft_review: false,
+    return { title: t.name, company_id: null, org_id: null, body: r.body, draft_review: false,
       fields: (t.fields || []).map(k => ({ ...PRESET_FIELDS.find(p => p.key === k), required: k !== 'tel' })),
       attachments: (t.attachments || []).map(k => ({ ...PRESET_ATTS.find(p => p.key === k), required: k !== 'photo' })) };
   };
-  const reload = async () => { TEMPLATES = must(await sb.from('templates').select('*').order('created_at')); viewTemplates(); };
+  const reload = async () => { await loadMasters(); viewTemplates(); };
   V.querySelectorAll('[data-lib]').forEach(b => b.onclick = async () => {
     const t = CONTRACT_LIBRARY.find(x => x.id === b.dataset.lib);
     try { await run(async () => must(await sb.from('templates').insert(libTpl(t)))); toast(t.name + 'を登録しました', 'ok'); await reload(); } catch (e) { }
   });
   document.getElementById('libAll').onclick = async () => {
-    const rows = CONTRACT_LIBRARY.filter(t => !TEMPLATES.some(x => x.title === t.name)).map(libTpl);
+    const rows = CONTRACT_LIBRARY.filter(t => !TEMPLATES.some(x => x.title === t.name && !x.org_id)).map(libTpl);
     if (!rows.length) return toast('すべて登録済みです', 'ok');
     try { await run(async () => must(await sb.from('templates').insert(rows))); toast(rows.length + '種類を登録しました', 'ok'); await reload(); } catch (e) { }
   };
 }
 function editTemplate(t) {
-  V.innerHTML = `<div class="pagehead"><h2>${t ? '雛形の編集' : '雛形の追加'}</h2><button class="btn" onclick="location.hash='#tpl'">← 雛形一覧</button></div>
+  const common = t && !t.org_id, ro = common && !isOp();   // 共通雛形は運営だけが編集できる
+  V.innerHTML = `<div class="pagehead"><h2>${ro ? '共通の雛形' : t ? '雛形の編集' : '雛形の追加'}</h2><button class="btn" onclick="location.hash='#tpl'">← 雛形一覧</button></div>
     <div class="detail"><div class="card">
       <div class="grid2">
         <div><label style="margin-top:0">雛形名</label><input id="tTitle" value="${esc(t ? t.title : '')}"></div>
-        <div><label style="margin-top:0">使える発行会社</label><select id="tCo"><option value="">全社共通</option>${COMPANIES.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>
+        <div><label style="margin-top:0">使える発行会社</label><select id="tCo" ${common ? 'disabled' : ''}><option value="">${common ? '全企業共通' : '自社の全発行会社'}</option>${common ? '' : COMPANIES.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>
       </div>
       <label>本文</label>
       <div class="muted" style="margin-bottom:6px">自動差し込み：${BUILTIN.map(k => `{{${k}}}`).join(' ')}　／ 作成時に入力：{{任意の名前}}　／ 署名者が記入：[[記入項目名]]</div>
@@ -700,31 +834,34 @@ function editTemplate(t) {
     </div>
     <div class="side">
       <div class="card"><label class="switch" style="margin-top:0"><input type="checkbox" id="tDraft" ${t && t.draft_review ? 'checked' : ''}>
-        <span><b>ドラフト確認を行う（初期値）</b></span></label></div>
+        <span><b>ドラフト確認を行う（初期値）</b></span></label>
+        <label class="switch"><input type="checkbox" id="tOtp" ${t && t.require_otp ? 'checked' : ''}><span><b>確認コードを求める（初期値）</b></span></label></div>
       <div class="card"><h3 style="font-size:15px">署名者の記入項目（初期値）</h3><div id="pkF" style="margin-top:8px"></div></div>
       <div class="card"><h3 style="font-size:15px">添付書類（初期値）</h3><div id="pkA" style="margin-top:8px"></div></div>
       <div class="card actions">
-        <button class="btn primary" id="tSave">保存</button>
-        ${t ? '<button class="btn" id="tCopy">複製</button><button class="btn danger" id="tDel">削除</button>' : ''}
+        ${ro ? '<div class="muted">全企業共通の雛形です。書き換えて使う場合は自社用にコピーしてください。</div><button class="btn primary" id="tCopy">自社用にコピー</button>'
+          : `<button class="btn primary" id="tSave">保存</button>
+        ${t ? `<button class="btn" id="tCopy">${common ? '自社用にコピー' : '複製'}</button><button class="btn danger" id="tDel">削除</button>` : ''}`}
       </div>
     </div></div>`;
   const $ = s => document.getElementById(s);
-  if (t) $('tCo').value = t.company_id || '';
+  if (t && !common) $('tCo').value = t.company_id || '';
+  if (ro) { $('tTitle').readOnly = true; $('tBody').readOnly = true; }
   const pkF = makePicker($('pkF'), 'field', t ? t.fields : []);
   const pkA = makePicker($('pkA'), 'att', t ? t.attachments : []);
-  const data = () => ({ title: $('tTitle').value.trim(), company_id: $('tCo').value || null, body: $('tBody').value,
-    draft_review: $('tDraft').checked, fields: pkF.get(), attachments: pkA.get(), updated_at: new Date().toISOString() });
+  const data = () => ({ title: $('tTitle').value.trim(), company_id: common ? null : ($('tCo').value || null), body: $('tBody').value,
+    draft_review: $('tDraft').checked, require_otp: $('tOtp').checked, fields: pkF.get(), attachments: pkA.get(), updated_at: new Date().toISOString() });
   $('tSave').onclick = async () => {
     const d = data();
     if (!d.title || !d.body.trim()) return toast('雛形名と本文を入力してください', 'err');
     try {
-      await run(async () => t ? must(await sb.from('templates').update(d).eq('id', t.id)) : must(await sb.from('templates').insert(d)));
+      await run(async () => t ? must(await sb.from('templates').update(d).eq('id', t.id)) : must(await sb.from('templates').insert({ ...d, org_id: ORG.id })));
       toast('保存しました', 'ok'); location.hash = '#tpl';
     } catch (e) { }
   };
   if ($('tCopy')) $('tCopy').onclick = async () => {
-    const d = data(); d.title += '（複製）';
-    try { await run(async () => must(await sb.from('templates').insert(d))); toast('複製しました', 'ok'); location.hash = '#tpl'; } catch (e) { }
+    const d = { ...data(), org_id: ORG.id, company_id: common ? null : data().company_id }; if (!common) d.title += '（複製）';
+    try { const r = await run(async () => must(await sb.from('templates').insert(d).select('id').single())); toast(common ? '自社用にコピーしました' : '複製しました', 'ok'); location.hash = '#tpl/' + r.id; } catch (e) { }
   };
   if ($('tDel')) $('tDel').onclick = async () => {
     if (!confirm('この雛形を削除しますか？（作成済みの契約には影響しません）')) return;
@@ -809,7 +946,7 @@ async function viewLegal() {
   drawSide();
   if (LEGAL && LEGAL.result) drawLegal();
   $('lgRun').onclick = async () => {
-    if (!SETTINGS.ai_url || !SETTINGS.ai_secret) return toast('「設定」でリーガルチェックの送信先と合言葉を登録してください', 'err');
+    if (!SETTINGS.ai_url) return toast('リーガルチェックは運営が準備中です。しばらくお待ちください', 'err');
     const file = $('lgFile').files[0], pasted = $('lgText').value.trim();
     if (!file && !pasted) return toast('契約書のファイルを選ぶか、本文を貼り付けてください', 'err');
     const req = { side, role: $('lgRole').value.trim(), our: $('lgOur').value.trim(), focus: $('lgFocus').value.trim() };
@@ -826,8 +963,9 @@ async function viewLegal() {
             sendFile = { mime: file.type || 'application/pdf', data: await fileToB64(file) };
           }
         }
+        const token = ((await sb.auth.getSession()).data.session || {}).access_token;   // ログイン中の本人であることを Apps Script 側で確認する
         const res = await fetch(SETTINGS.ai_url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'legal_check', secret: SETTINGS.ai_secret, side: req.side, role: req.role, our_name: req.our, focus: req.focus, text: text || undefined, file: sendFile || undefined }) });
+          body: JSON.stringify({ action: 'legal_check', token, org: ORG.id, side: req.side, role: req.role, our_name: req.our, focus: req.focus, text: text || undefined, file: sendFile || undefined }) });
         const j = await res.json().catch(() => ({ ok: false, error: '応答を読み取れませんでした（送信先URLを確認してください）' }));
         if (!j.ok) throw new Error(j.error || 'リーガルチェックに失敗しました');
         const r = j.result;
@@ -894,7 +1032,7 @@ const MODE_LABEL = { auto: '自動送信', approve: '承認後に送信' };
 async function viewIntakes(id) {
   await loadMasters();
   let list = [];
-  try { list = must(await sb.from('intakes').select('*').order('created_at')); } catch (e) { return toast(errText(e), 'err'); }
+  try { list = must(await sb.from('intakes').select('*').eq('org_id', ORG.id).order('created_at')); } catch (e) { return toast(errText(e), 'err'); }
   if (id) return editIntake(id === 'new' ? null : list.find(x => x.id === id));
   V.innerHTML = `<div class="pagehead"><h2>自動受付</h2><button class="btn primary" onclick="location.hash='#auto/new'">＋ 受付窓口を追加</button></div>
     <div class="muted" style="margin-bottom:12px">サイトの申込みを受け取り、雛形から契約書を自動で作成します。「自動送信」はそのままお客様へ送信、「承認後に送信」は担当者に通知し、管理画面で確認してから送信します。</div>
@@ -1092,7 +1230,7 @@ create trigger send_contract_after_insert after insert on public.申込みの表
         await run(async () => must(await sb.from('intakes').update(d).eq('id', x.id)));
         toast('保存しました', 'ok'); viewIntakes(x.id);
       } else {
-        const row = await run(async () => must(await sb.from('intakes').insert(d).select('*').single()));
+        const row = await run(async () => must(await sb.from('intakes').insert({ ...d, org_id: ORG.id }).select('*').single()));
         const key = await run(async () => must(await sb.rpc('admin_intake_new_key', { p_id: row.id })));
         history.replaceState(null, '', '#auto/' + row.id);
         editIntake({ ...row, key_hint: key.slice(-4) }, key);
@@ -1156,33 +1294,75 @@ async function viewCompanies() {
   document.getElementById('coAdd').onclick = async () => {
     const name = prompt('会社名', '');
     if (!name) return;
-    try { await run(async () => must(await sb.from('companies').insert({ name: name.trim() }))); await loadMasters(); draw(); } catch (e) { }
+    try { await run(async () => must(await sb.from('companies').insert({ name: name.trim(), org_id: ORG.id, color: ORG.color || '#E8740C' }))); await loadMasters(); draw(); } catch (e) { }
   };
   draw();
 }
 
-// ================= 設定 =================
+// ================= 設定（自社の設定・担当者・利用状況） =================
+const ROLE = { admin: '管理者', member: '担当者' };
+const PLAN = { free: '無料プラン', paid: '有料プラン' };
+const ORG_ST = { pending: '承認待ち', active: '利用中', suspended: '停止中', rejected: '却下' };
+const orgUrl = slug => (SETTINGS.site_url || (location.origin + location.pathname.replace(/[^/]*$/, ''))).replace(/\/$/, '') + '/login.html?c=' + slug;
+// 画像を縮小して data URL にする（ロゴ用）
+function shrinkImage(file, max) {
+  return new Promise((ok, ng) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas'); cv.width = Math.round(img.width * r); cv.height = Math.round(img.height * r);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      let d = cv.toDataURL('image/png'); if (d.length > 270000) d = cv.toDataURL('image/jpeg', 0.85);
+      if (d.length > 270000) return ng(new Error('ロゴの画像が大きすぎます。小さな画像を選んでください'));
+      ok(d);
+    };
+    img.onerror = () => ng(new Error('画像を読み込めませんでした')); img.src = url;
+  });
+}
 async function viewSettings() {
-  await loadMasters();
-  let staff = [];
-  try { staff = must(await sb.from('staff_members').select('*').order('created_at')); } catch (e) { }
+  let org, members = [], usage = {};
+  try {
+    [org, members, usage] = await Promise.all([
+      sb.from('orgs').select('*').eq('id', ORG.id).single().then(must),
+      sb.from('org_members').select('*').eq('org_id', ORG.id).order('created_at').then(must),
+      sb.rpc('org_usage', { p_org: ORG.id }).then(must)
+    ]);
+  } catch (e) { return toast(errText(e), 'err'); }
+  const adm = isAdmin(), dis = adm ? '' : 'disabled';
+  let logo = org.logo || '';
+  const lim = usage.limit == null ? '上限なし' : usage.limit + '件';
   V.innerHTML = `<div class="pagehead"><h2>設定</h2></div>
     <div class="detail"><div>
       <div class="card">
-        <label style="margin-top:0">署名ページの公開URL（このファイル一式を置いた場所）</label>
-        <input id="sUrl" value="${esc(SETTINGS.site_url || '')}" placeholder="https://アカウント名.github.io/denshi-keiyaku">
-        <div class="muted">現在の画面のURL：${esc(location.origin + location.pathname.replace(/[^/]*$/, ''))}　<button class="btn ghost" id="sUse" style="padding:2px 8px">これを使う</button></div>
-        <label>メール差出人（独自ドメインで送る場合のみ）</label>
-        <input id="sFrom" value="${esc(SETTINGS.mail_from || '')}">
-        <div class="muted">Gmail から送る方式では使いません。差出人名は契約の発行会社名、返信先は発行会社の通知先メールになります。</div>
-        <label>締結・回答の通知先（全社共通）</label>
-        <input id="sNotify" value="${esc(SETTINGS.notify_to || '')}">
-        <label>リーガルチェックの送信先（Apps Script のウェブアプリURL）</label>
-        <input id="sAiUrl" value="${esc(SETTINGS.ai_url || '')}" placeholder="https://script.google.com/macros/s/…/exec">
-        <label>リーガルチェックの合言葉</label>
-        <input id="sAiSecret" type="password" value="${esc(SETTINGS.ai_secret || '')}" autocomplete="off">
-        <div class="muted">Apps Script の「初期設定」を実行したときに表示される「リーガルチェックの合言葉」です。</div>
-        <button class="btn primary" id="sSave" style="margin-top:16px">設定を保存</button>
+        <h3 style="font-size:17px;margin:0 0 4px">自社の情報</h3>
+        <div class="muted">管理画面・お客様の署名画面に表示されます。${adm ? '' : '変更は貴社の管理者が行えます。'}</div>
+        <div class="grid2">
+          <div><label>会社名・屋号</label><input id="oName" value="${esc(org.name)}" ${dis}></div>
+          <div><label>ご担当者名</label><input id="oContact" value="${esc(org.contact_name)}" ${dis}></div>
+          <div><label>電話番号</label><input id="oTel" value="${esc(org.tel)}" ${dis}></div>
+          <div><label>代表者（役職・氏名）</label><input id="oRep" value="${esc(org.representative)}" ${dis}></div>
+          <div><label>所在地</label><input id="oAddr" value="${esc(org.address)}" ${dis}></div>
+          <div><label>ホームページ</label><input id="oWeb" value="${esc(org.website)}" ${dis}></div>
+          <div><label>テーマ色</label><input id="oColor" type="color" value="${esc(org.color || '#E8740C')}" style="height:44px;padding:4px" ${dis}></div>
+          <div><label>ロゴ</label><div class="row" style="flex-wrap:nowrap"><div class="logo-prev" id="oLogoPrev"></div>
+            ${adm ? '<input type="file" id="oLogo" accept="image/png,image/jpeg,image/webp" style="width:auto"><button class="btn ghost" id="oLogoDel" style="padding:4px 10px">削除</button>' : ''}</div></div>
+        </div>
+        ${adm ? '<button class="btn primary" id="oSave" style="margin-top:16px">保存</button>' : ''}
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 style="font-size:17px;margin:0 0 4px">担当者</h3>
+        <div class="muted">管理者は担当者の追加・役割の変更ができます。追加した人には招待メールが届きます。</div>
+        <table class="list" style="margin-top:8px"><thead><tr><th>メールアドレス</th><th>名前</th><th>役割</th><th>状態</th>${adm ? '<th></th>' : ''}</tr></thead><tbody>
+        ${members.map(m => `<tr data-m="${esc(m.email)}"><td>${esc(m.email)}</td><td>${esc(m.name || '')}</td>
+          <td>${adm ? `<select data-role>${Object.entries(ROLE).map(([k, v]) => `<option value="${k}" ${m.role === k ? 'selected' : ''}>${v}</option>`).join('')}</select>` : ROLE[m.role]}</td>
+          <td>${m.status === 'invited' ? '<span class="badge b-viewed">招待中</span>' : '<span class="badge b-signed">利用中</span>'}</td>
+          ${adm ? `<td>${m.email.toLowerCase() === ME.email.toLowerCase() ? '' : '<button class="btn ghost" data-rm style="padding:2px 8px">外す</button>'}</td>` : ''}</tr>`).join('')}
+        </tbody></table>
+        ${adm ? `<div class="grid2" style="margin-top:10px">
+          <div><label>追加するメールアドレス</label><input id="iEmail" type="email"></div>
+          <div><label>名前</label><input id="iName"></div>
+          <div><label>役割</label><select id="iRole"><option value="member">担当者</option><option value="admin">管理者</option></select></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn primary" id="iAdd" style="width:100%">招待する</button></div></div>` : ''}
       </div>
       <div class="card" style="margin-top:16px">
         <b>文書ハッシュの照合</b>
@@ -1190,25 +1370,52 @@ async function viewSettings() {
         <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input id="hq" class="mono" placeholder="64桁のハッシュ値"><button class="btn" id="hBtn">照合</button></div>
         <div id="hRes" style="margin-top:8px"></div>
       </div>
+      ${isOp() ? '<div id="sysBox"></div>' : ''}
     </div>
     <div class="side">
-      <div class="card"><b>担当者</b><ul class="log" style="margin-top:6px">${staff.map(s => `<li>${esc(s.email)}<div class="t">${esc(s.name || '')}</div></li>`).join('')}</ul>
-        <div class="muted" style="margin-top:6px">追加は手順書の「担当者の登録」を参照</div></div>
-      <div class="card actions"><div class="muted">${esc(ME.email)} でログイン中</div><button class="btn" id="out">ログアウト</button></div>
+      <div class="card"><b>ご利用状況（今月）</b>
+        <table class="kvt" style="margin-top:6px"><tr><th>プラン</th><td>${PLAN[usage.plan] || ''}</td></tr>
+        <tr><th>契約の送信</th><td>${usage.sent}件 ／ ${lim}</td></tr>
+        <tr><th>リーガルチェック</th><td>${usage.ai_used}回 ／ ${usage.ai_limit == null ? '上限なし' : usage.ai_limit + '回'}</td></tr></table>
+        ${usage.plan === 'free' ? '<div class="muted" style="margin-top:6px">上限を増やしたい場合は、運営へ有料プランをご相談ください。</div>' : ''}
+      </div>
+      <div class="card"><b>貴社専用のアドレス</b>
+        <div class="mono" style="word-break:break-all;margin-top:6px;font-size:13px">${esc(orgUrl(org.slug))}</div>
+        <button class="btn" id="oCopy" style="margin-top:8px">コピー</button>
+        <div class="muted" style="margin-top:6px">このアドレスを開くと、貴社の社名・ロゴ・色でログイン画面が表示されます。</div></div>
+      <div class="card actions"><div class="muted">${esc(ME.email)} でログイン中（${ROLE[ORG.role]}）</div><button class="btn" id="out">ログアウト</button></div>
     </div></div>`;
   const $ = s => document.getElementById(s);
-  $('sUse').onclick = () => $('sUrl').value = (location.origin + location.pathname.replace(/[^/]*$/, '')).replace(/\/$/, '');
-  $('sSave').onclick = async () => {
-    const rows = [['site_url', $('sUrl').value.trim().replace(/\/$/, '')], ['mail_from', $('sFrom').value.trim()], ['notify_to', $('sNotify').value.trim()],
-      ['ai_url', $('sAiUrl').value.trim()], ['ai_secret', $('sAiSecret').value.trim()]];
-    try {
-      await run(async () => { for (const [k, v] of rows) {
-        const r = must(await sb.from('app_settings').update({ value: v }).eq('key', k).select('key'));
-        if (!r.length) throw new Error('設定項目「' + k + '」がありません。最新の schema.sql を実行してください');
-      } });
-      await loadMasters(); toast('保存しました', 'ok');
-    } catch (e) { }
-  };
+  const drawLogo = () => { $('oLogoPrev').innerHTML = safeLogo(logo) ? `<img src="${safeLogo(logo)}" alt="">` : '<span class="muted">なし</span>'; };
+  drawLogo();
+  $('oCopy').onclick = async () => { try { await navigator.clipboard.writeText(orgUrl(org.slug)); toast('コピーしました', 'ok'); } catch (e) { toast('コピーできませんでした', 'err'); } };
+  if (adm) {
+    $('oLogo').onchange = async () => { const f = $('oLogo').files[0]; if (!f) return; try { logo = await shrinkImage(f, 360); drawLogo(); } catch (e) { toast(e.message, 'err'); } };
+    $('oLogoDel').onclick = () => { logo = ''; drawLogo(); };
+    $('oSave').onclick = async () => {
+      const p = { name: $('oName').value.trim(), contact_name: $('oContact').value.trim(), tel: $('oTel').value.trim(), representative: $('oRep').value.trim(),
+        address: $('oAddr').value.trim(), website: $('oWeb').value.trim(), color: $('oColor').value, logo };
+      if (!p.name) return toast('会社名を入力してください', 'err');
+      try { await run(async () => must(await sb.rpc('org_update', { p_org: ORG.id, p }))); toast('保存しました（ロゴ・色は以後に作成する契約から反映）', 'ok'); setTimeout(() => location.reload(), 600); } catch (e) { }
+    };
+    $('iAdd').onclick = async () => {
+      try {
+        const r = await run(async () => must(await sb.rpc('org_invite', { p_org: ORG.id, p_email: $('iEmail').value.trim(), p_role: $('iRole').value, p_name: $('iName').value.trim() })));
+        toast(r.status === 'active' ? '追加しました' : '招待メールを送りました', 'ok'); viewSettings();
+      } catch (e) { }
+    };
+    V.querySelectorAll('tr[data-m]').forEach(tr => {
+      const em = tr.dataset.m;
+      tr.querySelector('[data-role]').onchange = async e => {
+        try { await run(async () => must(await sb.rpc('org_member_update', { p_org: ORG.id, p_email: em, p_role: e.target.value, p_remove: false }))); toast('変更しました', 'ok'); } catch (x) { viewSettings(); }
+      };
+      const rm = tr.querySelector('[data-rm]');
+      if (rm) rm.onclick = async () => {
+        if (!confirm(em + ' を担当者から外しますか？')) return;
+        try { await run(async () => must(await sb.rpc('org_member_update', { p_org: ORG.id, p_email: em, p_role: 'member', p_remove: true }))); toast('外しました', 'ok'); viewSettings(); } catch (e) { }
+      };
+    });
+  }
   $('hBtn').onclick = async () => {
     try {
       const r = await run(async () => must(await sb.rpc('admin_lookup_hash', { p_hash: $('hq').value })));
@@ -1217,7 +1424,99 @@ async function viewSettings() {
         : '<div class="notice" style="background:#fbe5e5;border-color:#f0c4c4">✕ 一致する締結記録はありません（内容が変更されている可能性があります）</div>';
     } catch (e) { }
   };
-  $('out').onclick = async () => { await sb.auth.signOut(); ME = null; location.hash = ''; showLogin(); };
+  $('out').onclick = async () => { await sb.auth.signOut(); ME = null; MYST = null; location.hash = ''; showLogin(); };
+  if (isOp()) drawSystemSettings($('sysBox'));
+}
+
+// 運営だけの設定（全企業に共通）
+async function drawSystemSettings(box) {
+  let rows = [];
+  try { rows = must(await sb.from('app_settings').select('*')); } catch (e) { return; }
+  const S = {}; rows.forEach(r => S[r.key] = r.value);
+  box.innerHTML = `<div class="card" style="margin-top:16px;border-color:#1F3A5F">
+    <h3 style="font-size:17px;margin:0 0 4px">システム設定（運営のみ）</h3>
+    <label>署名ページの公開URL</label>
+    <input id="sUrl" value="${esc(S.site_url || '')}" placeholder="https://アカウント名.github.io/denshi-keiyaku">
+    <div class="muted">現在の画面のURL：${esc(location.origin + location.pathname.replace(/[^/]*$/, ''))}　<button class="btn ghost" id="sUse" style="padding:2px 8px">これを使う</button></div>
+    <label>運営への通知先（新規申込みのお知らせ）</label>
+    <input id="sNotify" value="${esc(S.notify_to || '')}">
+    <label>メール差出人（独自ドメインで送る場合のみ）</label>
+    <input id="sFrom" value="${esc(S.mail_from || '')}">
+    <label>リーガルチェックの送信先（Apps Script のウェブアプリURL）</label>
+    <input id="sAiUrl" value="${esc(S.ai_url || '')}" placeholder="https://script.google.com/macros/s/…/exec">
+    <div class="grid2">
+      <div><label>無料プラン：月の送信件数</label><input id="sFreeN" type="number" min="0" value="${esc(S.free_monthly_limit || '')}"></div>
+      <div><label>有料プラン：月の送信件数（空＝上限なし）</label><input id="sPaidN" type="number" min="0" value="${esc(S.paid_monthly_limit || '')}"></div>
+      <div><label>無料プラン：月のリーガルチェック回数</label><input id="sFreeAi" type="number" min="0" value="${esc(S.free_ai_limit || '')}"></div>
+      <div><label>有料プラン：月のリーガルチェック回数（空＝上限なし）</label><input id="sPaidAi" type="number" min="0" value="${esc(S.paid_ai_limit || '')}"></div>
+    </div>
+    <button class="btn primary" id="sSave" style="margin-top:16px">システム設定を保存</button></div>`;
+  const $ = s => document.getElementById(s);
+  $('sUse').onclick = () => $('sUrl').value = (location.origin + location.pathname.replace(/[^/]*$/, '')).replace(/\/$/, '');
+  $('sSave').onclick = async () => {
+    const rows = [['site_url', $('sUrl').value.trim().replace(/\/$/, '')], ['mail_from', $('sFrom').value.trim()], ['notify_to', $('sNotify').value.trim()],
+      ['ai_url', $('sAiUrl').value.trim()], ['free_monthly_limit', $('sFreeN').value.trim()], ['paid_monthly_limit', $('sPaidN').value.trim()],
+      ['free_ai_limit', $('sFreeAi').value.trim()], ['paid_ai_limit', $('sPaidAi').value.trim()]];
+    try {
+      await run(async () => { for (const [k, v] of rows) {
+        const r = must(await sb.from('app_settings').update({ value: v }).eq('key', k).select('key'));
+        if (!r.length) throw new Error('設定項目「' + k + '」がありません。最新のデータベース定義を実行してください');
+      } });
+      SETTINGS.site_url = rows[0][1]; SETTINGS.ai_url = rows[3][1]; toast('保存しました', 'ok');
+    } catch (e) { }
+  };
+}
+
+// ================= 運営（利用企業の承認・プラン） =================
+let OP_FILTER = 'pending';
+async function viewOperator() {
+  let list = [];
+  try { list = must(await sb.rpc('op_orgs')); } catch (e) { return toast(errText(e), 'err'); }
+  const cnt = st => list.filter(o => st === 'ng' ? ['suspended', 'rejected'].includes(o.status) : o.status === st).length;
+  const shown = list.filter(o => OP_FILTER === 'all' || (OP_FILTER === 'ng' ? ['suspended', 'rejected'].includes(o.status) : o.status === OP_FILTER));
+  V.innerHTML = `<div class="pagehead"><h2>運営：利用企業</h2></div>
+    <div class="seg3" style="grid-template-columns:repeat(4,1fr);max-width:640px;margin-bottom:14px">
+      ${[['pending', '承認待ち'], ['active', '利用中'], ['ng', '停止・却下'], ['all', 'すべて']].map(([k, l]) => `<button data-of="${k}" class="${OP_FILTER === k ? 'on' : ''}">${l}${k !== 'all' ? `（${cnt(k)}）` : `（${list.length}）`}</button>`).join('')}
+    </div>
+    ${shown.length ? shown.map(o => `<div class="card" style="margin-bottom:12px" data-org="${o.id}">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div><b style="font-size:17px">${esc(o.name)}</b> <span class="badge ${o.status === 'active' ? 'b-signed' : o.status === 'pending' ? 'b-viewed' : 'b-cancelled'}">${ORG_ST[o.status]}</span>
+          <span class="badge b-draft">${PLAN[o.plan]}</span>
+          <div class="muted" style="margin-top:4px">申込み：${fmt(o.created_at)}${o.approved_at ? '　承認：' + fmt(o.approved_at) : ''}　専用アドレス：?c=${esc(o.slug)}</div></div>
+        <div class="muted" style="text-align:right">今月の送信 ${o.sent_month}件／${o.limit == null ? '上限なし' : o.limit + '件'}<br>契約 累計${o.contracts}件・担当者${o.members}人・リーガルチェック今月${o.ai_month}回</div>
+      </div>
+      <table class="kvt" style="margin-top:8px">
+        <tr><th>担当者</th><td>${esc(o.contact_name)}（${esc(o.contact_email)}）</td></tr>
+        <tr><th>電話</th><td>${esc(o.tel)}</td></tr>
+        <tr><th>代表者</th><td>${esc(o.representative)}</td></tr>
+        <tr><th>所在地</th><td>${esc(o.address)}</td></tr>
+        <tr><th>ホームページ</th><td>${esc(o.website)}</td></tr>
+        <tr><th>利用目的</th><td>${esc(o.note).replace(/\n/g, '<br>')}</td></tr>
+      </table>
+      <div class="grid2" style="margin-top:8px">
+        <div><label>状態</label><select data-k="status">${Object.entries(ORG_ST).map(([k, v]) => `<option value="${k}" ${o.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+        <div><label>プラン</label><select data-k="plan">${Object.entries(PLAN).map(([k, v]) => `<option value="${k}" ${o.plan === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+        <div><label>この企業だけの月の送信上限（空＝プランの標準）</label><input data-k="limit" type="number" min="0" value="${o.monthly_limit == null ? '' : o.monthly_limit}"></div>
+        <div><label>理由・メモ（却下・停止の場合はお客様へのメールに記載）</label><input data-k="reason" value="${esc(o.reason || '')}"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        ${o.status === 'pending' ? '<button class="btn primary" data-quick="active">承認する</button><button class="btn danger" data-quick="rejected">却下する</button>' : ''}
+        <button class="btn" data-save>変更を保存</button></div>
+    </div>`).join('') : '<div class="empty card">該当する企業はありません</div>'}`;
+  V.querySelectorAll('[data-of]').forEach(b => b.onclick = () => { OP_FILTER = b.dataset.of; viewOperator(); });
+  V.querySelectorAll('[data-org]').forEach(box => {
+    const id = box.dataset.org, g = k => box.querySelector(`[data-k="${k}"]`).value;
+    const save = async st => {
+      const status = st || g('status'), lim = g('limit').trim();
+      if (status === 'rejected' && !confirm('却下します。申込み者に通知メールが届きます。よろしいですか？')) return;
+      try {
+        await run(async () => must(await sb.rpc('op_set_org', { p_org: id, p_status: status, p_plan: g('plan'), p_limit: lim === '' ? null : Number(lim), p_reason: g('reason').trim() })));
+        toast(status === 'active' && st ? '承認しました（申込み者へメールでお知らせしました）' : '保存しました', 'ok'); viewOperator();
+      } catch (e) { }
+    };
+    box.querySelector('[data-save]').onclick = () => save();
+    box.querySelectorAll('[data-quick]').forEach(b => b.onclick = () => save(b.dataset.quick));
+  });
 }
 
 // ================= 数字の入力補助（金額・割合・段階・期間・日付） =================

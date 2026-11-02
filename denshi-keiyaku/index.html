@@ -3,48 +3,246 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>電子契約 管理画面</title>
+<title>電子契約｜送るだけで、相手はURLを開いて押印まで完了</title>
+<meta name="description" content="契約書を作って、メールで送るだけ。受け取る方は登録もログインも不要で、URLを開けば確認・記入・押印・締結まで完了します。よく使う契約書の雛形、立場に合わせた有利な文言づくり、リーガルチェックにも対応。">
+<meta property="og:title" content="電子契約｜送るだけで、相手はURLを開いて押印まで完了">
+<meta property="og:description" content="受け取る方は登録・ログイン不要。雛形・かんたん作成・リーガルチェック付きの電子契約サービス。">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20261030d">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<script>
+  // 以前の案内メールのアドレス（?c=会社 や #signup）はログイン画面へ
+  (function () {
+    if (/[?&]c=/.test(location.search) || location.hash === '#signup') location.replace('login.html' + location.search + location.hash);
+  })();
+</script>
+<style>
+:root{--ac:#E8740C;--ac-d:#C65F05;--ac-l:#FFF4EA;--ink:#17202b;--sub:#5a6573;--line:#e4e7eb;--bg:#fbfaf8;--navy:#1F3A5F;--ok:#1a7f4b}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);background:var(--bg);line-height:1.8;font-size:16px;-webkit-font-smoothing:antialiased}
+a{color:inherit}img{max-width:100%}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 26px;border-radius:999px;font-weight:700;text-decoration:none;font-size:16px;border:2px solid transparent;transition:.15s;white-space:nowrap}
+.btn.pri{background:var(--ac);color:#fff;box-shadow:0 6px 18px rgba(232,116,12,.28)}.btn.pri:hover{background:var(--ac-d)}
+.btn.sec{background:#fff;color:var(--ink);border-color:var(--line)}.btn.sec:hover{border-color:var(--ink)}
+.btn.sm{padding:9px 18px;font-size:14px}
+/* ヘッダー */
+header{position:sticky;top:0;z-index:30;background:rgba(251,250,248,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;letter-spacing:.04em;text-decoration:none}
+.logo i{width:12px;height:26px;background:var(--ac);border-radius:3px;display:inline-block;transform:skewX(-12deg)}
+nav.gl{display:flex;gap:22px;margin-left:auto;font-size:14px;font-weight:600}
+nav.gl a{text-decoration:none;color:var(--sub)}nav.gl a:hover{color:var(--ink)}
+.hd-cta{display:flex;gap:8px}
+@media(max-width:900px){nav.gl{display:none}.hd-cta{margin-left:auto}}
+@media(max-width:480px){.hd-cta .btn{padding:8px 12px;font-size:13px}.hd-cta .long{display:none}}
+/* ヒーロー */
+.hero{padding:72px 0 64px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.eyebrow{display:inline-block;background:var(--ac-l);color:var(--ac-d);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;letter-spacing:.04em}
+.hero h1{font-size:clamp(30px,4.6vw,52px);line-height:1.3;margin:18px 0 18px;font-weight:900;letter-spacing:.01em}
+.hero h1 em{font-style:normal;background:linear-gradient(transparent 62%,#ffd9b3 62%)}
+.hero p.lead{font-size:clamp(16px,1.7vw,18px);color:var(--sub);margin:0 0 28px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero .note{font-size:13px;color:var(--sub);margin-top:14px}
+.mock{position:relative;height:440px}
+.paper{position:absolute;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 60px rgba(23,32,43,.12)}
+.p1{left:0;top:10px;width:78%;height:400px;padding:26px 26px;font-family:"Noto Serif JP",serif}
+.p1 h4{text-align:center;margin:0 0 14px;font-size:17px;letter-spacing:.2em}
+.p1 .ln{height:8px;border-radius:4px;background:#eceef1;margin:9px 0}.p1 .ln.s{width:62%}.p1 .ln.m{width:84%}
+.p1 .art{font-size:12px;font-weight:700;margin-top:14px;color:#3b4652}
+.p1 .seal{position:absolute;left:36px;bottom:30px;width:66px;height:66px;border:3px solid #d0342c;border-radius:50%;color:#d0342c;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;transform:rotate(-8deg);opacity:.9;letter-spacing:.05em}
+.p2{right:0;bottom:0;width:48%;padding:18px;font-size:13px}
+.p2 .tt{font-weight:800;font-size:14px;margin-bottom:8px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#e2f4ea;color:var(--ok)}
+.p2 ul{list-style:none;margin:10px 0 0;padding:0}.p2 li{display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px dashed var(--line)}
+.p2 li b{width:18px;height:18px;border-radius:50%;background:var(--ac);color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr}.mock{height:380px;margin-top:10px}.p1{height:340px}}
+/* セクション共通 */
+section{padding:80px 0}
+.sec-h{text-align:center;max-width:720px;margin:0 auto 44px}
+.sec-h .k{color:var(--ac);font-weight:800;font-size:13px;letter-spacing:.18em}
+.sec-h h2{font-size:clamp(24px,3.2vw,36px);margin:8px 0 12px;line-height:1.4;font-weight:900}
+.sec-h p{color:var(--sub);margin:0}
+.alt{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+/* 受け取る側 */
+.recv{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:s}
+.recv div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 14px;text-align:center;position:relative}
+.recv div::before{counter-increment:s;content:counter(s);display:flex;width:30px;height:30px;margin:0 auto 10px;border-radius:50%;background:var(--ac);color:#fff;font-weight:800;align-items:center;justify-content:center}
+.recv b{display:block;font-size:16px}.recv span{font-size:13px;color:var(--sub)}
+.nologin{margin:28px auto 0;max-width:760px;background:var(--navy);color:#fff;border-radius:16px;padding:22px 26px;display:flex;gap:18px;align-items:center}
+.nologin .ic{font-size:30px;flex:none}.nologin p{margin:0;font-size:15px;opacity:.92}.nologin strong{font-size:18px}
+@media(max-width:820px){.recv{grid-template-columns:1fr 1fr}.recv div:last-child{grid-column:1/-1}}
+/* 使い方 */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.step{background:var(--bg);border-radius:16px;padding:28px 24px;border:1px solid var(--line)}
+.step .n{font-size:13px;font-weight:800;color:var(--ac);letter-spacing:.14em}
+.step h3{font-size:20px;margin:6px 0 8px}.step p{margin:0;color:var(--sub);font-size:15px}
+@media(max-width:820px){.steps{grid-template-columns:1fr}}
+/* 特長 */
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.f{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
+.f .ic{width:44px;height:44px;border-radius:12px;background:var(--ac-l);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.f h3{font-size:17px;margin:0 0 6px}.f p{margin:0;color:var(--sub);font-size:14px}
+@media(max-width:900px){.feat{grid-template-columns:1fr 1fr}}@media(max-width:560px){.feat{grid-template-columns:1fr}}
+/* 比較 */
+.cmp{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:15px}
+.cmp th,.cmp td{padding:14px 18px;border-bottom:1px solid var(--line);text-align:left}
+.cmp thead th{background:#f3f4f6;font-size:14px}.cmp thead th:last-child{background:var(--ac);color:#fff}
+.cmp tr:last-child td{border-bottom:none}.cmp td:last-child{font-weight:700}
+.cmp td:first-child{color:var(--sub);width:26%}
+@media(max-width:600px){.cmp{font-size:13px}.cmp th,.cmp td{padding:10px}}
+/* 料金 */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px;margin:0 auto}
+.plan{background:#fff;border:2px solid var(--line);border-radius:18px;padding:30px}
+.plan.rec{border-color:var(--ac);position:relative}
+.plan.rec::after{content:"おすすめ";position:absolute;top:-13px;left:24px;background:var(--ac);color:#fff;font-size:12px;font-weight:800;padding:3px 12px;border-radius:999px}
+.plan h3{margin:0;font-size:20px}.plan .pr{font-size:34px;font-weight:900;margin:8px 0 4px}.plan .pr small{font-size:14px;font-weight:600;color:var(--sub)}
+.plan ul{padding:0;margin:16px 0 22px;list-style:none}.plan li{padding:7px 0 7px 26px;position:relative;border-top:1px dashed var(--line);font-size:15px}
+.plan li::before{content:"✓";position:absolute;left:2px;color:var(--ac);font-weight:900}
+.plan .btn{width:100%}
+@media(max-width:720px){.plans{grid-template-columns:1fr}}
+/* よくある質問 */
+.faq{max-width:820px;margin:0 auto}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;padding:0 20px}
+.faq summary{cursor:pointer;font-weight:700;padding:18px 28px 18px 0;list-style:none;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"＋";position:absolute;right:0;top:17px;color:var(--ac);font-weight:900}
+.faq details[open] summary::after{content:"－"}
+.faq details p{margin:0 0 18px;color:var(--sub);font-size:15px}
+/* 最後の案内 */
+.final{background:linear-gradient(135deg,#1F3A5F,#17202b);color:#fff;border-radius:24px;padding:56px 32px;text-align:center}
+.final h2{font-size:clamp(24px,3.4vw,36px);margin:0 0 12px;font-weight:900}.final p{opacity:.85;margin:0 0 26px}
+.final .btn.sec{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+footer{padding:44px 0 36px;font-size:13px;color:var(--sub)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between}
+footer .links a{margin-right:18px;text-decoration:none}footer .links a:hover{color:var(--ink)}
+</style>
 </head>
 <body>
-<div id="loginView" class="login hidden">
-  <div class="brand" style="color:var(--ink);justify-content:center;margin-bottom:16px;font-size:20px"><i></i>電子契約 管理画面</div>
-  <div class="card">
-    <label style="margin-top:0">メールアドレス</label>
-    <input id="lEmail" type="email" autocomplete="username">
-    <label>パスワード</label>
-    <input id="lPass" type="password" autocomplete="current-password">
-    <button class="btn primary lg" id="lBtn" style="margin-top:18px">ログイン</button>
-    <p class="muted" id="lMsg" style="margin:12px 0 0"></p>
+<header><div class="wrap">
+  <a class="logo" href="./"><i></i>電子契約</a>
+  <nav class="gl"><a href="#receiver">受け取る方</a><a href="#how">使い方</a><a href="#features">できること</a><a href="#price">料金</a><a href="#faq">よくある質問</a></nav>
+  <div class="hd-cta"><a class="btn sec sm" href="login.html">ログイン</a><a class="btn pri sm" href="login.html#signup"><span class="long">無料で</span>会員登録</a></div>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">受け取る方は 登録・ログイン 不要</span>
+    <h1>契約書は、<em>送るだけ。</em><br>相手はURLを開いて<br>押印まで完了。</h1>
+    <p class="lead">貴社の名前で契約書を発行し、メールで送るだけ。受け取った方はURLを開けば、内容の確認・必要事項の記入・本人確認書類の撮影・押印・締結まで、その場ですべて終わります。</p>
+    <div class="ctas"><a class="btn pri" href="login.html#signup">無料で会員登録する</a><a class="btn sec" href="#how">使い方を見る</a></div>
+    <div class="note">会員登録後、運営の確認を経てご利用いただけます。無料プランは月5件まで。</div>
   </div>
-</div>
+  <div class="mock" aria-hidden="true">
+    <div class="paper p1">
+      <h4>業務委託契約書</h4>
+      <div class="ln"></div><div class="ln m"></div><div class="ln s"></div>
+      <div class="art">第1条（委託業務）</div><div class="ln"></div><div class="ln m"></div>
+      <div class="art">第2条（委託料及び支払）</div><div class="ln"></div><div class="ln s"></div>
+      <div class="art">第3条（秘密保持）</div><div class="ln m"></div><div class="ln"></div>
+      <div class="seal">承認</div>
+    </div>
+    <div class="paper p2">
+      <div class="tt">受け取った方の画面 <span class="chip">ログイン不要</span></div>
+      <ul><li><b>1</b>URLを開く</li><li><b>2</b>内容を確認</li><li><b>3</b>必要事項を記入</li><li><b>4</b>押印して承認</li><li><b>5</b>控えをダウンロード</li></ul>
+    </div>
+  </div>
+</div></section>
 
-<div id="mainView" class="hidden">
-  <div class="topbar"><div class="in">
-    <div class="brand"><i></i>電子契約</div>
-    <nav class="tabs">
-      <button data-go="#list">契約一覧</button>
-      <button data-go="#new">新規作成</button>
-      <button data-go="#tpl">雛形</button>
-      <button data-go="#legal">リーガルチェック</button>
-      <button data-go="#auto">自動受付</button>
-      <button data-go="#co">発行会社</button>
-      <button data-go="#set">設定</button>
-    </nav>
-    <div class="who" id="who"></div>
-  </div></div>
-  <main id="view"></main>
-</div>
+<section id="receiver" class="alt"><div class="wrap">
+  <div class="sec-h"><div class="k">受け取る方</div><h2>相手に手間をかけさせない</h2>
+    <p>受け取る方に、会員登録・ログイン・アプリのインストールをお願いする必要はありません。届いたメールのボタンを押すだけで始まります。</p></div>
+  <div class="recv">
+    <div><b>URLを開く</b><span>メールのボタンを押すだけ</span></div>
+    <div><b>内容を確認</b><span>修正の希望もその場で伝えられる</span></div>
+    <div><b>必要事項を記入</b><span>記入漏れはその場で案内</span></div>
+    <div><b>押印・承認</b><span>印影を選んでボタンで押印</span></div>
+    <div><b>控えを保存</b><span>押印済みの契約書をダウンロード</span></div>
+  </div>
+  <div class="nologin"><div class="ic">🔗</div><div><strong>IDもパスワードもいりません</strong>
+    <p>契約ごとに、その方だけが開ける専用のURLをお送りします。高額な契約などでは、開くたびにメールの確認コードで本人確認する設定も選べます。</p></div></div>
+</div></section>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="js/config.js?v=20261030d"></script>
-<script src="js/common.js?v=20261030d"></script>
-<script src="js/library.js?v=20261030d"></script>
-<script src="js/editor.js?v=20261030d"></script>
-<script src="js/admin.js?v=20261030d"></script>
+<section id="how"><div class="wrap">
+  <div class="sec-h"><div class="k">使い方</div><h2>3つの手順で、貴社の契約を電子化</h2></div>
+  <div class="steps">
+    <div class="step"><div class="n">手順 1</div><h3>会員登録</h3><p>ログインID（メールアドレス）とパスワードを決め、会社情報を入力。運営が確認すると、貴社専用のページが使えるようになります。</p></div>
+    <div class="step"><div class="n">手順 2</div><h3>契約書をつくる</h3><p>よく使う契約書の雛形を選んで社名と金額を入れるだけ。自社の立場（甲・乙）に合わせて、有利な文言で作ることもできます。</p></div>
+    <div class="step"><div class="n">手順 3</div><h3>メールで送る</h3><p>相手の名前とメールアドレスを入れて送信。締結されると通知が届き、押印済みの契約書がいつでも取り出せます。</p></div>
+  </div>
+</div></section>
+
+<section id="features" class="alt"><div class="wrap">
+  <div class="sec-h"><div class="k">できること</div><h2>作る・確かめる・結ぶ・残す</h2></div>
+  <div class="feat">
+    <div class="f"><div class="ic">📄</div><h3>27種類の雛形</h3><p>業務委託・秘密保持・売買・雇用・業務提携・金銭消費貸借・M&A・コンサル各分野など、よく使う契約書を用意。</p></div>
+    <div class="f"><div class="ic">⚖️</div><h3>立場に合わせた有利な文言</h3><p>甲・乙のどちらかを選ぶと、自社に有利な条項に切り替え。メリット・注意点・交渉の対応策も表示します。</p></div>
+    <div class="f"><div class="ic">🔍</div><h3>リーガルチェック</h3><p>相手から届いた契約書を読み込み、自社の立場から不利な条項・足りない条項と修正案を提示します。</p></div>
+    <div class="f"><div class="ic">✍️</div><h3>ドラフト確認と修正依頼</h3><p>本契約の前に案を確認してもらえます。相手は条項を選び、削除（赤線）・追記（青字）で修正を依頼できます。</p></div>
+    <div class="f"><div class="ic">📷</div><h3>記入・書類の添付</h3><p>氏名や住所などの記入項目を自由に設定。本人確認書類はスマホのカメラで撮影して添付できます。</p></div>
+    <div class="f"><div class="ic">🔢</div><h3>金額・手数料もかんたん入力</h3><p>定額・割合・段階制、税別・税込を選ぶだけで契約書の文章になります。保存後も入力欄から変更できます。</p></div>
+    <div class="f"><div class="ic">🛡️</div><h3>改ざんを防ぐ記録</h3><p>締結時の内容を暗号の仕組み（ハッシュ値）で記録し、送信・開封・押印などの操作履歴を契約書に添えて残します。</p></div>
+    <div class="f"><div class="ic">🌐</div><h3>サイトの申込みから自動作成</h3><p>貴社サイトの申込みフォームと連携すると、申込みから契約書の作成・送信まで自動で行えます。</p></div>
+    <div class="f"><div class="ic">👥</div><h3>複数の担当者・自社のロゴ</h3><p>担当者を招待して社内で共有。ロゴと色を設定すると、相手の画面とメールに貴社の名前で表示されます。</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-h"><div class="k">紙との違い</div><h2>郵送も、印刷も、待ち時間もなくなる</h2></div>
+  <table class="cmp">
+    <thead><tr><th></th><th>紙の契約書</th><th>この電子契約</th></tr></thead>
+    <tbody>
+      <tr><td>締結までの時間</td><td>郵送の往復で数日〜数週間</td><td>最短で送ったその日</td></tr>
+      <tr><td>相手の手間</td><td>印刷・押印・返送</td><td>URLを開いて押印ボタン</td></tr>
+      <tr><td>印紙代</td><td>契約の種類・金額に応じて必要</td><td>かかりません（※1）</td></tr>
+      <tr><td>郵送・印刷代</td><td>必要</td><td>不要</td></tr>
+      <tr><td>保管と検索</td><td>書類棚・ファイル</td><td>画面で検索・いつでも取り出し</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--sub);margin-top:10px">※1 印紙税は紙の文書の作成に課される税で、電子データで作成・送信する契約書には課されないというのが国税庁の考え方です。</p>
+</div></section>
+
+<section id="price" class="alt"><div class="wrap">
+  <div class="sec-h"><div class="k">料金</div><h2>まずは無料で始められます</h2></div>
+  <div class="plans">
+    <div class="plan"><h3>無料プラン</h3><div class="pr">0円<small>／月</small></div>
+      <ul><li>契約書の送信 月5件まで</li><li>リーガルチェック 月3回まで</li><li>雛形・かんたん作成・入力補助</li><li>担当者の追加・自社のロゴ表示</li></ul>
+      <a class="btn sec" href="login.html#signup">無料で会員登録</a></div>
+    <div class="plan rec"><h3>有料プラン</h3><div class="pr">お見積り</div>
+      <ul><li>契約書の送信 上限なし</li><li>リーガルチェック 月100回まで</li><li>無料プランのすべての機能</li><li>サイトの申込みからの自動作成</li></ul>
+      <a class="btn pri" href="mailto:info@management-advisers.com?subject=%E9%9B%BB%E5%AD%90%E5%A5%91%E7%B4%84%20%E6%9C%89%E6%96%99%E3%83%97%E3%83%A9%E3%83%B3%E3%81%AE%E7%9B%B8%E8%AB%87">有料プランを相談する</a></div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="sec-h"><div class="k">よくある質問</div><h2>よくある質問</h2></div>
+  <div class="faq">
+    <details><summary>受け取る側は、本当に登録やログインがいらないのですか？</summary>
+      <p>はい。契約ごとに、その方専用のURLをメールでお送りします。URLを開くだけで、確認・記入・押印・締結・控えのダウンロードまで行えます。発行側の設定で、開くたびにメールの確認コードで本人確認する方式を選ぶこともできます。</p></details>
+    <details><summary>電子契約でも契約は有効ですか？</summary>
+      <p>契約は、法令に特別の定めがある場合を除き、書面でなくても当事者の合意で成立します（民法第522条第2項）。ただし、任意後見契約や事業用定期借地権の設定契約のように、公正証書など特定の方式が法律で求められる契約もあります。ご不安な契約は専門家にご確認ください。</p></details>
+    <details><summary>相手が本人かどうか、どう確かめますか？</summary>
+      <p>相手のメールアドレスに届いた専用URLから開封されたこと、開封・押印の日時と接続元などを操作履歴として記録します。必要に応じて、確認コードによる本人確認や、本人確認書類の撮影・添付を求めることもできます。</p></details>
+    <details><summary>締結した契約書はどう保存されますか？</summary>
+      <p>締結時の本文・記入内容・添付書類・印影をまとめてハッシュ値で記録し、締結後は変更できない仕組みにしています。押印済みの契約書は、発行側・受け取った側のどちらもダウンロードできます。</p></details>
+    <details><summary>どんな契約書が作れますか？</summary>
+      <p>業務委託・秘密保持・物品売買・代理店・業務提携・覚書・雇用（正社員・パート）・フリーランス・金銭消費貸借・出資・株式譲渡・事業譲渡・会員入会・紹介・個人情報の取扱い・訪問購入・委託販売・遺品整理、経営顧問や補助金活用支援などコンサル各分野の、計27種類の雛形があります。お手持ちの契約書を貼り付けて使うこともできます。</p></details>
+    <details><summary>会員登録から使えるまで、どのくらいかかりますか？</summary>
+      <p>会員登録とメールアドレスの確認、会社情報の入力が済むと、運営が内容を確認します。承認されるとメールでお知らせし、すぐにご利用いただけます。</p></details>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="final"><h2>次の契約から、送るだけに。</h2><p>会員登録は無料です。貴社の名前で、今日から契約書を送れます。</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a class="btn pri" href="login.html#signup">無料で会員登録する</a><a class="btn sec" href="login.html">ログイン</a></div></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div><b style="color:var(--ink)">電子契約</b><br>運営：株式会社マネージメントアドバイザーズ<br>大阪府大阪市北区天神橋2-5-3 第五新興ビル5F</div>
+  <div class="links"><a href="terms.html">利用規約</a><a href="privacy.html">プライバシーポリシー</a><a href="login.html">ログイン</a><a href="../">運営会社</a></div>
+</div></footer>
 </body>
 </html>

@@ -4,7 +4,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const STATUS = { draft: '下書き', review: 'ドラフト確認中', sent: '送信済', viewed: '閲覧済', signed: '締結済', cancelled: '取消', expired: '期限切れ' };
 const EVENTS = {
   created: '契約書作成', sent: '署名依頼メール送信', resent: '署名依頼メール再送',
-  otp_sent: '認証コード送信', otp_failed: '認証コード誤り', verified: 'メール認証完了',
+  otp_sent: '確認コード送信', otp_failed: '確認コード誤り', verified: 'メール確認コードによる本人確認', link_opened: 'メール記載のURLから開封',
   opened: '契約書閲覧', signed: '押印・承認（締結）', cancelled: '取消', verify_check: '改ざん検証', auto_created: '自動受付で作成',
   draft_sent: 'ドラフト確認依頼', draft_resent: 'ドラフト確認依頼（再送）', draft_approved: 'ドラフト承認',
   draft_changes: 'ドラフト修正依頼', file_uploaded: '書類添付', file_deleted: '添付削除'
@@ -112,6 +112,7 @@ function renderDoc(c, logs, opts) {
     <div class="doc-parties">
       <div class="party">
         <div class="party-label">発行者</div>
+        ${/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(co.logo || '') ? `<img class="logo" src="${co.logo}" alt="">` : ''}
         <div class="nm">${esc(co.name)}</div>
         ${co.address ? `<div>${esc(co.address)}</div>` : ''}
         ${co.representative ? `<div>${esc(co.representative)}</div>` : ''}

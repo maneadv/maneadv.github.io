@@ -19,7 +19,7 @@ let step = store.get('step') || 'read';
 const previews = {};
 const DOC_ACCEPT = 'image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.heic,.heif';      // 今回アップロードした画像の縮小表示
 
-const STEP_DEF = [['auth', '認証'], ['read', '確認'], ['fill', '記入'], ['seal', '押印'], ['approve', '承認'], ['done', '完了']];
+const STEP_DEF = [['auth', '本人確認'], ['read', '確認'], ['fill', '記入'], ['seal', '押印'], ['approve', '承認'], ['done', '完了']];
 const needsInput = f => !isLocked(f);
 function hasFillStep() { return C && ((C.fields || []).some(needsInput) || (C.attachments || []).length); }
 // 発行側の記入値を初期値として反映（修正不可の項目は常に発行側の値）
@@ -33,7 +33,7 @@ function applyPrefill() {
 function drawSteps(cur) {
   const el = document.getElementById('steps');
   if (!cur || (C && C.status === 'review')) { el.innerHTML = ''; return; }
-  const list = STEP_DEF.filter(s => s[0] !== 'fill' || hasFillStep() || !C);
+  const list = STEP_DEF.filter(s => (s[0] !== 'fill' || hasFillStep() || !C) && (s[0] !== 'auth' || (INFO && INFO.require_otp)));
   const idx = list.findIndex(s => s[0] === cur);
   el.innerHTML = list.map((s, i) => `<div class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${s[1]}</div>`).join('');
 }
@@ -46,7 +46,11 @@ function fail(msg) {
 }
 function onErr(e) {
   const m = errText(e);
-  if (/認証の有効期限/.test(m)) { session = null; store.del('session'); C = null; renderAuth(); }
+  if (/認証の有効期限/.test(m)) {
+    session = null; store.del('session'); C = null;
+    if (INFO && !INFO.require_otp) { toast('画面を開き直しました。もう一度操作してください', 'err'); return openByLink(); }
+    renderAuth();
+  }
   toast(m, 'err');
 }
 
@@ -58,14 +62,30 @@ function onErr(e) {
   } catch (e) { return fail(errText(e)); }
   document.title = INFO.title + '｜電子契約';
   document.getElementById('coName').textContent = INFO.company;
+  if (/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(INFO.logo || '')) {
+    const im = document.createElement('img'); im.src = INFO.logo; im.alt = ''; document.getElementById('coName').prepend(im);
+  }
   document.getElementById('docNo').textContent = '契約番号 ' + INFO.contract_no;
   if (INFO.color) document.documentElement.style.setProperty('--accent', INFO.color);
   if (session) {
     try { C = must(await sb.rpc('sign_view', { p_token: TOKEN, p_session: session })); applyPrefill(); return render(); }
     catch (e) { session = null; store.del('session'); }
   }
+  if (!INFO.require_otp) return openByLink();
   renderAuth();
 })();
+
+// メールで届いたURLを開くだけで始められる（ログイン・コード入力は不要）
+async function openByLink() {
+  try {
+    const r = must(await sb.rpc('sign_open', { p_token: TOKEN }));
+    session = r.session; store.set('session', session);
+    C = must(await sb.rpc('sign_view', { p_token: TOKEN, p_session: session }));
+  } catch (e) { return fail(errText(e)); }
+  applyPrefill();
+  if (!['read', 'fill', 'seal', 'approve'].includes(step)) step = 'read';
+  render();
+}
 
 // ---------- 本人確認 ----------
 function renderAuth(sent) {
@@ -121,7 +141,7 @@ async function verify() {
 
 // ---------- 画面の振り分け ----------
 function render() {
-  if (!C) return renderAuth();
+  if (!C) return INFO && !INFO.require_otp ? openByLink() : renderAuth();
   if (C.status === 'signed') return renderDone();
   if (C.status === 'review') return renderReview();
   if (step === 'fill' && !hasFillStep()) step = 'seal';
