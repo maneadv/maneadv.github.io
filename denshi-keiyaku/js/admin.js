@@ -201,20 +201,28 @@ function route() {
 }
 
 // ================= 契約一覧 =================
-let LIST_FILTER = { q: '', co: '', st: '' };
+let LIST_FILTER = { q: '', co: '', st: '', d1: '', d2: '', a1: '', a2: '', cp: '', adv: false }, LAST_LIST = [];
 async function viewList() {
   V.innerHTML = `<div class="pagehead"><h2>契約一覧</h2><button class="btn primary" onclick="location.hash='#new'">＋ 新規作成</button></div>
     <div class="filters">
       <input id="fq" placeholder="契約番号・契約書名・署名者で検索" value="${esc(LIST_FILTER.q)}">
       <select id="fco"><option value="">すべての発行会社</option>${COMPANIES.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
       <select id="fst"><option value="">すべての状態</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
-    </div><div id="listBody"><div class="empty">読み込み中…</div></div>`;
+    </div>
+    <details class="adv" ${LIST_FILTER.adv ? 'open' : ''}><summary>取引情報で検索（取引年月日・金額・取引先）</summary>
+      <div class="filters" style="margin-top:8px">
+        <span class="fl">取引年月日</span><input id="fd1" type="date" value="${esc(LIST_FILTER.d1 || '')}"><span>〜</span><input id="fd2" type="date" value="${esc(LIST_FILTER.d2 || '')}">
+        <span class="fl">金額</span><input id="fa1" type="number" min="0" placeholder="下限" value="${esc(LIST_FILTER.a1 || '')}"><span>〜</span><input id="fa2" type="number" min="0" placeholder="上限" value="${esc(LIST_FILTER.a2 || '')}"><span>円</span>
+        <span class="fl">取引先</span><input id="fcp" placeholder="取引先名" value="${esc(LIST_FILTER.cp || '')}">
+        <button class="btn ghost" id="fclr">条件をクリア</button><button class="btn" id="fcsv">一覧をCSVで保存</button>
+      </div></details>
+    <div id="listBody"><div class="empty">読み込み中…</div></div>`;
   document.getElementById('fco').value = LIST_FILTER.co;
   document.getElementById('fst').value = LIST_FILTER.st;
   let rows;
   try {
     rows = must(await sb.from('contracts')
-      .select('id,contract_no,title,status,draft_review,draft_result,signer_name,signer_email,company_id,created_at,sent_at,signed_at,token_expires_at,intake_id')
+      .select('id,contract_no,title,status,draft_review,draft_result,signer_name,signer_email,company_id,created_at,sent_at,signed_at,token_expires_at,intake_id,deal_date,amount,counterparty')
       .eq('org_id', ORG.id).order('created_at', { ascending: false }).limit(1000));
   } catch (e) { return toast(errText(e), 'err'); }
   if (!document.getElementById('listBody')) return;   // 読み込み中に別の画面へ移動した
@@ -222,12 +230,19 @@ async function viewList() {
     const q = LIST_FILTER.q.toLowerCase();
     const list = rows.filter(r => (!LIST_FILTER.co || r.company_id === LIST_FILTER.co)
       && (!LIST_FILTER.st || effectiveStatus(r) === LIST_FILTER.st)
-      && (!q || [r.contract_no, r.title, r.signer_name, r.signer_email].join(' ').toLowerCase().includes(q)));
+      && (!q || [r.contract_no, r.title, r.signer_name, r.signer_email, r.counterparty].join(' ').toLowerCase().includes(q))
+      && (!LIST_FILTER.d1 || (r.deal_date && r.deal_date >= LIST_FILTER.d1))
+      && (!LIST_FILTER.d2 || (r.deal_date && r.deal_date <= LIST_FILTER.d2))
+      && (LIST_FILTER.a1 === '' || LIST_FILTER.a1 == null || (r.amount != null && Number(r.amount) >= Number(LIST_FILTER.a1)))
+      && (LIST_FILTER.a2 === '' || LIST_FILTER.a2 == null || (r.amount != null && Number(r.amount) <= Number(LIST_FILTER.a2)))
+      && (!LIST_FILTER.cp || (r.counterparty || '').toLowerCase().includes(LIST_FILTER.cp.toLowerCase())));
+    LAST_LIST = list;
     document.getElementById('listBody').innerHTML = list.length ? `<table class="list">
-      <thead><tr><th>契約番号</th><th>契約書名</th><th>発行会社</th><th>署名者</th><th>状態</th><th>日時</th></tr></thead>
+      <thead><tr><th>契約番号</th><th>契約書名</th><th>取引先</th><th>取引日</th><th class="num">金額</th><th>状態</th><th>日時</th></tr></thead>
       <tbody>${list.map(r => `<tr class="click" data-id="${r.id}">
-        <td class="mono">${esc(r.contract_no)}</td><td><b>${esc(r.title)}</b>${r.intake_id ? ' <span class="badge b-review">自動受付</span>' : ''}</td><td>${esc(coName(r.company_id))}</td>
-        <td>${esc(r.signer_name)}</td>
+        <td class="mono">${esc(r.contract_no)}</td><td><b>${esc(r.title)}</b>${r.intake_id ? ' <span class="badge b-review">自動受付</span>' : ''}<br><span class="muted" style="font-size:12px">${esc(coName(r.company_id))}</span></td>
+        <td>${esc(r.counterparty || r.signer_name)}</td><td class="muted">${esc(r.deal_date ? r.deal_date.replace(/-/g, '/') : '')}</td>
+        <td class="num">${r.amount != null ? Number(r.amount).toLocaleString('ja-JP') : ''}</td>
         <td>${badge(r)}${r.status === 'review' && r.draft_result ? ` <span class="badge ${r.draft_result === 'approved' ? 'b-signed' : 'b-viewed'}">${r.draft_result === 'approved' ? '承認' : '修正依頼'}</span>` : ''}</td>
         <td class="muted">${fmt(r.signed_at || r.sent_at || r.created_at)}</td></tr>`).join('')}</tbody></table>`
       : '<div class="empty card">該当する契約はありません</div>';
@@ -236,6 +251,17 @@ async function viewList() {
   document.getElementById('fq').oninput = e => { LIST_FILTER.q = e.target.value; draw(); };
   document.getElementById('fco').onchange = e => { LIST_FILTER.co = e.target.value; draw(); };
   document.getElementById('fst').onchange = e => { LIST_FILTER.st = e.target.value; draw(); };
+  [['fd1', 'd1'], ['fd2', 'd2'], ['fa1', 'a1'], ['fa2', 'a2'], ['fcp', 'cp']].forEach(([id, k]) =>
+    document.getElementById(id).oninput = e => { LIST_FILTER[k] = e.target.value; LIST_FILTER.adv = true; draw(); });
+  document.getElementById('fclr').onclick = () => { Object.assign(LIST_FILTER, { d1: '', d2: '', a1: '', a2: '', cp: '' }); viewList(); };
+  document.getElementById('fcsv').onclick = () => {
+    const head = ['契約番号', '契約書名', '発行会社', '取引先', '取引年月日', '取引金額', '署名者', '署名者メール', '状態', '作成日時', '締結日時'];
+    const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [head].concat(LAST_LIST.map(r => [r.contract_no, r.title, coName(r.company_id), r.counterparty || '', r.deal_date || '', r.amount == null ? '' : r.amount,
+      r.signer_name, r.signer_email, STATUS[effectiveStatus(r)] || '', fmt(r.created_at), r.signed_at ? fmt(r.signed_at) : '']));
+    const blob = new Blob(['\ufeff' + lines.map(l => l.map(cell).join(',')).join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '契約一覧_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+  };
   draw();
 }
 
@@ -355,8 +381,22 @@ async function viewEdit(id) {
           <h3 style="font-size:15px">署名者の流れ</h3>
           <label class="switch"><input type="checkbox" id="eDraft" ${c && c.draft_review ? 'checked' : ''}>
             <span><b>ドラフト確認を行う</b><br><span class="muted">本契約書の前に案を確認・承認してもらう</span></span></label>
+          <label class="switch"><input type="checkbox" id="eAc" ${c && c.require_access_code ? 'checked' : ''}>
+            <span><b>アクセスコードを求める（推奨：高額・重要な契約）</b><br><span class="muted">メールのURLに加えて、電話・対面・書面など<b>メール以外の方法</b>で伝えるコードの入力を求めます。メールと別の手段を組み合わせるため、本人確認の証明力が高まります（電子署名法3条の考え方に沿った2段階の確認）</span></span></label>
+          <div id="acBox" class="${c && c.require_access_code ? '' : 'hidden'}" style="margin:-4px 0 8px 30px">
+            <input id="eAcCode" maxlength="32" autocomplete="off" placeholder="${c && c.require_access_code ? '設定済み（変更する場合だけ入力）' : '4〜32文字（例：数字6桁）'}">
+            <button type="button" class="btn ghost" id="eAcGen" style="padding:3px 10px;margin-top:4px">自動で作る</button>
+            <div class="muted" style="font-size:12px;margin-top:4px">コードはメールには載りません。相手に電話などで伝えてください。保存後は表示できないので、必ず控えてください。</div>
+          </div>
           <label class="switch"><input type="checkbox" id="eOtp" ${c && c.require_otp ? 'checked' : ''}>
-            <span><b>確認コードを求める</b><br><span class="muted">通常は不要です。受け取る人はメールのURLを開くだけで契約できます。高額な契約などで、開くたびにメールの6桁コードで本人確認したい場合だけ選びます</span></span></label>
+            <span><b>確認コードを求める</b><br><span class="muted">通常は不要です。受け取る人はメールのURLを開くだけで契約できます。開くたびにメールの6桁コードで本人確認したい場合だけ選びます</span></span></label>
+        </div>
+        <div class="card">
+          <h3 style="font-size:15px">取引情報</h3>
+          <div class="muted">電子帳簿保存法の検索用（取引年月日・取引金額・取引先）。送信後は、入力済みの値を変更できません。</div>
+          <label>取引年月日（契約日）</label><input id="eDeal" type="date" value="${esc(c && c.deal_date ? c.deal_date : '')}">
+          <label>取引金額（円・税込）</label><input id="eAmt" type="number" min="0" step="1" value="${c && c.amount != null ? esc(c.amount) : ''}" placeholder="金額が決まらない契約は空欄">
+          <label>取引先</label><input id="eCp" maxlength="200" value="${esc(c && c.counterparty ? c.counterparty : '')}" placeholder="空欄なら署名者の氏名・会社名">
         </div>
         <div class="card">
           <h3 style="font-size:15px">署名者の記入項目</h3>
@@ -425,6 +465,8 @@ async function viewEdit(id) {
       vars: { ...vars, '作成日': vars['作成日'] || todayJa(), __num: JSON.parse(JSON.stringify(NUM_STATE)) },
       signer_name: signer.name, signer_email: signer.email,
       draft_review: $('eDraft').checked, require_otp: $('eOtp').checked, fields: pkF.get(), attachments: pkA.get(),
+      deal_date: $('eDeal').value || null, amount: $('eAmt').value === '' ? null : Math.round(Number($('eAmt').value)),
+      counterparty: $('eCp').value.trim() || signer.name || null,
       company_snapshot: co
     };
   };
@@ -514,14 +556,22 @@ async function viewEdit(id) {
     const left = customVars(d.body);
     if (left.length && !confirm(`未入力の差し込み項目があります：${left.join('、')}\nこのまま保存しますか？`)) return;
     delete d.company_snapshot;
+    const acOn = $('eAc').checked, acCode = $('eAcCode').value.trim();
+    if (acOn && !acCode && !(c && c.require_access_code)) return toast('アクセスコードを入力するか「自動で作る」を押してください', 'err');
+    if (acOn && acCode && (acCode.length < 4 || acCode.length > 32)) return toast('アクセスコードは4〜32文字にしてください', 'err');
+    if (acOn && acCode && !confirm(`アクセスコード「${acCode}」を設定します。\nこのコードは保存後に表示できません。控えてから「OK」を押してください。`)) return;
     try {
       const saved = await run(async () => c
         ? must(await sb.from('contracts').update(d).eq('id', c.id).select('id').single())
         : must(await sb.from('contracts').insert({ ...d, template_id: tplSel.value || null }).select('id').single()));
+      if (acOn && acCode) await run(async () => must(await sb.rpc('admin_set_access_code', { p_id: saved.id, p_code: acCode })));
+      else if (!acOn && c && c.require_access_code) await run(async () => must(await sb.rpc('admin_set_access_code', { p_id: saved.id, p_code: '' })));
       toast('保存しました', 'ok');
       location.hash = '#c/' + saved.id;
     } catch (e) { }
   };
+  $('eAc').onchange = () => $('acBox').classList.toggle('hidden', !$('eAc').checked);
+  $('eAcGen').onclick = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); $('eAcCode').value = String(a[0] % 1000000).padStart(6, '0'); };
 }
 
 // ================= かんたん作成 =================
@@ -668,6 +718,7 @@ async function viewDetail(id) {
           <dt>発行会社</dt><dd>${esc((c.company_snapshot || {}).name)}</dd>
           <dt>署名者</dt><dd>${esc(c.signer_name)}<br><span class="muted">${esc(c.signer_email)}</span></dd>
           <dt>ドラフト確認</dt><dd>${draftLabel}</dd>
+          <dt>本人確認</dt><dd>${c.require_access_code ? 'メールのURL＋アクセスコード' : c.require_otp ? 'メールの確認コード' : 'メールのURL'}</dd>
           <dt>作成</dt><dd>${fmt(c.created_at)}<br><span class="muted">${esc(c.created_by || '')}</span></dd>
           ${c.sent_at ? `<dt>最終送信</dt><dd>${fmt(c.sent_at)}</dd>` : ''}
           ${c.token_expires_at && c.status !== 'signed' ? `<dt>期限</dt><dd>${fmt(c.token_expires_at)}${st === 'expired' ? ' <span class="badge b-expired">期限切れ</span>' : ''}</dd>` : ''}
@@ -677,6 +728,12 @@ async function viewDetail(id) {
           <table class="doc-fields" style="margin-top:6px">${Object.entries(c.intake_data).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(typeof v === 'object' ? JSON.stringify(v) : v)}</td></tr>`).join('')}</table></div>` : ''}
         <div class="card"><b>記入事項</b>${entered}</div>
         <div class="card"><b>添付書類</b>${fileList}</div>
+        <div class="card"><b>取引情報</b><span class="muted" style="font-size:12px">（電子帳簿保存法の検索用）</span>
+          <label>取引年月日</label><input id="dDeal" type="date" value="${esc(c.deal_date || '')}" ${c.deal_date && !['draft', 'review'].includes(c.status) ? 'disabled' : ''}>
+          <label>取引金額（円）</label><input id="dAmt" type="number" min="0" value="${c.amount != null ? esc(c.amount) : ''}" ${c.amount != null && !['draft', 'review'].includes(c.status) ? 'disabled' : ''}>
+          <label>取引先</label><input id="dCp" value="${esc(c.counterparty || '')}" ${c.counterparty && !['draft', 'review'].includes(c.status) ? 'disabled' : ''}>
+          <button class="btn" id="dealBtn" style="margin-top:8px">取引情報を保存</button>
+          <div class="muted" style="font-size:12px;margin-top:4px">送信後は、未入力の項目だけ追加できます（入力済みの値は訂正・削除できません）。</div></div>
         <div class="card"><b>社内メモ</b><textarea id="memo" style="min-height:80px;margin-top:6px">${esc(c.memo || '')}</textarea>
           <button class="btn" id="memoBtn" style="margin-top:8px">メモを保存</button></div>
         <div class="card"><b>操作履歴</b><ul class="log" style="margin-top:6px">${logs.map(l => `<li>${esc(EVENTS[l.event] || l.event)}
@@ -731,6 +788,10 @@ async function viewDetail(id) {
     const reason = prompt('取消の理由（任意）', '');
     if (reason === null) return;
     try { await run(async () => must(await sb.rpc('admin_cancel', { p_id: c.id, p_reason: reason }))); toast('取り消しました', 'ok'); viewDetail(c.id); } catch (e) { }
+  };
+  $('dealBtn').onclick = async () => {
+    const d = { deal_date: $('dDeal').value || null, amount: $('dAmt').value === '' ? null : Math.round(Number($('dAmt').value)), counterparty: $('dCp').value.trim() || null };
+    try { await run(async () => must(await sb.from('contracts').update(d).eq('id', c.id))); toast('取引情報を保存しました', 'ok'); viewDetail(c.id); } catch (e) { }
   };
   $('memoBtn').onclick = async () => {
     try { await run(async () => must(await sb.from('contracts').update({ memo: $('memo').value }).eq('id', c.id))); toast('メモを保存しました', 'ok'); } catch (e) { }
@@ -1383,6 +1444,9 @@ async function viewSettings() {
         <div class="mono" style="word-break:break-all;margin-top:6px;font-size:13px">${esc(orgUrl(org.slug))}</div>
         <button class="btn" id="oCopy" style="margin-top:8px">コピー</button>
         <div class="muted" style="margin-top:6px">このアドレスを開くと、貴社の社名・ロゴ・色でログイン画面が表示されます。</div></div>
+      <div class="card"><b>電子帳簿保存法</b>
+        <div class="muted" style="margin-top:4px">備え付ける「システム概要書」と「事務処理規程」のひな形を印刷できます。</div>
+        <a class="btn" href="denshi-chobo.html" target="_blank" style="margin-top:8px">書類を開く</a></div>
       <div class="card actions"><div class="muted">${esc(ME.email)} でログイン中（${ROLE[ORG.role]}）</div><button class="btn" id="out">ログアウト</button></div>
     </div></div>`;
   const $ = s => document.getElementById(s);

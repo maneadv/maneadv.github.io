@@ -281,3 +281,9 @@ ins.d-ins{color:#1f5fd6;text-decoration:none;font-weight:700;background:#eaf1fd}
 #who select{width:auto;padding:4px 6px;font-size:13px;margin:0}
 .sign-head .co img{max-height:30px;max-width:140px;vertical-align:middle;margin-right:8px}
 .party .logo{max-height:36px;max-width:140px;margin-bottom:4px}
+/* 取引情報の検索 */
+details.adv{margin:-6px 0 12px}details.adv summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:14px}
+details.adv .filters{display:flex;flex-wrap:wrap;align-items:center;gap:6px}details.adv .filters input{width:auto;min-width:0}
+details.adv input[type=number]{width:120px}details.adv input[type=date]{width:150px}
+.fl{font-size:13px;color:var(--sub);margin-left:6px}
+table.list th.num,table.list td.num{text-align:right;white-space:nowrap}

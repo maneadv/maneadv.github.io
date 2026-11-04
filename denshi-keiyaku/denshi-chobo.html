@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>電子帳簿保存法への対応｜電子契約</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;color:#17202b;background:#fbfaf8;line-height:1.9}
+header{border-bottom:1px solid #e4e7eb;background:#fff}header div{max-width:860px;margin:0 auto;padding:14px 20px}
+header a{font-weight:900;text-decoration:none;color:#17202b;display:inline-flex;gap:10px;align-items:center}header i{width:10px;height:22px;background:#E8740C;border-radius:3px;display:inline-block;transform:skewX(-12deg)}
+main{max-width:860px;margin:0 auto;padding:32px 20px 60px}h1{font-size:28px;margin:0 0 6px}h2{font-size:18px;margin:32px 0 6px;padding-left:10px;border-left:4px solid #E8740C}
+ol{padding-left:1.4em}li{margin:4px 0}.date{color:#5a6573;font-size:14px}footer{text-align:center;font-size:13px;color:#5a6573;padding:24px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}th,td{border:1px solid #e4e7eb;padding:8px 10px;text-align:left;vertical-align:top}th{background:#f6f7f9;width:28%}
+.box{background:#fff;border:1px solid #e4e7eb;border-radius:12px;padding:20px 22px;margin:18px 0}.note{font-size:13px;color:#5a6573}
+.print{display:inline-block;margin:6px 0 0;padding:8px 16px;border-radius:999px;background:#E8740C;color:#fff;text-decoration:none;font-weight:700;border:none;cursor:pointer;font-size:14px}
+@media print{header,footer,.print,.noprint{display:none}.box{border:none;padding:0;page-break-after:always}body{background:#fff}}
+</style></head><body><header><div><a href="./"><i></i>電子契約</a></div></header><main>
+<h1>電子帳簿保存法への対応</h1>
+<p class="date noprint">本サービスで締結した契約書を、電子帳簿保存法（電子取引データの保存）の要件に沿って保存するための説明と書類です。貴社の状況に合わせて内容を確認し、必要に応じて税理士にご相談ください。</p>
+
+<div class="box noprint">
+<h2>要件ごとの対応</h2>
+<table>
+<tr><th>要件</th><th>本サービスでの対応</th></tr>
+<tr><td>真実性の確保</td><td>締結した契約書（本文・記入内容・添付書類・印影）は、締結時に改ざん検知用のハッシュ値を記録し、締結後は本サービスの画面・機能から発行者を含め誰も変更・削除できない仕組みです。送信・開封・押印などの操作履歴も変更できません。あわせて、下記の「事務処理規程」を備え付けて運用することをおすすめします（国税庁が示す方法のひとつです）。</td></tr>
+<tr><td>可視性の確保</td><td>契約一覧・詳細画面でいつでも表示でき、押印済みの契約書（締結記録付き）をPDFで出力できます。下記の「システム概要書」を備え付けてください。</td></tr>
+<tr><td>検索機能の確保</td><td>契約一覧の「取引情報で検索」で、<b>取引年月日・取引金額の範囲指定</b>、<b>取引先</b>による検索と、それらの組み合わせ検索ができます。一覧はCSVで出力できます（税務調査等でのダウンロードの求めへの対応）。各契約の「取引情報」を入力しておいてください。</td></tr>
+</table>
+<p class="note">※ 2課税年度前の売上高が5,000万円以下の事業者は、税務職員のダウンロードの求めに応じられる場合、検索要件は不要とされています（国税庁）。</p>
+<button class="print" onclick="print()">下の書類を印刷する（PDFで保存も可）</button>
+</div>
+
+<div class="box">
+<h2>システム概要書</h2>
+<table>
+<tr><th>システムの名称</th><td>電子契約（運営：株式会社マネージメントアドバイザーズ）</td></tr>
+<tr><th>利用目的</th><td>契約書の作成・送付・締結および締結済み契約書（電子取引データ）の保存</td></tr>
+<tr><th>保存する電子取引データ</th><td>契約書本文、署名者の記入内容、添付書類、印影、締結日時、操作履歴、改ざん検知用ハッシュ値（SHA-256）</td></tr>
+<tr><th>保存場所</th><td>本サービスのデータベース（クラウド）</td></tr>
+<tr><th>訂正・削除の防止</th><td>締結済みの契約データは、システム上、変更・削除ができない。下書き以外の契約の削除、操作履歴の変更・一括削除もできない</td></tr>
+<tr><th>検索の方法</th><td>契約一覧画面で、取引年月日（範囲）、取引金額（範囲）、取引先、契約番号・契約書名・署名者の組み合わせにより検索</td></tr>
+<tr><th>表示・出力の方法</th><td>パソコン等の画面に表示、PDFで出力・印刷、一覧をCSVで出力</td></tr>
+<tr><th>利用者の権限</th><td>貴社の管理者が担当者を登録し、担当者はログインID（メールアドレス）とパスワードで利用する</td></tr>
+<tr><th>備付け日</th><td>　　　　年　　月　　日</td></tr>
+</table>
+</div>
+
+<div class="box">
+<h2>電子取引データの訂正及び削除の防止に関する事務処理規程（ひな形）</h2>
+<p class="note noprint">国税庁が公表している規程例の考え方に沿ったひな形です。【　】の部分を貴社に合わせて書き換えてください。</p>
+<p><b>第1条（目的）</b>この規程は、電子計算機を使用して作成する国税関係帳簿書類の保存方法の特例に関する法律第7条に定める電子取引の取引情報に係る電磁的記録の保存義務を履行するため、【会社名】において行った電子取引の取引情報に係る電磁的記録を適正に保存するために必要な事項を定め、これに基づき保存することを目的とする。</p>
+<p><b>第2条（適用範囲）</b>この規程は、【会社名】の全ての役員及び従業員（以下「従業員」という。）に対して適用する。</p>
+<p><b>第3条（管理責任者）</b>この規程による電子取引の取引情報の管理責任者は、【役職・氏名】とする。</p>
+<p><b>第4条（訂正削除の原則禁止）</b>保存する取引関係情報の内容について、訂正又は削除をすることは原則禁止とする。</p>
+<p><b>第5条（訂正削除を行う場合）</b>業務処理上やむを得ない理由によって保存する取引関係情報を訂正又は削除する場合は、次の事項を記載した申請書を管理責任者へ提出し、承認を得た上で行う。<br>
+(1) 申請日　(2) 取引伝票番号又は契約番号　(3) 取引件名　(4) 取引先名　(5) 訂正・削除日付　(6) 訂正・削除内容　(7) 訂正・削除理由　(8) 処理担当者名<br>
+2 管理責任者は、訂正又は削除の処理の状況を記録し、当該取引に係る電磁的記録の保存期間が満了するまで保存する。</p>
+<p><b>第6条（保存場所・方法）</b>電子取引の取引情報は、電子契約システム（運営：株式会社マネージメントアドバイザーズ）に保存する。保存した取引情報には、取引年月日・取引金額・取引先を登録し、検索できる状態にしておく。</p>
+<p><b>第7条（保存期間）</b>取引関係情報の保存期間は、法定の保存期間（法人は原則7年、欠損金の繰越控除を受ける事業年度は10年）とする。サービスの利用を終了する場合は、終了前に全ての取引関係情報を出力し、別の方法で保存する。</p>
+<p><b>附則</b>この規程は、【　　　　年　　月　　日】から施行する。</p>
+</div>
+</main><footer><a href="./">サービスのご案内</a>　<a href="terms.html">利用規約</a>　<a href="privacy.html">プライバシーポリシー</a><br>運営：株式会社マネージメントアドバイザーズ</footer></body></html>
