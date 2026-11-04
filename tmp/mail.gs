@@ -83,12 +83,16 @@ function callGemini_(parts, schema) {
   const props = PropertiesService.getScriptProperties();
   const key = props.getProperty('GEMINI_KEY');
   if (!key) throw new Error('Gemini の鍵が登録されていません（スクリプト プロパティ GEMINI_KEY）');
-  const base = [props.getProperty('MODEL')].concat(MODELS_).filter(Boolean);
+  // 前回うまく動いたモデルを最初に試す（混雑しているモデルで待たされないように）
+  const base = [props.getProperty('MODEL'), props.getProperty('MODEL_OK')].concat(MODELS_).filter(Boolean)
+    .filter((m, i, a) => a.indexOf(m) === i);
   const models = base.concat(base);   // 混雑時に備えて一巡したらもう一度
+  const started = Date.now();
   const cfg = { temperature: 0.2 };
   if (schema) { cfg.responseMimeType = 'application/json'; cfg.responseSchema = schema; }
   let last = '';
   for (const m of models) {
+    if (Date.now() - started > 240000) break;   // 4分を過ぎたら打ち切る（Apps Script の上限は6分）
     const res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + m + ':generateContent', {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       headers: { 'x-goog-api-key': key },
@@ -97,12 +101,15 @@ function callGemini_(parts, schema) {
     const code = res.getResponseCode(), body = res.getContentText();
     if (code === 404) { last = m + ' が見つかりません'; continue; }   // モデル名が変わった場合は次を試す
     if (code === 429 || code === 500 || code === 503) {                // 混雑・一時的な不調は少し待って次のモデルへ
-      last = m + ' が混み合っています（' + code + '）'; Utilities.sleep(1500); continue;
+      last = m + ' が混み合っています（' + code + '）';
+      if (props.getProperty('MODEL_OK') === m) props.deleteProperty('MODEL_OK');
+      Utilities.sleep(1500); continue;
     }
     if (code !== 200) throw new Error('Gemini の呼び出しに失敗しました（' + code + '）：' + body.slice(0, 300));
     const j = JSON.parse(body);
     const text = (((j.candidates || [])[0] || {}).content || { parts: [] }).parts.map(p => p.text || '').join('');
     if (!text) throw new Error('Gemini から応答がありませんでした（' + JSON.stringify(j.promptFeedback || {}) + '）');
+    if (props.getProperty('MODEL_OK') !== m) props.setProperty('MODEL_OK', m);
     return { model: m, text: text };
   }
   throw new Error('AI が混み合っているか、使えるモデルがありません。少し時間をおいてお試しください（' + last + '）');
