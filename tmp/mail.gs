@@ -83,7 +83,8 @@ function callGemini_(parts, schema) {
   const props = PropertiesService.getScriptProperties();
   const key = props.getProperty('GEMINI_KEY');
   if (!key) throw new Error('Gemini の鍵が登録されていません（スクリプト プロパティ GEMINI_KEY）');
-  const models = [props.getProperty('MODEL')].concat(MODELS_).filter(Boolean);
+  const base = [props.getProperty('MODEL')].concat(MODELS_).filter(Boolean);
+  const models = base.concat(base);   // 混雑時に備えて一巡したらもう一度
   const cfg = { temperature: 0.2 };
   if (schema) { cfg.responseMimeType = 'application/json'; cfg.responseSchema = schema; }
   let last = '';
@@ -95,13 +96,16 @@ function callGemini_(parts, schema) {
     });
     const code = res.getResponseCode(), body = res.getContentText();
     if (code === 404) { last = m + ' が見つかりません'; continue; }   // モデル名が変わった場合は次を試す
+    if (code === 429 || code === 500 || code === 503) {                // 混雑・一時的な不調は少し待って次のモデルへ
+      last = m + ' が混み合っています（' + code + '）'; Utilities.sleep(1500); continue;
+    }
     if (code !== 200) throw new Error('Gemini の呼び出しに失敗しました（' + code + '）：' + body.slice(0, 300));
     const j = JSON.parse(body);
     const text = (((j.candidates || [])[0] || {}).content || { parts: [] }).parts.map(p => p.text || '').join('');
     if (!text) throw new Error('Gemini から応答がありませんでした（' + JSON.stringify(j.promptFeedback || {}) + '）');
     return { model: m, text: text };
   }
-  throw new Error('使えるモデルがありません：' + last);
+  throw new Error('AI が混み合っているか、使えるモデルがありません。少し時間をおいてお試しください（' + last + '）');
 }
 
 const LEGAL_SCHEMA_ = {
