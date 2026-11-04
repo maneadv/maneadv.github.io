@@ -147,6 +147,7 @@ function renderDoc(c, logs, opts) {
         <tr><th>締結日時（日本時間）</th><td>${fmt(c.signed_at, true)}　<span class="stamp">締結済</span></td></tr>
         <tr><th>承認時の接続元</th><td>${esc(c.signer_ip || '記録なし')}</td></tr>
         <tr><th>文書ハッシュ<br>（SHA-256）</th><td class="hash">${esc(c.doc_hash)}</td></tr>
+        <tr><th>タイムスタンプ</th><td>${c.ts_at ? `${esc(fmt(c.ts_at, true))}（時刻認証局：${esc(c.ts_tsa || '')}、RFC 3161 形式。上記の文書ハッシュに対して取得）` : '取得手続き中'}</td></tr>
       </table>
       ${files ? `<table><tr><th style="width:150px">添付書類</th><th>ファイル</th><th>ファイルハッシュ（SHA-256）</th></tr>${files}</table>` : ''}
       <table>

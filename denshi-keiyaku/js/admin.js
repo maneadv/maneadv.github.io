@@ -723,6 +723,8 @@ async function viewDetail(id) {
           ${c.sent_at ? `<dt>最終送信</dt><dd>${fmt(c.sent_at)}</dd>` : ''}
           ${c.token_expires_at && c.status !== 'signed' ? `<dt>期限</dt><dd>${fmt(c.token_expires_at)}${st === 'expired' ? ' <span class="badge b-expired">期限切れ</span>' : ''}</dd>` : ''}
           ${c.signed_at ? `<dt>締結</dt><dd>${fmt(c.signed_at, true)}</dd><dt>押印</dt><dd>${esc(SEAL_TYPES[c.seal_type] || '')}</dd>` : ''}
+          ${c.status === 'signed' ? `<dt>タイムスタンプ</dt><dd>${c.ts_at ? `${fmt(c.ts_at, true)}<br><span class="muted">${esc(c.ts_tsa || '')}</span><br><button class="btn ghost" id="tsDl" style="padding:2px 8px;margin-top:4px">証明ファイルを保存</button>`
+            : `<span class="muted">${c.ts_requested_at ? '取得中（数十秒で完了します）' : '未取得'}</span><br><button class="btn ghost" id="tsReq" style="padding:2px 8px;margin-top:4px">取得する</button>`}</dd>` : ''}
         </dl></div>
         ${c.intake_data ? `<div class="card"><b>サイトからの申込み内容</b>${c.intake_ref ? `<div class="muted">申込番号：${esc(c.intake_ref)}</div>` : ''}
           <table class="doc-fields" style="margin-top:6px">${Object.entries(c.intake_data).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(typeof v === 'object' ? JSON.stringify(v) : v)}</td></tr>`).join('')}</table></div>` : ''}
@@ -788,6 +790,14 @@ async function viewDetail(id) {
     const reason = prompt('取消の理由（任意）', '');
     if (reason === null) return;
     try { await run(async () => must(await sb.rpc('admin_cancel', { p_id: c.id, p_reason: reason }))); toast('取り消しました', 'ok'); viewDetail(c.id); } catch (e) { }
+  };
+  if ($('tsDl')) $('tsDl').onclick = () => {
+    const bin = atob(c.ts_token), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([u8], { type: 'application/timestamp-reply' }));
+    a.download = c.contract_no + '_タイムスタンプ.tsr'; a.click();
+  };
+  if ($('tsReq')) $('tsReq').onclick = async () => {
+    try { await run(async () => must(await sb.rpc('admin_request_timestamp', { p_id: c.id }))); toast('時刻認証局に依頼しました。少しして画面を更新してください', 'ok'); setTimeout(() => viewDetail(c.id), 8000); } catch (e) { }
   };
   $('dealBtn').onclick = async () => {
     const d = { deal_date: $('dDeal').value || null, amount: $('dAmt').value === '' ? null : Math.round(Number($('dAmt').value)), counterparty: $('dCp').value.trim() || null };
