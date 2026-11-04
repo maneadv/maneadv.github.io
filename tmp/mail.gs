@@ -55,6 +55,7 @@ function doPost(e) {
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (req.action === 'legal_check') return reply(legalCheck_(req));
+    if (req.action === 'timestamp') return reply(timestamp_(req));
     const secret = PropertiesService.getScriptProperties().getProperty('SECRET');
     if (!secret || req.secret !== secret) return reply({ ok: false, error: '合言葉が違います' });
 
@@ -137,12 +138,13 @@ const LEGAL_SCHEMA_ = {
 };
 
 // ログイン中の利用者本人か、所属企業の今月の回数が残っているかをデータベースで確認（1回分を使う）
-function useQuota_(token, org) {
+// commit=false：残り回数の確認だけ／commit=true：成功したので1回分を計上
+function useQuota_(token, org, commit) {
   if (!token || !org) return 'ログインし直してください';
   const res = UrlFetchApp.fetch(SB_URL_ + '/rest/v1/rpc/ai_quota_use', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     headers: { apikey: SB_ANON_, Authorization: 'Bearer ' + token },
-    payload: JSON.stringify({ p_org: org })
+    payload: JSON.stringify({ p_org: org, p_commit: !!commit })
   });
   if (res.getResponseCode() === 200) return '';
   let msg = '';
@@ -152,7 +154,7 @@ function useQuota_(token, org) {
 }
 
 function legalCheck_(req) {
-  const ng = useQuota_(String(req.token || ''), String(req.org || ''));
+  const ng = useQuota_(String(req.token || ''), String(req.org || ''), false);
   if (ng) return { ok: false, error: ng };
   const side = String(req.side || '').slice(0, 50), role = String(req.role || '').slice(0, 50);
   const our = String(req.our_name || '').slice(0, 100), focus = String(req.focus || '').slice(0, 500);
@@ -182,7 +184,106 @@ function legalCheck_(req) {
   const r = callGemini_(parts, LEGAL_SCHEMA_);
   let result;
   try { result = JSON.parse(r.text); } catch (e) { return { ok: false, error: 'AI の応答を読み取れませんでした。もう一度お試しください' }; }
+  try { useQuota_(String(req.token || ''), String(req.org || ''), true); } catch (e) { }   // 成功した時だけ回数に数える
   return { ok: true, model: r.model, result: result };
+}
+
+// ===== タイムスタンプ（RFC 3161） =====
+// 締結した文書のハッシュ値（SHA-256）を、第三者の時刻認証局に送り、時刻付きの証明を受け取って保存する。
+// 無料で公開されている時刻認証局を順に試す（総務大臣認定ではない）。
+const TSA_ = [
+  { name: 'DigiCert', url: 'http://timestamp.digicert.com' },
+  { name: 'Sectigo', url: 'http://timestamp.sectigo.com' },
+  { name: 'FreeTSA', url: 'https://freetsa.org/tsr' }
+];
+
+function hexToBytes_(h) { const b = []; for (let i = 0; i < h.length; i += 2) b.push(parseInt(h.substr(i, 2), 16)); return b; }
+function toSigned_(arr) { return arr.map(x => x > 127 ? x - 256 : x); }
+
+// 時刻認証の依頼（TimeStampReq）を組み立てる：SHA-256、乱数（nonce）、証明書の同封を求める
+function buildTsq_(hashHex) {
+  const nonce = []; for (let i = 0; i < 8; i++) nonce.push(Math.floor(Math.random() * 256));
+  nonce[0] = nonce[0] & 0x7f; if (nonce[0] === 0) nonce[0] = 1;   // 正の整数にする
+  const algo = [0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00];
+  const mi = [0x30, 0x31].concat(algo, [0x04, 0x20], hexToBytes_(hashHex));
+  const body = [0x02, 0x01, 0x01].concat(mi, [0x02, 0x08], nonce, [0x01, 0x01, 0xff]);
+  return { der: [0x30, body.length].concat(body), nonce: nonce };
+}
+
+// DER の長さを読む
+function derLen_(b, i) { let l = b[i]; if (l < 0x80) return [l, i + 1]; const n = l & 0x7f; l = 0; for (let k = 0; k < n; k++) l = l * 256 + b[i + 1 + k]; return [l, i + 1 + n]; }
+
+// 応答（TimeStampResp）の状態を確認：0＝許可、1＝修正して許可
+function tsrStatus_(b) {
+  if (b[0] !== 0x30) return -1;
+  let [, i] = derLen_(b, 1);          // 外側の SEQUENCE の中身へ
+  if (b[i] !== 0x30) return -1;
+  let [, j] = derLen_(b, i + 1);      // PKIStatusInfo の中身へ
+  if (b[j] !== 0x02) return -1;
+  return b[j + 2];
+}
+
+// 応答の中の時刻（GeneralizedTime）を取り出す
+function tsrTime_(b) {
+  for (let i = 0; i < b.length - 16; i++) {
+    if (b[i] === 0x18 && b[i + 1] >= 15 && b[i + 1] <= 24) {
+      const t = String.fromCharCode.apply(null, b.slice(i + 2, i + 2 + b[i + 1]));
+      const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\.\d+)?Z$/.exec(t);
+      if (m) return m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + m[6] + (m[7] || '') + 'Z';
+    }
+  }
+  return null;
+}
+
+function getTimestamp_(hashHex) {
+  let last = '';
+  for (const t of TSA_) {
+    try {
+      const q = buildTsq_(hashHex);
+      const res = UrlFetchApp.fetch(t.url, { method: 'post', contentType: 'application/timestamp-query', payload: toSigned_(q.der), muteHttpExceptions: true });
+      if (res.getResponseCode() !== 200) { last = t.name + '：' + res.getResponseCode(); continue; }
+      const b = res.getContent().map(x => x & 0xff);
+      const st = tsrStatus_(b);
+      if (st !== 0 && st !== 1) { last = t.name + '：拒否（' + st + '）'; continue; }
+      // 送ったハッシュ値と乱数が応答に含まれているか確認
+      const hex = b.map(x => ('0' + x.toString(16)).slice(-2)).join('');
+      if (hex.indexOf(hashHex.toLowerCase()) < 0) { last = t.name + '：ハッシュ値が一致しません'; continue; }
+      return { tsa: t.name, token: Utilities.base64Encode(toSigned_(b)), time: tsrTime_(b) };
+    } catch (e) { last = t.name + '：' + e; }
+  }
+  throw new Error('タイムスタンプを取得できませんでした（' + last + '）');
+}
+
+function timestamp_(req) {
+  const secret = PropertiesService.getScriptProperties().getProperty('SECRET');
+  if (!secret || req.secret !== secret) return { ok: false, error: '合言葉が違います' };
+  const hash = String(req.hash || '').toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(hash)) return { ok: false, error: 'ハッシュ値が正しくありません' };
+  const ts = getTimestamp_(hash);
+  const res = UrlFetchApp.fetch(SB_URL_ + '/rest/v1/rpc/ts_store', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { apikey: SB_ANON_, Authorization: 'Bearer ' + SB_ANON_ },
+    payload: JSON.stringify({ p_id: req.id, p_hash: hash, p_token: ts.token, p_tsa: ts.tsa, p_time: ts.time, p_secret: secret })
+  });
+  return { ok: res.getResponseCode() === 200, tsa: ts.tsa, time: ts.time, store: res.getResponseCode() };
+}
+
+// 動作確認：試しにタイムスタンプを1つ取る（保存はしない）
+function タイムスタンプ動作確認() {
+  const h = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'test ' + new Date()).map(x => ('0' + (x & 0xff).toString(16)).slice(-2)).join('');
+  const t = getTimestamp_(h);
+  console.log('時刻認証局：' + t.tsa + ' ／ 時刻：' + t.time + ' ／ 応答の大きさ：' + t.token.length);
+}
+
+// 毎日1回、データベースに接続して自動停止（無料枠は7日間使われないと停止）を防ぐ。
+// 「トリガー」画面で、この関数を「時間主導型・日付ベース」で設定する
+function 毎日の見守り() {
+  const res = UrlFetchApp.fetch(SB_URL_ + '/rest/v1/rpc/org_public', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { apikey: SB_ANON_, Authorization: 'Bearer ' + SB_ANON_ },
+    payload: JSON.stringify({ p_slug: 'ma' })
+  });
+  console.log('データベースの応答：' + res.getResponseCode());
 }
 
 // 開いた時の表示（動作確認用。合言葉などは表示しない）
