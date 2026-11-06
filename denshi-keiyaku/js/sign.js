@@ -33,7 +33,7 @@ function applyPrefill() {
 function drawSteps(cur) {
   const el = document.getElementById('steps');
   if (!cur || (C && C.status === 'review')) { el.innerHTML = ''; return; }
-  const list = STEP_DEF.filter(s => (s[0] !== 'fill' || hasFillStep() || !C) && (s[0] !== 'auth' || (INFO && INFO.require_otp)));
+  const list = STEP_DEF.filter(s => (s[0] !== 'fill' || hasFillStep() || !C) && (s[0] !== 'auth' || (INFO && (INFO.require_otp || INFO.require_access_code))));
   const idx = list.findIndex(s => s[0] === cur);
   el.innerHTML = list.map((s, i) => `<div class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${s[1]}</div>`).join('');
 }
@@ -75,10 +75,30 @@ function onErr(e) {
   renderAuth();
 })();
 
-// メールで届いたURLを開くだけで始められる（ログイン・コード入力は不要）
-async function openByLink() {
+// アクセスコード（発行元から電話などで伝えられたコード）の入力
+function renderAccessCode() {
+  drawSteps('auth');
+  app.innerHTML = `<div class="card">
+    <div class="muted">${INFO.status === 'review' ? '契約書ドラフト（案）のご確認' : INFO.status === 'signed' ? '締結済み契約書の閲覧' : '契約書のご確認・ご押印'}</div>
+    <h2 style="font-size:20px;margin:4px 0 14px">${esc(INFO.title)}</h2>
+    <div class="kv"><dt>宛先</dt><dd>${esc(INFO.signer_name)} 様</dd><dt>発行元</dt><dd>${esc(INFO.company || '')}</dd></div>
+    <p class="notice" style="margin-top:16px">この契約書は、ご本人確認のためアクセスコードが必要です。<br>発行元から電話・書面など、メール以外の方法でお伝えしたコードを入力してください。</p>
+    <label>アクセスコード</label>
+    <input id="acode" autocomplete="off" maxlength="32" style="font-size:20px;letter-spacing:3px;text-align:center">
+    <button class="btn primary lg" id="acBtn" style="margin-top:14px">確認する</button>
+    <p class="muted" style="margin-top:10px;font-size:13px">コードがわからない場合は、発行元にお問い合わせください。</p></div>`;
+  const inp = document.getElementById('acode'); inp.focus();
+  const go = () => { const v = inp.value.trim(); if (!v) return toast('アクセスコードを入力してください', 'err'); openByLink(v); };
+  document.getElementById('acBtn').onclick = go;
+  inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+// メールで届いたURLを開くだけで始められる（ログイン不要。アクセスコードが設定された契約はコードも確認）
+async function openByLink(code) {
+  if (INFO.require_access_code && !code) return renderAccessCode();
   try {
-    const r = must(await sb.rpc('sign_open', { p_token: TOKEN }));
+    const r = must(await sb.rpc('sign_open', code ? { p_token: TOKEN, p_code: code } : { p_token: TOKEN }));
+    if (r.ok === false) { toast(r.error || 'アクセスコードが違います', 'err'); return; }
     session = r.session; store.set('session', session);
     C = must(await sb.rpc('sign_view', { p_token: TOKEN, p_session: session }));
   } catch (e) { return fail(errText(e)); }
