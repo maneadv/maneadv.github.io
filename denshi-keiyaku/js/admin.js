@@ -47,6 +47,10 @@ async function boot() {
   const { data } = await sb.auth.getSession();
   if (!data.session) return showLogin();
   ME = data.session.user;
+  try {
+    const aal = (await sb.auth.mfa.getAuthenticatorAssuranceLevel()).data;
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') return showMfa();
+  } catch (e) { }
   try { MYST = must(await sb.rpc('my_status')); }
   catch (e) { await sb.auth.signOut(); return showLogin('ログイン情報を確認できませんでした。もう一度ログインしてください'); }
   const usable = MYST.orgs.filter(o => o.status === 'active' && o.member_status === 'active');
@@ -110,6 +114,81 @@ function showLogin(msg, mode) {
 }
 const logoutBtn = '<button class="btn ghost" id="gOut" style="margin-top:10px;width:100%">ログアウト</button>';
 const bindOut = () => { const b = document.getElementById('gOut'); if (b) b.onclick = async () => { await sb.auth.signOut(); MYST = null; showLogin(); }; };
+
+// 2段階認証：ログイン時に認証アプリの6桁を入れる
+async function showMfa(msg) {
+  document.getElementById('mainView').classList.add('hidden');
+  LOGINV().classList.remove('hidden');
+  loginShell(`<h3 style="margin:0 0 8px">2段階認証</h3>
+    <div>スマートフォンの認証アプリ（Google 認証システムなど）に表示されている<b>6桁の数字</b>を入れてください。</div>
+    <input id="mCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="mono" style="font-size:24px;letter-spacing:8px;text-align:center;margin-top:12px" placeholder="000000">
+    <button class="btn primary lg" id="mBtn" style="margin-top:14px;width:100%">確認</button>
+    <p class="muted" style="margin:12px 0 0">${esc(msg || '')}</p>
+    <p class="muted" style="margin:10px 0 0;font-size:12px">スマートフォンを無くした場合は、運営までご連絡ください（本人確認のうえ解除します）。</p>${logoutBtn}`);
+  bindOut();
+  const c = document.getElementById('mCode'); c.focus();
+  const go = async () => {
+    const code = c.value.replace(/\D/g, '');
+    if (code.length !== 6) return toast('6桁の数字を入れてください', 'err');
+    try {
+      await run(async () => {
+        const f = must(await sb.auth.mfa.listFactors());
+        const t = (f.totp || []).find(x => x.status === 'verified');
+        if (!t) throw new Error('2段階認証の設定が見つかりません');
+        must(await sb.auth.mfa.challengeAndVerify({ factorId: t.id, code }));
+      });
+    } catch (e) { c.value = ''; c.focus(); return; }
+    boot();
+  };
+  document.getElementById('mBtn').onclick = go;
+  c.oninput = () => { if (c.value.replace(/\D/g, '').length === 6) go(); };
+}
+
+// 設定画面の「2段階認証」欄
+async function drawMfaCard(box) {
+  if (!box) return;
+  let list = [];
+  try { list = (must(await sb.auth.mfa.listFactors()).totp || []); } catch (e) { box.innerHTML = '<b>2段階認証</b><div class="muted">状態を読み込めませんでした</div>'; return; }
+  const on = list.find(f => f.status === 'verified');
+  if (on) {
+    box.innerHTML = `<b>2段階認証</b> <span class="badge b-signed">設定済み</span>
+      <div class="muted" style="margin-top:4px">ログインの時に、パスワードに加えて認証アプリの6桁が必要です（${fmt(on.created_at)} 設定）。</div>
+      <button class="btn ghost" id="mfaOff" style="margin-top:8px">解除する</button>`;
+    box.querySelector('#mfaOff').onclick = async () => {
+      if (!confirm('2段階認証を解除します。パスワードだけでログインできる状態に戻ります。よろしいですか？')) return;
+      try { await run(async () => must(await sb.auth.mfa.unenroll({ factorId: on.id }))); toast('解除しました', 'ok'); await sb.auth.refreshSession(); drawMfaCard(box); } catch (e) { }
+    };
+    return;
+  }
+  box.innerHTML = `<b>2段階認証</b> <span class="badge b-draft">未設定</span>
+    <div class="muted" style="margin-top:4px">設定すると、パスワードが漏れても他人はログインできません。スマートフォンに無料の認証アプリ（「Google 認証システム」など）を入れてから進めてください。</div>
+    <button class="btn primary" id="mfaOn" style="margin-top:8px">設定する</button>`;
+  box.querySelector('#mfaOn').onclick = async () => {
+    let en;
+    try {
+      en = await run(async () => {
+        for (const f of list.filter(x => x.status !== 'verified')) await sb.auth.mfa.unenroll({ factorId: f.id });
+        return must(await sb.auth.mfa.enroll({ factorType: 'totp', issuer: '電子契約', friendlyName: '認証アプリ ' + Date.now() }));
+      });
+    } catch (e) { return; }
+    box.innerHTML = `<b>2段階認証の設定</b>
+      <ol style="padding-left:20px;margin:8px 0">
+        <li>認証アプリを開き、「＋」→「QRコードをスキャン」でこの模様を読み取る</li>
+        <li>アプリに出た<b>6桁の数字</b>を下に入れて「確認」</li></ol>
+      <div style="text-align:center"><img src="${en.totp.qr_code}" alt="" style="width:200px;height:200px;background:#fff;padding:6px;border-radius:8px"></div>
+      <div class="muted" style="font-size:12px;margin-top:6px">読み取れない場合は、アプリで「セットアップキーを入力」を選び、次の文字を入れてください：<br><span class="mono" style="word-break:break-all">${esc(en.totp.secret)}</span></div>
+      <input id="mfaCode" inputmode="numeric" maxlength="6" class="mono" style="font-size:22px;letter-spacing:6px;text-align:center;margin-top:10px" placeholder="000000">
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="mfaOk">確認</button><button class="btn ghost" id="mfaCancel">やめる</button></div>`;
+    box.querySelector('#mfaCancel').onclick = async () => { try { await sb.auth.mfa.unenroll({ factorId: en.id }); } catch (e) { } drawMfaCard(box); };
+    box.querySelector('#mfaOk').onclick = async () => {
+      const code = box.querySelector('#mfaCode').value.replace(/\D/g, '');
+      if (code.length !== 6) return toast('6桁の数字を入れてください', 'err');
+      try { await run(async () => must(await sb.auth.mfa.challengeAndVerify({ factorId: en.id, code }))); } catch (e) { return; }
+      toast('2段階認証を設定しました。次回のログインから6桁が必要になります', 'ok');
+      drawMfaCard(box);
+    };
+  };
+}
 
 // 承認前の画面（メール確認 → 会社情報の入力 → 承認待ち）
 function showGate() {
@@ -1457,9 +1536,11 @@ async function viewSettings() {
       <div class="card"><b>電子帳簿保存法</b>
         <div class="muted" style="margin-top:4px">備え付ける「システム概要書」と「事務処理規程」のひな形を印刷できます。</div>
         <a class="btn" href="denshi-chobo.html" target="_blank" style="margin-top:8px">書類を開く</a></div>
+      <div class="card" id="mfaBox"></div>
       <div class="card actions"><div class="muted">${esc(ME.email)} でログイン中（${ROLE[ORG.role]}）</div><button class="btn" id="out">ログアウト</button></div>
     </div></div>`;
   const $ = s => document.getElementById(s);
+  drawMfaCard($('mfaBox'));
   const drawLogo = () => { $('oLogoPrev').innerHTML = safeLogo(logo) ? `<img src="${safeLogo(logo)}" alt="">` : '<span class="muted">なし</span>'; };
   drawLogo();
   $('oCopy').onclick = async () => { try { await navigator.clipboard.writeText(orgUrl(org.slug)); toast('コピーしました', 'ok'); } catch (e) { toast('コピーできませんでした', 'err'); } };
@@ -1576,7 +1657,15 @@ async function viewOperator() {
       <div class="row" style="margin-top:12px">
         ${o.status === 'pending' ? '<button class="btn primary" data-quick="active">承認する</button><button class="btn danger" data-quick="rejected">却下する</button>' : ''}
         <button class="btn" data-save>変更を保存</button></div>
-    </div>`).join('') : '<div class="empty card">該当する企業はありません</div>'}`;
+    </div>`).join('') : '<div class="empty card">該当する企業はありません</div>'}
+    <div class="card" style="margin-top:16px"><b>2段階認証の解除（スマートフォンを無くした人）</b>
+      <div class="muted">本人確認をしてから解除してください。解除すると、その人はパスワードだけでログインできるようになります。</div>
+      <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input id="mfaRe" type="email" placeholder="解除する人のメールアドレス"><button class="btn" id="mfaReBtn">解除</button></div></div>`;
+  document.getElementById('mfaReBtn').onclick = async () => {
+    const em = document.getElementById('mfaRe').value.trim();
+    if (!em || !confirm(em + ' の2段階認証を解除します。よろしいですか？')) return;
+    try { const r = await run(async () => must(await sb.rpc('op_reset_mfa', { p_email: em }))); toast(r.removed ? '解除しました' : 'この人は2段階認証を設定していません', 'ok'); } catch (e) { }
+  };
   V.querySelectorAll('[data-of]').forEach(b => b.onclick = () => { OP_FILTER = b.dataset.of; viewOperator(); });
   V.querySelectorAll('[data-org]').forEach(box => {
     const id = box.dataset.org, g = k => box.querySelector(`[data-k="${k}"]`).value;

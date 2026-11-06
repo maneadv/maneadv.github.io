@@ -54,6 +54,10 @@ function errText(e) {
   if (/Failed to fetch|NetworkError/i.test(m)) return '通信できませんでした。接続を確認してください';
   if (/violates foreign key/i.test(m)) return 'この項目は契約で使われているため削除できません';
   if (/JWT expired/i.test(m)) return 'ログインの有効期限が切れました。再ログインしてください';
+  if (/invalid totp|invalid.*code/i.test(m)) return '6桁の数字が違います。アプリに表示されている最新の数字を入れてください';
+  if (/aal2|assurance level/i.test(m)) return '2段階認証の確認が必要です。いったんログアウトして、もう一度ログインしてください';
+  if (/challenge.*expired|expired.*challenge/i.test(m)) return '時間が経ちすぎました。もう一度入れてください';
+  if (/too many|rate limit/i.test(m)) return '試行回数が多すぎます。しばらく待ってから入れてください';
   return m;
 }
 let loadingCount = 0;
