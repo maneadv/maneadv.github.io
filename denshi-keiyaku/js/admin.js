@@ -89,8 +89,11 @@ function showLogin(msg, mode) {
     <p class="muted" id="lMsg" style="margin:12px 0 0">${esc(msg || '')}</p>
     <p class="muted" style="margin:10px 0 0;font-size:12px">${mode === 'signup'
       ? '登録後、メールアドレスの確認と会社情報の入力を行います。運営が承認すると、貴社専用のページが使えるようになります。担当者として招待された方も、招待メールのアドレスでここから登録してください。'
-      : 'パスワードを忘れた場合は、貴社の管理者または運営までご連絡ください。'}</p>`);
+      : '<a href="#" id="lForgot">パスワードを忘れた方はこちら</a>'}</p>`);
   LOGINV().querySelectorAll('[data-lm]').forEach(b => b.onclick = () => showLogin('', b.dataset.lm));
+  const fg = document.getElementById('lForgot');
+  if (fg) fg.onclick = e => { e.preventDefault(); showForgot(document.getElementById('lEmail').value.trim()); };
+  if (PREFILL_EMAIL) { document.getElementById('lEmail').value = PREFILL_EMAIL; PREFILL_EMAIL = ''; }
   const $ = s => document.getElementById(s);
   $('lBtn').onclick = async () => {
     const email = $('lEmail').value.trim(), password = $('lPass').value;
@@ -111,6 +114,41 @@ function showLogin(msg, mode) {
     boot();
   };
   (mode === 'signup' ? $('lPass2') : $('lPass')).onkeydown = e => { if (e.key === 'Enter') $('lBtn').click(); };
+}
+// パスワードを忘れた方：メールの確認コードで再設定
+let PREFILL_EMAIL = '';
+function showForgot(email) {
+  loginShell(`<h3 style="margin:0 0 8px">パスワードの再設定</h3>
+    <div class="muted">登録しているメールアドレスに、6桁の確認コードをお送りします。</div>
+    <label>ログインID（メールアドレス）</label><input id="fEmail" type="email" autocomplete="username" value="${esc(email || '')}">
+    <button class="btn primary lg" id="fSend" style="margin-top:14px;width:100%">確認コードを送る</button>
+    <div id="fStep2" class="hidden">
+      <div class="notice" style="margin-top:14px">登録されているメールアドレスであれば、確認コードを送りました。メールが届かない場合は、迷惑メールのフォルダもご確認ください。</div>
+      <label>確認コード（6桁）</label><input id="fCode" inputmode="numeric" maxlength="6" class="mono" style="font-size:22px;letter-spacing:6px;text-align:center" placeholder="000000">
+      <label>新しいパスワード（8文字以上）</label><input id="fPass" type="password" autocomplete="new-password">
+      <label>新しいパスワード（確認）</label><input id="fPass2" type="password" autocomplete="new-password">
+      <button class="btn primary lg" id="fSet" style="margin-top:14px;width:100%">パスワードを変更する</button>
+    </div>
+    <button class="btn ghost" id="fBack" style="margin-top:10px;width:100%">ログイン画面に戻る</button>`);
+  const $ = s => document.getElementById(s);
+  $('fBack').onclick = () => showLogin();
+  $('fSend').onclick = async () => {
+    const em = $('fEmail').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return toast('メールアドレスを確認してください', 'err');
+    try { await run(async () => must(await sb.rpc('pw_reset_send', { p_email: em }))); } catch (e) { return; }
+    $('fStep2').classList.remove('hidden'); $('fSend').textContent = '確認コードを送り直す'; $('fCode').focus();
+  };
+  $('fSet').onclick = async () => {
+    const em = $('fEmail').value.trim(), code = $('fCode').value.replace(/\D/g, ''), pw = $('fPass').value;
+    if (code.length !== 6) return toast('確認コード（6桁）を入れてください', 'err');
+    if (pw.length < 8) return toast('パスワードは8文字以上にしてください', 'err');
+    if (pw !== $('fPass2').value) return toast('確認用のパスワードが一致しません', 'err');
+    let r;
+    try { r = await run(async () => must(await sb.rpc('pw_reset_set', { p_email: em, p_code: code, p_password: pw }))); } catch (e) { return; }
+    if (!r.ok) return toast(r.error || '確認コードが違います', 'err');
+    toast('パスワードを変更しました。新しいパスワードでログインしてください', 'ok');
+    PREFILL_EMAIL = em; showLogin('パスワードを変更しました。新しいパスワードでログインしてください', 'login');
+  };
 }
 const logoutBtn = '<button class="btn ghost" id="gOut" style="margin-top:10px;width:100%">ログアウト</button>';
 const bindOut = () => { const b = document.getElementById('gOut'); if (b) b.onclick = async () => { await sb.auth.signOut(); MYST = null; showLogin(); }; };
