@@ -95,3 +95,4 @@
 @media(max-width:720px){.ma-progress{top:calc(env(safe-area-inset-top,0px) + 74px)}}
 .ma-form .sent{background:#e8f6ec;color:#24663a;border:1px solid #a9dab7;padding:16px;font-size:14px;line-height:1.9}
 .ma-form .sent b{display:block;font-size:16px}
+.svc-links{scroll-margin-top:150px;margin-bottom:56px}

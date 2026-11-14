@@ -4,7 +4,6 @@ agency/index.html
 agency/shiryo.html
 assets/add.css
 assets/assist-data.js
-assets/order.js
 business/alliance.html
 business/care.html
 business/cost.html
@@ -30,9 +29,6 @@ business/tsushin.html
 company/index.html
 contact/index.html
 index.html
-kanri/index.html
 privacy/index.html
 recruit/index.html
-robots.txt
-sitemap.xml
 works/index.html
