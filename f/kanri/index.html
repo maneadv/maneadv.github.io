@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>案件管理｜株式会社マネージメントアドバイザーズ</title>
+<link rel="icon" href="../assets/logo-32.png">
+<style>
+:root{--bg:#f6f4f1;--card:#fff;--ink:#1f1d1a;--sub:#6b655d;--line:#e6e0d8;--or:#e8771e;--or2:#fde7d3;--red:#d93025;--red2:#fde4e1;--amb:#c77800;--amb2:#fff1d6;--grn:#1e8e3e;--grn2:#e3f4e8;--blu:#1a67d2;--blu2:#e4eefc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 "Hiragino Sans","Noto Sans JP","Yu Gothic",Meiryo,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.hide{display:none!important}
+/* ログイン */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+#login form{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+#login h1{margin:0 0 4px;font-size:18px}
+#login p{margin:0 0 20px;color:var(--sub);font-size:12px}
+label.f{display:block;margin:0 0 14px;font-size:12px;color:var(--sub)}
+label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:15px}
+textarea{resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:13px}
+.btn.pri{background:var(--or);border-color:var(--or);color:#fff}
+.btn.pri:hover{filter:brightness(1.05)}
+.btn.sm{padding:6px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.err{color:var(--red);font-size:12px;min-height:18px;margin:0 0 8px}
+/* 上部 */
+header{position:sticky;top:0;z-index:20;background:#1f1d1a;color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+header h1{margin:0;font-size:15px;font-weight:700;flex:1;min-width:160px}
+header h1 small{display:block;font-weight:400;font-size:11px;opacity:.6}
+header .who{font-size:12px;opacity:.85}
+header .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.25)}
+#alarm{display:none;align-items:center;gap:10px;padding:10px 16px;background:var(--red);color:#fff;font-weight:700}
+#alarm.on{display:flex;animation:blink 1.2s ease-in-out infinite}
+#alarm .btn{background:#fff;color:var(--red);border:0;margin-left:auto}
+@keyframes blink{50%{background:#b3241b}}
+main{max-width:1280px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--sub);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--or)}
+/* 集計 */
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:0 0 14px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left}
+.tile b{display:block;font-size:26px;line-height:1.1}
+.tile span{font-size:12px;color:var(--sub)}
+.tile.red b{color:var(--red)} .tile.amb b{color:var(--amb)} .tile.blu b{color:var(--blu)} .tile.grn b{color:var(--grn)}
+.tile.on{outline:2px solid var(--or)}
+.tile.red.hot{background:var(--red2);border-color:#f3b5ae}
+/* 絞り込み */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.filters input[type=search],.filters select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.filters input[type=search]{flex:1;min-width:180px}
+.filters label{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px}
+.count{font-size:12px;color:var(--sub);margin-left:auto}
+/* 一覧 */
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:6px 1.3fr 1.4fr 1fr 1.5fr 150px;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 0;cursor:pointer;text-align:left;width:100%}
+.row:hover{border-color:#cfc6ba;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.row .bar{align-self:stretch;border-radius:12px 0 0 12px;background:#d7d0c6}
+.row.s-red .bar{background:var(--red)} .row.s-amb .bar{background:var(--amb)} .row.s-done .bar{background:var(--grn)} .row.s-act .bar{background:var(--blu)}
+.row.s-red{background:#fffafa}
+.row.s-done{opacity:.72}
+.no{font-size:11px;color:var(--sub)}
+.nm{font-weight:700;font-size:15px}
+.co{font-size:12px;color:var(--sub)}
+.cat{font-size:12px;color:var(--sub)}
+.cat b{display:block;color:var(--ink);font-size:13px}
+.subs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.subs i{font-style:normal;font-size:11px;padding:1px 7px;border-radius:999px;background:#f1ede7;color:#5a544c}
+.pt{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid}
+.pt::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pt.none{color:#8a8178;border-style:dashed}
+.steps{display:flex;align-items:center;gap:0}
+.steps i{flex:1;height:6px;background:#e8e3dc;margin-right:3px;border-radius:3px}
+.steps i.done{background:var(--or)}
+.steps i.cur{background:var(--or);box-shadow:0 0 0 2px var(--or2)}
+.st{display:flex;justify-content:space-between;font-size:12px;margin-top:5px}
+.st b{font-weight:700}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.b-new{background:var(--or);color:#fff}
+.b-red{background:var(--red);color:#fff}
+.b-amb{background:var(--amb2);color:var(--amb)}
+.b-blu{background:var(--blu2);color:var(--blu)}
+.b-grn{background:var(--grn2);color:var(--grn)}
+.b-gry{background:#eee;color:#666}
+.age{text-align:right}
+.age .t{display:block;font-weight:700;font-size:13px}
+.age .t.red{color:var(--red)} .age .t.amb{color:var(--amb)}
+.age small{display:block;font-size:11px;color:var(--sub)}
+.empty{padding:40px;text-align:center;color:var(--sub);background:var(--card);border:1px dashed var(--line);border-radius:12px}
+/* 詳細 */
+#shade{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:30}
+#detail{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--bg);z-index:31;overflow-y:auto;box-shadow:-10px 0 30px rgba(0,0,0,.15)}
+#detail .dh{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:flex-start;gap:10px;z-index:2}
+#detail .dh h2{margin:0;font-size:17px;flex:1}
+#detail .dh h2 small{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.x{border:0;background:#f1ede7;width:34px;height:34px;border-radius:50%;font-size:18px;line-height:1}
+.sec{background:#fff;border:1px solid var(--line);border-radius:12px;margin:12px 16px;padding:14px 16px}
+.sec h3{margin:0 0 10px;font-size:13px;color:var(--sub);font-weight:700}
+.big-steps{display:flex;gap:4px;flex-wrap:wrap}
+.big-steps button{flex:1 1 auto;min-width:72px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 4px;font-size:12px;font-weight:600;color:var(--sub)}
+.big-steps button.done{background:var(--or2);border-color:#f3c79d;color:#a4500f}
+.big-steps button.cur{background:var(--or);border-color:var(--or);color:#fff}
+.big-steps button.drop.cur{background:#666;border-color:#666}
+dl.info{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;margin:0;font-size:13px}
+dl.info dt{color:var(--sub)}
+dl.info dd{margin:0;word-break:break-all}
+dl.info a{color:var(--blu)}
+pre.msg{white-space:pre-wrap;margin:0;font:inherit;font-size:13px;background:#faf8f5;border-radius:8px;padding:10px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{font-size:12px;color:var(--sub);margin:4px 0 10px}
+.warnbox{background:var(--amb2);color:#7a4a00;border-radius:8px;padding:10px 12px;font-size:13px;margin:0 0 10px}
+.redbox{background:var(--red2);color:#a1231a;border-radius:8px;padding:10px 12px;font-size:13px;margin:0 0 10px;font-weight:700}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{position:relative;padding:0 0 14px 18px;border-left:2px solid var(--line);margin-left:6px}
+.tl li::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#cfc6ba}
+.tl li.sent::before{background:var(--grn)}
+.tl li.prog::before{background:var(--or)}
+.tl .h{font-size:12px;color:var(--sub)}
+.tl .c{white-space:pre-wrap;font-size:13px}
+/* 第5版 */
+.big-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:4px}
+.big-steps button{min-width:0;padding:7px 4px;font-size:12px}
+.big-steps button.wait.cur{background:#7b5ea7;border-color:#7b5ea7}
+.cands{display:flex;flex-direction:column;gap:8px}
+.cand{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fdfcfa}
+.cand.top{border-color:#f3c79d;background:#fffaf4}
+.cand .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cand .hd b{font-size:14px}
+.cand .sc{margin-left:auto;font-size:12px;color:var(--sub)}
+.cand .meter{height:5px;background:#eee;border-radius:3px;margin:6px 0}
+.cand .meter i{display:block;height:100%;background:var(--or);border-radius:3px}
+.cand ul{margin:4px 0 8px;padding-left:1.2em;font-size:12px;color:#5a544c}
+.cand .acts{justify-content:flex-start}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.chiprow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12px}
+.chiprow button.on{background:var(--or);border-color:var(--or);color:#fff}
+.money{display:none}.money.on{display:block}
+.row.s-wait .bar{background:#7b5ea7}
+.b-pur{background:#efe7fb;color:#6a4c99}
+.b-yel{background:var(--amb2);color:var(--amb)}
+table.pt-tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}
+table.pt-tbl th,table.pt-tbl td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.pt-tbl th{background:#faf8f5;font-size:12px;color:var(--sub)}
+table.pt-tbl tr.off{opacity:.5}
+table.pt-tbl td small{display:block;color:var(--sub);font-size:11px}
+.pt-head{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+/* 報告文 */
+#modal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#modal .box{background:#fff;border-radius:14px;width:min(680px,100%);max-height:94vh;overflow:auto;padding:20px}
+#modal h3{margin:0 0 4px;font-size:16px}
+#modal textarea{min-height:300px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1f1d1a;color:#fff;padding:10px 18px;border-radius:999px;z-index:60;font-size:13px}
+/* 振分け先の設定 */
+table.rt{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px}
+table.rt th,table.rt td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+table.rt th{background:#faf8f5;font-size:12px;color:var(--sub)}
+table.rt td.g{background:#fdf6ee;font-weight:700}
+table.rt input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+table.rt input.ch{border-color:var(--or);background:#fffaf4}
+.savebar{position:sticky;bottom:0;background:var(--bg);padding:10px 0;display:flex;gap:10px;align-items:center;justify-content:flex-end}
+/* 区分の切り替え・凡例・ログ・設定 */
+.kbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.kbar button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;color:var(--sub)}
+.kbar button b{margin-left:6px;font-size:11px;background:var(--or2);color:#a84505;border-radius:999px;padding:1px 7px}
+.kbar button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.legend{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:0 0 12px;font-size:11px;color:var(--sub)}
+.legend i{font-style:normal;padding:2px 8px;border-radius:6px;background:#fff;border:1px solid var(--line)}
+.legend i.end{background:var(--grn2);border-color:#bfe3c9}
+.legend em{font-style:normal;color:#c9c2b8}
+.kd{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:#efe9ff;color:#5b3fb0;margin-left:4px;vertical-align:middle}
+.ct{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--blu2);color:var(--blu);margin-left:4px}
+.role{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--or2);color:#a84505;margin-left:4px}
+.lf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.lf input,.lf select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+table.lg{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:12px}
+table.lg th,table.lg td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.lg th{background:#faf8f5;color:var(--sub);white-space:nowrap}
+table.lg td.w{white-space:pre-wrap;word-break:break-word}
+.consent{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:2px solid #f3b5ae;background:var(--red2);border-radius:10px;margin:0 0 12px;font-size:13px;font-weight:600}
+.consent input{width:20px;height:20px;flex:none;margin:1px 0 0}
+.pend{background:#fff8e6!important}
+.sentbadge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--grn2);color:var(--grn);margin-left:6px}
+@media(max-width:900px){table.lg .hm{display:none}}
+@media(max-width:900px){
+  .tiles{grid-template-columns:repeat(3,1fr)}
+  .row{grid-template-columns:6px 1fr auto;gap:6px 12px;padding:12px 12px 12px 0}
+  .row .bar{grid-row:1/5}
+  .row>.c1{grid-column:2}
+  .row>.age{grid-column:3;grid-row:1}
+  .row>.c2,.row>.c3,.row>.c4{grid-column:2/4}
+  .grid2{grid-template-columns:1fr}
+  table.rt .hm{display:none}
+  table.pt-tbl .hm{display:none}
+}
+@media(max-width:520px){header{gap:6px 8px;padding:8px 12px}header h1{font-size:14px}header h1 small{display:none}header .btn{padding:5px 8px;font-size:11px}#alarm{font-size:12px;padding:8px 12px}#alarm .btn{white-space:nowrap}main{padding:12px}.tiles{grid-template-columns:repeat(3,1fr);gap:6px}.tile{padding:8px 10px}.tile b{font-size:20px}.tile span{font-size:11px}.filters input[type=search]{flex-basis:100%}.filters select{flex:1;min-width:0}.sec{margin:10px}}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form id="lf" autocomplete="on">
+    <h1>案件管理画面</h1>
+    <p>株式会社マネージメントアドバイザーズ</p>
+    <label class="f">ログインID<input id="lid" name="username" autocomplete="username" required></label>
+    <label class="f">パスワード<input id="lpw" name="password" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lerr"></p>
+    <button class="btn pri" style="width:100%" id="lbtn">ログイン</button>
+  </form>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <h1>案件管理<small>株式会社マネージメントアドバイザーズ</small></h1>
+    <span class="who" id="upd"></span>
+    <button class="btn sm" id="snd" title="警告音の入／切">🔔 音：入</button>
+    <span class="who" id="me"></span>
+    <button class="btn sm" id="pwb">パスワード変更</button>
+    <button class="btn sm" id="out">ログアウト</button>
+  </header>
+  <div id="alarm"><span id="alarmText"></span><button class="btn sm" id="alarmGo">要対応を表示</button></div>
+  <main>
+    <div class="tabs"><button class="on" data-tab="cases">案件一覧</button><button data-tab="partners">取次先</button><button data-tab="log" class="adm">対応ログ</button><button data-tab="setting" class="adm">設定</button></div>
+    <section id="cases">
+      <div class="kbar" id="kbar"></div>
+      <div class="legend" id="legend"></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="filters">
+        <input type="search" id="q" placeholder="名前・会社・番号・内容で探す">
+        <select id="fs"><option value="">すべての進み具合</option></select>
+        <select id="fp"><option value="">すべての取次先</option></select>
+        <select id="fa"><option value="">すべての担当者</option><option value="-">担当者なし</option></select>
+        <select id="fc"><option value="">電子契約：すべて</option></select>
+        <label><input type="checkbox" id="fd"> 終わったものも表示</label>
+        <span class="count" id="cnt"></span>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
+    <section id="partners" class="hide">
+      <div class="pt-head"><p class="note" style="margin:0;flex:1">取次先を登録すると、お問い合わせの内容から合う取次先が「取次の候補」として自動で出ます。「対応分野」と「得意なこと・キーワード」を入れるほど、候補の精度が上がります。</p><button class="btn pri" id="ptadd">＋ 取次先を登録</button></div>
+      <div class="pt-head" style="margin-top:-4px"><p class="note" style="margin:0;flex:1">相手に専用のリンクを送って、取次先の情報を入力してもらうこともできます（14日間有効）。入力された内容は「確認待ち」になり、管理者が確認してから使えるようになります。</p><button class="btn" id="ptinv">✉ 登録フォームのリンクを送る</button></div>
+      <div id="ptlist"></div>
+    </section>
+    <section id="log" class="hide">
+      <p class="note" style="margin:0 0 10px">ログイン・進捗の記録・お客さまへの報告・取次先への送付・担当者や取次先の変更など、すべての操作が自動で残ります（消すことはできません）。</p>
+      <div class="lf"><label>いつから <input type="date" id="lg1"></label><label>いつまで <input type="date" id="lg2"></label><select id="lgk"><option value="">すべての区分</option></select><select id="lgt"><option value="">すべての種類</option></select><select id="lgp"><option value="">操作した人：すべて</option></select><button class="btn sm" id="lgr">表示する</button><button class="btn sm" id="lgc">表計算ソフト用に保存</button><span class="count" id="lgn"></span></div>
+      <div id="lglist"></div>
+    </section>
+    <section id="setting" class="hide">
+      <div class="pt-head"><p class="note" style="margin:0;flex:1">管理画面を使う人を登録します。「担当者」は自分が担当の案件と、まだ担当が決まっていない案件だけを見られます。「管理者」はすべての案件・対応ログ・設定を扱えます。</p><button class="btn pri" id="stadd">＋ 担当者を追加</button></div>
+      <div id="stlist"></div>
+    </section>
+  </main>
+</div>
+
+<div id="shade" class="hide"></div>
+<aside id="detail" class="hide"></aside>
+<div id="modal" class="hide"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var h=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var S={token:null,data:null,kubun:'',filter:{tile:''},open:null,alerts:{},lastChime:0,sound:true,known:null};
+try{S.token=sessionStorage.getItem('ma-adm');S.sound=localStorage.getItem('ma-adm-snd')!=='0';S.kubun=localStorage.getItem('ma-adm-kb')||''}catch(_){}
+var 契約状態=['','下書き送付済み','返事あり','本契約送付済み','締結','取消し'];
+
+// サーバーの呼び出し
+var GAS='https://script.google.com/macros/s/AKfycbzepmv2nhstu4cCZT6eGkV7mOzPnPS5l5haTXulbpYSzf_-qIoIKs9A8dKfcuJYxNjVWw/exec';
+function call(fn){var args=Array.prototype.slice.call(arguments,1);
+  return fetch(GAS,{method:'POST',body:new URLSearchParams({api:fn,args:JSON.stringify(args)})})
+  .catch(function(){throw new Error('通信できませんでした。インターネットの接続を確認して、もう一度お試しください。')})
+  .then(function(r){return r.json()}).then(function(j){if(j&&j.apiError){if(/ログインの有効時間/.test(j.apiError)){logoutLocal();}throw new Error(j.apiError)}return j?j.r:null})}
+function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2600)}
+
+// ---- 音（警告音・新着音） ----
+var AC=null;function ac(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(_){}return AC}
+function tone(f,t0,d,vol){var a=ac();if(!a)return;var o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(a.destination);var t=a.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.25,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d+.05)}
+function chimeAlert(){if(!S.sound)return;[0,.32,.64].forEach(function(t){tone(880,t,.25,.3);tone(660,t+.14,.22,.25)})}
+function chimeNew(){if(!S.sound)return;tone(784,0,.5,.22);tone(1047,.18,.7,.22)}
+
+document.addEventListener('pointerdown',function(){ac()},{once:true});
+// ---- ログイン ----
+$('#lf').addEventListener('submit',function(e){e.preventDefault();ac();var b=$('#lbtn');b.disabled=true;$('#lerr').textContent='';
+  call('login',$('#lid').value,$('#lpw').value).then(function(r){b.disabled=false;
+    if(!r.ok){$('#lerr').textContent=r.error;return}
+    S.token=r.token;try{sessionStorage.setItem('ma-adm',r.token)}catch(_){}
+    $('#lpw').value='';start()}).catch(function(e){b.disabled=false;$('#lerr').textContent=e.message})});
+function logoutLocal(){S.token=null;try{sessionStorage.removeItem('ma-adm')}catch(_){}clearInterval(S.timer);$('#app').classList.add('hide');$('#login').classList.remove('hide');closeDetail();$('#lerr').textContent='ログインしてください。'}
+$('#out').addEventListener('click',function(){call('logout',S.token).catch(function(){});logoutLocal();$('#lerr').textContent=''});
+$('#snd').addEventListener('click',function(){S.sound=!S.sound;try{localStorage.setItem('ma-adm-snd',S.sound?'1':'0')}catch(_){}sndLabel();if(S.sound)chimeNew()});
+function sndLabel(){$('#snd').textContent=S.sound?'🔔 音：入':'🔕 音：切'}
+$('#pwb').addEventListener('click',function(){
+  modal('<h3>パスワード変更</h3><p class="note">8文字以上にしてください。</p><label class="f">今のパスワード<input type="password" id="p0" autocomplete="current-password"></label><label class="f">新しいパスワード<input type="password" id="p1" autocomplete="new-password"></label><label class="f">新しいパスワード（確認）<input type="password" id="p2" autocomplete="new-password"></label><p class="err" id="perr"></p><div class="acts"><button class="btn" data-close>やめる</button><button class="btn pri" id="pok">変更する</button></div>');
+  $('#pok').onclick=function(){if($('#p1').value!==$('#p2').value){$('#perr').textContent='確認用と一致しません。';return}
+    call('changePassword',S.token,$('#p0').value,$('#p1').value).then(function(r){if(!r.ok){$('#perr').textContent=r.error;return}closeModal();toast('パスワードを変更しました')}).catch(function(e){$('#perr').textContent=e.message})}});
+
+function start(){$('#login').classList.add('hide');$('#app').classList.remove('hide');sndLabel();load(true);clearInterval(S.timer);S.timer=setInterval(function(){load(false)},60000)}
+
+// ---- 読み込み ----
+function load(first){return call('listCases',S.token).then(function(d){
+  var prev=S.known;S.data=d;$('#me').innerHTML=h(d.me.名前)+' さん<span class="role">'+h(d.me.立場||'担当者')+'</span>';$$('.tabs .adm').forEach(function(b){b.classList.toggle('hide',d.me.立場!=='管理者')});if(d.区分順.indexOf(S.kubun)<0)S.kubun='';$('#upd').textContent='更新 '+d.時刻.slice(11);
+  // 新着
+  var ids={};d.案件.forEach(function(c){ids[c.番号]=1});
+  if(prev){var nw=d.案件.filter(function(c){return !prev[c.番号]});if(nw.length){chimeNew();toast('新しいお問い合わせが '+nw.length+' 件届きました')}}
+  S.known=ids;
+  if(first)fillSelects();
+  render();alarm();
+  if(S.open){var c=find(S.open);if(c&&!$('#detail').contains(document.activeElement))renderDetail(c,true)}
+}).catch(function(e){if(S.token)toast(e.message)})}
+function KD(c){return S.data.区分[c&&c.区分||'経営相談']}
+function stagesOf(c){return KD(c).段階}
+function curStages(){return S.kubun?S.data.区分[S.kubun].段階:S.data.段階}
+function find(no){return S.data&&S.data.案件.filter(function(c){return c.番号===no})[0]}
+function fillSelects(){var d=S.data;
+  var all=[];d.区分順.forEach(function(k){d.区分[k].段階.forEach(function(x){if(all.indexOf(x)<0)all.push(x)})});var fsv=$('#fs').value;
+  $('#fs').innerHTML='<option value="">すべての進み具合</option>'+(S.kubun?curStages():all).map(function(s){return '<option>'+h(s)+'</option>'}).join('');if(fsv)$('#fs').value=fsv;
+  $('#fc').innerHTML='<option value="">電子契約：すべて</option><option value="-">電子契約：なし</option>'+契約状態.slice(1).map(function(s){return '<option>'+h(s)+'</option>'}).join('');
+  $('#fp').innerHTML='<option value="">すべての取次先</option>'+d.振分け先.map(function(s){return '<option>'+h(s)+'</option>'}).join('');
+  $('#fa').innerHTML='<option value="">すべての担当者</option><option value="-">担当者なし</option>'+d.担当者.map(function(s){return '<option>'+h(s)+'</option>'}).join('')}
+['#q','#fs','#fp','#fa','#fd','#fc'].forEach(function(s){$(s).addEventListener(s==='#q'?'input':'change',render)});
+
+// ---- 表示の部品 ----
+function hours(n){n=Math.max(0,n|0);return n>=24?Math.floor(n/24)+'日'+(n%24?(n%24)+'時間':''):n+'時間'}
+function hue(s){var x=0;for(var i=0;i<s.length;i++)x=(x*31+s.charCodeAt(i))%360;return x}
+function partner(p){return String(p||'').split('／').map(function(x){
+  if(/未設定|未割当/.test(x))return '<span class="pt none">'+h(x)+'</span>';
+  var c=hue(x);return '<span class="pt" style="color:hsl('+c+',65%,36%);background:hsl('+c+',80%,96%);border-color:hsl('+c+',55%,82%)">'+h(x)+'</span>'}).join(' ')}
+function level(c){if(c.警告==='未対応')return 'red';if(c.警告)return 'amb';if(!c.進行中)return 'done';if(c.待機)return 'wait';if(c.状況==='未対応')return 'red';return 'act'}
+function stepsBar(c){var st=stagesOf(c),i=st.indexOf(c.状況);
+  return '<div class="steps" title="'+h(c.状況)+'">'+st.map(function(_,k){return '<i class="'+(k<i?'done':k===i?'cur':'')+'"></i>'}).join('')+'</div>'}
+function statusBadge(c){var cls=c.状況==='未対応'?'b-red':!c.進行中?'b-grn':c.待機?'b-pur':c.お金?'b-yel':'b-blu';
+  return '<span class="badge '+cls+'">'+h(c.状況)+(c.進捗中?'・'+h(c.進捗中):'')+'</span>'}
+function ageHtml(c){
+  if(!c.進行中)return '<span class="t" style="color:var(--sub)">'+h(c.状況)+'</span><small>'+h(c.最終対応.slice(0,10))+'</small>';
+  if(c.待機&&!c.警告)return '<span class="t" style="color:#6a4c99">次回アプローチ</span><small>'+(c.期日?'予定日 '+h(c.期日):'予定日なし')+'</small>';
+  var cls=c.警告==='未対応'||c.状況==='未対応'?'red':c.警告?'amb':'';
+  var lab=c.状況==='未対応'?'未対応 ':'放置 ';
+  return '<span class="t '+cls+'">'+lab+hours(c.放置時間)+'</span><small>'+(c.警告?'⚠ '+h(c.警告):'最終対応 '+h(c.最終対応.slice(5)))+'</small>'+(c.期日?'<small>期日 '+h(c.期日)+'</small>':'')+(c.連絡めやす?'<small style="color:var(--blu)">✉ 連絡 '+hours(c.連絡からの時間)+'なし</small>':'')}
+
+// ---- 一覧 ----
+function list(){var d=S.data,q=$('#q').value.trim(),fs=$('#fs').value,fc=$('#fc').value,fp=$('#fp').value,fa=$('#fa').value,fd=$('#fd').checked,t=S.filter.tile;
+  return d.案件.filter(function(c){
+    if(S.kubun&&c.区分!==S.kubun)return false;
+    if(fc==='-'&&c.契約状態)return false;if(fc&&fc!=='-'&&c.契約状態!==fc)return false;
+    if(t==='red'&&c.状況!=='未対応')return false;
+    if(t==='warn'&&!c.警告)return false;
+    if(t==='act'&&(!c.進行中||c.状況==='未対応'||c.待機||c.お金))return false;
+    if(t==='money'&&!c.お金)return false;
+    if(t==='wait'&&!c.待機)return false;
+    if(t==='done'&&c.進行中)return false;
+    if(!fd&&!c.進行中&&t!=='done'&&KD(c).終了.indexOf(fs)<0)return false;
+    if(fs&&c.状況!==fs)return false;
+    if(fp&&String(c.振分け先).split('／').indexOf(fp)<0)return false;
+    if(fa==='-'&&c.担当者)return false;if(fa&&fa!=='-'&&c.担当者!==fa)return false;
+    if(q){var all=[c.番号,c.名前,c.会社,c.メール,c.電話,c.分野,c.小分類,c.本文,c.メモ,c.振分け先,c.契約番号].join(' ');if(all.indexOf(q)<0)return false}
+    return true})}
+function kbar(){var d=S.data,A=d.案件;
+  var n=function(k){return A.filter(function(c){return (!k||c.区分===k)&&c.進行中}).length};
+  $('#kbar').innerHTML=[''].concat(d.区分順).map(function(k){var m=n(k);return '<button data-k="'+h(k)+'" class="'+(S.kubun===k?'on':'')+'" title="'+h(k?d.区分[k].説明:'すべての区分')+'">'+h(k||'すべて')+(m?'<b>'+m+'</b>':'')+'</button>'}).join('');
+  $$('#kbar button').forEach(function(b){b.onclick=function(){S.kubun=b.dataset.k;try{localStorage.setItem('ma-adm-kb',S.kubun)}catch(_){}$('#fs').value='';S.filter.tile='';fillSelects();render()}});
+  if(S.kubun){var K=d.区分[S.kubun];$('#legend').innerHTML='進め方：'+K.段階.map(function(x){return '<i class="'+(K.終了.indexOf(x)>=0?'end':'')+'">'+h(x)+'</i>'}).join('<em>→</em>')}
+  else $('#legend').innerHTML='区分を選ぶと、その区分の進め方（段階）が出ます。数字は進行中の件数です。';
+  var ptOn=!S.kubun||!d.区分[S.kubun].自社のみ;$('#fp').classList.toggle('hide',!ptOn)}
+function render(){var d=S.data;if(!d)return;kbar();var A=d.案件.filter(function(c){return !S.kubun||c.区分===S.kubun});
+  var n={red:A.filter(function(c){return c.状況==='未対応'}).length,warn:A.filter(function(c){return c.警告}).length,act:A.filter(function(c){return c.進行中&&c.状況!=='未対応'&&!c.待機&&!c.お金}).length,money:A.filter(function(c){return c.お金}).length,wait:A.filter(function(c){return c.待機}).length,done:A.filter(function(c){return !c.進行中}).length};
+  var tiles=[['red','red','未対応'],['warn','amb','要対応（放置・期日超過）'],['act','blu','対応中'],['money','amb','支払い・手数料・分配'],['wait','blu','次回アプローチ'],['done','grn','終わったもの']];
+  if(S.kubun&&d.区分[S.kubun].自社のみ)tiles=tiles.filter(function(x){return x[0]!=='money'&&x[0]!=='wait'});
+  $('#tiles').style.gridTemplateColumns=innerWidth>900?'repeat('+tiles.length+',1fr)':'';
+  $('#tiles').innerHTML=tiles.map(function(x){return '<button class="tile '+x[1]+(S.filter.tile===x[0]?' on':'')+(x[0]==='red'&&n.red?' hot':'')+'" data-t="'+x[0]+'"><b>'+n[x[0]]+'</b><span>'+x[2]+'</span></button>'}).join('');
+  $$('#tiles .tile').forEach(function(b){b.onclick=function(){S.filter.tile=S.filter.tile===b.dataset.t?'':b.dataset.t;render()}});
+  var L=list();$('#cnt').textContent=L.length+' 件を表示（'+(S.kubun||'全区分')+' '+A.length+' 件）';
+  if(!L.length){$('#list').innerHTML='<div class="empty">該当する案件はありません。</div>';return}
+  $('#list').innerHTML=L.map(function(c){var lv=level(c),isNew=c.状況==='未対応'&&c.放置時間<24;
+    var subs=String(c.小分類||'').split('、').filter(Boolean);
+    return '<button class="row s-'+lv+'" data-no="'+h(c.番号)+'"><span class="bar"></span>'
+     +'<div class="c1"><div class="no">'+h(c.番号)+'　'+h(c.受付)+(isNew?' <span class="badge b-new">新着</span>':'')+'</div><div class="nm">'+h(c.名前)+' 様'+(S.kubun?'':'<span class="kd">'+h(c.区分)+'</span>')+(c.契約状態?'<span class="ct">契約：'+h(c.契約状態)+'</span>':'')+'</div><div class="co">'+h(c.会社||'')+'</div></div>'
+     +'<div class="c2 cat"><b>'+h(String(c.分野||c.相談||'').split('＞').pop())+'</b>'+h(String(c.分野||'').split('＞')[0])+'<div class="subs">'+subs.slice(0,3).map(function(s){return '<i>'+h(s)+'</i>'}).join('')+(subs.length>3?'<i>ほか'+(subs.length-3)+'件</i>':'')+'</div></div>'
+     +'<div class="c3">'+partner(c.振分け先)+'</div>'
+     +'<div class="c4">'+stepsBar(c)+'<div class="st">'+statusBadge(c)+'<span class="co">担当：'+h(c.担当者||'未定')+'</span></div></div>'
+     +'<div class="age">'+ageHtml(c)+'</div></button>'}).join('');
+  $$('#list .row').forEach(function(r){r.onclick=function(){openDetail(r.dataset.no)}})}
+
+// ---- 警告（画面の帯と音） ----
+function alarm(){var A=S.data.案件.filter(function(c){return c.警告});
+  var bar=$('#alarm');document.title=(A.length?'('+A.length+') ':'')+'案件管理';
+  if(!A.length){bar.classList.remove('on');S.alerts={};return}
+  var cnt=function(w){return A.filter(function(c){return c.警告===w}).length};
+  $('#alarmText').textContent='⚠ 要対応 '+A.length+' 件（未対応のまま '+cnt('未対応')+' 件／期日超過 '+cnt('期日超過')+' 件／進捗の記録なし '+cnt('進捗の記録なし')+' 件）';
+  bar.classList.add('on');
+  var fresh=A.some(function(c){return !S.alerts[c.番号]});var now=Date.now();
+  if(fresh||now-S.lastChime>10*60000){chimeAlert();S.lastChime=now}
+  S.alerts={};A.forEach(function(c){S.alerts[c.番号]=1})}
+$('#alarmGo').onclick=function(){S.filter.tile='warn';$('#fd').checked=false;render();window.scrollTo(0,0)};
+
+// ---- 詳細 ----
+function openDetail(no){S.open=no;var c=find(no);if(!c)return;renderDetail(c,false);$('#shade').classList.remove('hide');$('#detail').classList.remove('hide');$('#detail').scrollTop=0}
+function closeDetail(){S.open=null;$('#shade').classList.add('hide');$('#detail').classList.add('hide')}
+$('#shade').onclick=closeDetail;
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('#modal').classList.contains('hide'))closeModal();else closeDetail()}});
+function nextStage(c){var st=stagesOf(c),i=st.indexOf(c.状況);return i>=0&&i<st.length-1?st[i+1]:c.状況}
+function isMoney(st,c){return (!c||c.区分==='経営相談')&&S.data.お金.indexOf(st)>=0}
+function renderDetail(c,keep){var d=S.data,el=$('#detail'),ST=stagesOf(c),K=KD(c),adm=d.me.立場==='管理者';
+  var memo=keep&&$('#dmemo')?$('#dmemo').value:null;
+  var cur=ST.indexOf(c.状況),nx=c.状況==='未対応'?'内容確認':c.状況;
+  var subs=String(c.小分類||'').split('、').filter(Boolean);
+  el.innerHTML='<div class="dh"><h2><small>'+h(c.番号)+'　受付 '+h(c.受付)+'</small>'+h(c.名前)+' 様 '+statusBadge(c)+'<span class="kd">'+h(c.区分)+'</span></h2><button class="x" id="dx" aria-label="閉じる">×</button></div>'
+   +(c.警告?'<div class="sec" style="padding:0;border:0;background:none"><div class="redbox">⚠ '+h(c.警告)+(c.警告==='期日超過'?'（期日 '+h(c.期日)+'）':'（'+(c.状況==='未対応'?'受付から ':'最後の対応から ')+hours(c.放置時間)+'）')+'</div></div>':'')
+   +'<div class="sec"><h3>進み具合</h3><div class="big-steps">'+ST.map(function(s,k){return '<button data-s="'+h(s)+'" class="'+(K.待機.indexOf(s)>=0?'wait ':'')+(k<cur?'done':k===cur?'cur':'')+'">'+h(s)+'</button>'}).join('')+'</div>'+(c.進捗中?'<p class="note">いまの中分類・小分類：'+h(c.進捗中)+(c.進捗小?'　＞　'+h(c.進捗小):'')+'</p>':'')+'<p class="note">押すと、その段階で「進捗を記録」の欄に入ります。</p></div>'
+   +'<div class="sec"><h3>お客さま</h3><dl class="info"><dt>お名前</dt><dd>'+h(c.名前)+' 様</dd><dt>会社名</dt><dd>'+h(c.会社||'—')+'</dd><dt>メール</dt><dd><a href="mailto:'+h(c.メール)+'">'+h(c.メール)+'</a></dd><dt>電話</dt><dd>'+(c.電話?'<a href="tel:'+h(c.電話.replace(/[^\d+]/g,''))+'">'+h(c.電話)+'</a>':'—')+'</dd><dt>お客さまへの連絡</dt><dd>'+(c.最終報告?h(c.最終報告)+'（'+c.報告回数+' 回目まで）':'まだ連絡していません（受付メールのみ）')+'</dd></dl></div>'
+   +'<div class="sec"><h3>ご相談の内容</h3><dl class="info"><dt>分野</dt><dd>'+h(c.分野||c.相談||'')+'</dd><dt>くわしい内容</dt><dd><div class="subs">'+subs.map(function(s){return '<i>'+h(s)+'</i>'}).join('')+'</div></dd></dl><pre class="msg" style="margin-top:10px">'+h(c.本文)+'</pre></div>'
+   +(K.自社のみ?'':'<div class="sec" id="cand"><h3>取次の候補（お問い合わせの内容から自動で選びました）</h3><div class="cands" id="cands"><p class="note">探しています…</p></div></div>')
+   +'<div class="sec"><h3>'+(K.自社のみ?'担当':'取次先・担当')+'</h3>'+(K.自社のみ?'<p class="note">「'+h(c.区分)+'」は当社だけで対応する区分のため、取次先はありません。</p>':'<div style="margin:0 0 10px">'+partner(c.振分け先)+'</div>')+'<div class="grid2">'+(K.自社のみ?'<input type="hidden" id="dp" value="">':'<label class="f">取次先（複数は「／」で区切る）<input id="dp" list="dpl" value="'+h(c.振分け先)+'"><datalist id="dpl">'+d.振分け先.map(function(s){return '<option value="'+h(s)+'">'}).join('')+'</datalist></label>')+'<label class="f">担当者<select id="da"><option value="">未定</option>'+staffOpts(c,adm)+'</select></label></div><label class="f">社内メモ（お客さまには見えません）<textarea id="dmemo" rows="3">'+h(memo!=null?memo:c.メモ||'')+'</textarea></label><div class="acts"><button class="btn" id="dsave">'+(K.自社のみ?'担当・メモを保存':'取次先・担当・メモを保存')+'</button></div></div>'
+   +'<div class="sec"><h3>電子契約</h3><p class="note">契約書は「電子契約」の画面で作って送ります。送ったら、ここに契約番号と状態を入れておくと、一覧で見分けられます。</p><div class="grid2"><label class="f">契約番号<input id="ctn" value="'+h(c.契約番号)+'" placeholder="例）MA-2611-0001"></label><label class="f">契約の状態<select id="cts">'+契約状態.map(function(s){return '<option value="'+h(s)+'"'+(s===c.契約状態?' selected':'')+'>'+h(s||'なし')+'</option>'}).join('')+'</select></label></div><div class="acts"><button class="btn" id="ctopen">電子契約の画面を開く（お客さまの情報を写す）</button><button class="btn" id="ctsave">契約番号・状態を保存</button></div></div>'
+   +'<div class="sec" id="prog"><h3>進捗を記録する</h3>'
+     +'<label class="f">① 進み具合（大分類）<select id="ns">'+ST.map(function(s){return '<option'+(s===nx?' selected':'')+'>'+h(s)+'</option>'}).join('')+'</select></label>'
+     +'<div class="f" style="font-size:12px;color:var(--sub)">② 中分類</div><div class="chiprow" id="nmid"></div>'
+     +'<div class="f" style="font-size:12px;color:var(--sub)">③ 小分類</div><div class="chiprow" id="nsml"></div>'
+     +'<label class="f">④ 詳細（社内の記録）<textarea id="nr" rows="3" placeholder="例）電話で状況を確認。取次先へ資料を送付。"></textarea></label>'
+     +'<div class="grid2"><label class="f money" id="nmw">金額（円・任意）<input id="nm" inputmode="numeric" placeholder="例）50000"></label><label class="f">次回期日（任意・過ぎると警告）<input id="nd" type="date" value="'+h((c.期日||'').replace(/\//g,'-'))+'"></label></div>'
+     +'<div id="custbox"><label class="f">お客さまへ伝えること（任意・報告文に入ります）<textarea id="nc" rows="2" placeholder="例）いただいた資料をもとに、取次先と内容を確認しております。"></textarea></label><label class="f">次の予定（任意・報告文に入ります）<input id="nn" placeholder="例）11月5日（水）にお電話いたします"></label></div>'
+     +'<div class="acts"><button class="btn" id="nonly">記録だけする</button><button class="btn pri" id="nrep">記録して報告文を作る</button></div><p class="note" id="nnote">報告文は自動で作られます。お客さまへ送るかどうかは、内容を見てから決められます。</p></div>'
+   +'<div class="sec"><h3>対応の履歴</h3><ul class="tl" id="tl"><li><div class="h">読み込み中…</div></li></ul></div>';
+  $('#dx').onclick=closeDetail;
+  var pick={中:'',小:[]};
+  var drawPick=function(){var st=$('#ns').value,opts=c.区分==='経営相談'?(d.選択肢[st]||[]):[];
+    $('#nmid').innerHTML=opts.length?opts.map(function(o){return '<button type="button" class="'+(pick.中===o.中?'on':'')+'">'+h(o.中)+'</button>'}).join(''):'<span class="note">（選択肢なし）</span>';
+    $$('#nmid button').forEach(function(b){b.onclick=function(){pick.中=pick.中===b.textContent?'':b.textContent;pick.小=[];drawPick()}});
+    var o=opts.filter(function(x){return x.中===pick.中})[0];
+    $('#nsml').innerHTML=o&&o.小.length?o.小.map(function(t){return '<button type="button" class="'+(pick.小.indexOf(t)>=0?'on':'')+'">'+h(t)+'</button>'}).join(''):'<span class="note">'+(pick.中?'（小分類なし）':'中分類を選ぶと出ます')+'</span>';
+    $$('#nsml button').forEach(function(b){b.onclick=function(){var t=b.textContent,i=pick.小.indexOf(t);i>=0?pick.小.splice(i,1):pick.小.push(t);drawPick()}});
+    var inner=d.社内段階.indexOf(st)>=0;$('#nrep').disabled=inner;$('#custbox').style.display=inner?'none':'';
+    $('#nnote').textContent=inner?'「'+st+'」は社内の手続きのため、お客さまへの報告文は作りません。':'報告文は自動で作られます。お客さまへ送るかどうかは、内容を見てから決められます。';
+    $('#nmw').classList.toggle('on',isMoney(st,c)||st==='提案見積中'||st==='見積り送付'||st==='入金待ち')};
+  if(c.状況===nx&&c.進捗中){pick.中=c.進捗中;pick.小=String(c.進捗小||'').split('、').filter(Boolean)}
+  $('#ns').onchange=function(){pick={中:'',小:[]};drawPick()};drawPick();
+  $$('.big-steps button',el).forEach(function(b){b.onclick=function(){$('#ns').value=b.dataset.s;pick={中:'',小:[]};drawPick();$('#prog').scrollIntoView({behavior:'smooth',block:'start'})}});
+  $('#ctsave').onclick=function(){busy(this);call('updateCase',S.token,{番号:c.番号,行:c.行,契約番号:$('#ctn').value.trim(),契約状態:$('#cts').value}).then(function(){toast('電子契約の情報を保存しました');reload()}).catch(fail)};
+  $('#ctopen').onclick=function(){var t='【案件 '+c.番号+'】\nお名前：'+c.名前+' 様\n会社名：'+(c.会社||'')+'\nメール：'+c.メール+'\n電話：'+(c.電話||'')+'\n内容：'+(c.分野||c.相談||'');
+    try{navigator.clipboard.writeText(t);toast('お客さまの情報を写しました。電子契約の画面で貼り付けてください')}catch(_){}
+    window.open('../denshi-keiyaku/','_blank','noopener')};
+  $('#dsave').onclick=function(){busy(this);call('updateCase',S.token,{番号:c.番号,行:c.行,振分け先:$('#dp').value.trim(),担当者:$('#da').value,メモ:$('#dmemo').value}).then(function(){toast('保存しました');reload()}).catch(fail)};
+  var rec=function(){return {番号:c.番号,行:c.行,状況:$('#ns').value,中分類:pick.中,小分類:pick.小.join('、'),記録:$('#nr').value,金額:$('#nm').value,期日:$('#nd').value,担当者:$('#da').value||c.担当者||S.data.me.名前}};
+  $('#nonly').onclick=function(){var r=rec();if(!r.記録.trim()&&r.状況===c.状況&&!r.中分類&&!r.金額&&r.期日===(c.期日||'').replace(/\//g,'-')){toast('進み具合・中分類・詳細のどれかを入れてください');return}busy(this);call('updateCase',S.token,r).then(function(){toast('記録しました（お客さまへは送っていません）');reload()}).catch(fail)};
+  $('#nrep').onclick=function(){var b=this;busy(b);var r=rec();
+    call('updateCase',S.token,r).then(function(){return call('draftReport',S.token,c.番号,r.状況,$('#nc').value,$('#nn').value,$('#da').value||c.担当者||'')}).then(function(dr){unbusy(b);reportModal(c,r.状況,dr);reload()}).catch(fail)};
+  if(!K.自社のみ)call('suggestPartners',S.token,c.番号).then(function(R){var box=$('#cands');if(!box)return;
+    if(!R.登録数){box.innerHTML='<p class="note">取次先がまだ登録されていません。「取次先」のタブで登録すると、ここに候補が出ます。（分類からの目安：'+h(R.目安)+'）</p>';return}
+    if(!R.候補.length){box.innerHTML='<p class="note">登録されている取次先の中に、この内容に合うものが見つかりませんでした。（分類からの目安：'+h(R.目安)+'）</p>';return}
+    box.innerHTML=R.候補.map(function(x,i){return '<div class="cand'+(i?'':' top')+'"><div class="hd">'+(i?'':'<span class="badge b-new">一番の候補</span>')+'<b>'+h(x.名前)+'</b><span class="badge b-gry">'+h(x.種別||'')+'</span><span class="sc">適合度 '+x.点+'</span></div><div class="meter"><i style="width:'+x.点+'%"></i></div><ul>'+x.理由.map(function(t){return '<li>'+h(t)+'</li>'}).join('')+'</ul>'+(x.条件?'<p class="note" style="margin:0 0 6px">条件：'+h(x.条件)+'</p>':'')+'<div class="acts"><button class="btn sm" data-set="'+h(x.名前)+'">この取次先に決める</button><button class="btn sm pri" data-ref="'+h(x.名前)+'"'+(x.メール?'':' disabled title="メール未登録"')+'>取次の連絡文を作る</button></div></div>'}).join('');
+    $$('#cands [data-set]').forEach(function(b){b.onclick=function(){var nm=b.dataset.set,cur=String(c.振分け先||'').split('／').filter(function(x){return x&&!/未設定|未割当/.test(x)});if(cur.indexOf(nm)<0)cur.push(nm);busy(b);
+      call('updateCase',S.token,{番号:c.番号,行:c.行,振分け先:cur.join('／'),状況:ST.indexOf(c.状況)<ST.indexOf('対応選定')?'対応選定':c.状況,中分類:'提携先へ取次',小分類:'候補を決定',記録:'取次先を「'+nm+'」に決定'}).then(function(){toast('取次先を「'+nm+'」に決めました');reload()}).catch(fail)}});
+    $$('#cands [data-ref]').forEach(function(b){b.onclick=function(){referralModal(c,b.dataset.ref,false)}})}).catch(function(e){var box=$('#cands');if(box)box.innerHTML='<p class="note">候補を出せませんでした：'+h(e.message)+'</p>'});
+  call('getHistory',S.token,c.番号).then(function(H){var sentTo={};H.forEach(function(x){if(/取次/.test(x.種類)&&/送信済み/.test(x.送信)){var m=String(x.内容).match(/(?:送り先|取次先)：([^（\n]+)/);if(m)sentTo[m[1].trim()]=1}});
+    $$('#cands [data-ref]').forEach(function(b){if(sentTo[b.dataset.ref])b.insertAdjacentHTML('afterend','<span class="sentbadge">送付済み</span>')});
+    $('#tl').innerHTML=H.length?H.map(function(x){return '<li class="'+(/送信済み/.test(x.送信)?'sent':x.種類==='進捗'?'prog':'')+'"><div class="h">'+h(x.日時)+'　'+h(x.担当者)+'　<b>'+h(x.種類)+'</b>'+(x.状況?'（'+h(x.状況)+(x.中?'・'+h(x.中):'')+(x.小?'・'+h(x.小):'')+'）':'')+(x.金額?'　<b>'+Number(x.金額).toLocaleString()+'円</b>':'')+(x.送信?'　<span class="badge b-grn">'+h(x.送信)+'</span>':'')+'</div><div class="c">'+h(x.内容)+'</div></li>'}).join(''):'<li><div class="h">まだ履歴はありません。</div></li>'}).catch(function(){})}
+function staffOpts(c,adm){var d=S.data,L=adm?d.担当者.slice():[d.me.名前];if(c.担当者&&L.indexOf(c.担当者)<0)L.push(c.担当者);return L.map(function(s){return '<option'+(s===c.担当者?' selected':'')+'>'+h(s)+'</option>'}).join('')}
+function busy(b){b.disabled=true;b.dataset.t=b.textContent;b.textContent='処理中…'}
+function unbusy(b){if(b){b.disabled=false;if(b.dataset.t)b.textContent=b.dataset.t}}
+function fail(e){$$('button[disabled]').forEach(unbusy);toast('エラー：'+e.message)}
+function reload(){return load(false).then(function(){var c=find(S.open);if(c)renderDetail(c,false)})}
+
+// ---- 報告文の確認と送信 ----
+function modal(html){var m=$('#modal');m.innerHTML='<div class="box">'+html+'</div>';m.classList.remove('hide');$$('[data-close]',m).forEach(function(b){b.onclick=closeModal})}
+function closeModal(){$('#modal').classList.add('hide');$('#modal').innerHTML=''}
+function reportModal(c,st,dr){
+  var tooSoon=c.最終報告&&dr.連絡からの時間<dr.下限;
+  modal('<h3>お客さまへの進捗報告（下書き）</h3><p class="note">宛先：'+h(dr.宛先)+'　／　作り方：'+h(dr.方法)+'　／　前回の連絡：'+h(dr.前回連絡)+'　／　これまでの報告：'+dr.報告回数+' 回</p>'
+   +(tooSoon?'<div class="warnbox">前回の連絡から '+hours(dr.連絡からの時間)+' しかたっていません。連絡が多すぎないか確認してください。急ぎでなければ、次の区切りでまとめて送るのがおすすめです。</div>':'')
+   +'<label class="f">返信する担当者（文中の名前・差出人名が変わります）<select id="mt">'+dr.担当一覧.map(function(s){return '<option'+(s===dr.担当?' selected':'')+'>'+h(s)+'</option>'}).join('')+'</select></label>'
+   +'<label class="f">件名<input id="ms" value="'+h(dr.件名)+'"></label><label class="f">本文（自由に直せます）<textarea id="mb">'+h(dr.本文)+'</textarea></label>'
+   +'<div class="acts"><button class="btn" id="mno">今回は送らない</button><button class="btn pri" id="mgo">この内容でお客さまに送る</button></div>');
+  var cur=dr.担当;
+  $('#mt').onchange=function(){var nw=this.value,t=$('#mb').value;
+    t=t.split('の'+cur+'です。').join('の'+nw+'です。').split('担当：'+cur).join('担当：'+nw);$('#mb').value=t;cur=nw;toast('担当者を「'+nw+'」に変えました')};
+  $('#mno').onclick=function(){closeModal();toast('記録だけ保存しました（お客さまへは送っていません）')};
+  $('#mgo').onclick=function(){var b=this;if(!$('#mb').value.trim()){toast('本文が空です');return}busy(b);
+    call('sendReport',S.token,c.番号,$('#ms').value,$('#mb').value,st,$('#mt').value).then(function(){closeModal();toast('お客さまへ送信しました');reload()}).catch(fail)}}
+
+// ---- 取次先への連絡文 ----
+function referralModal(c,name,withContact,staff){
+  call('draftReferral',S.token,c.番号,name,withContact,staff||$('#da')&&$('#da').value||c.担当者||'').then(function(dr){
+    modal('<h3>取次先への連絡（下書き）</h3><p class="note">宛先：'+h(dr.取次先)+'（'+h(dr.宛先||'メール未登録')+'）</p>'
+     +'<label class="f">送る担当者<select id="rt2">'+dr.担当一覧.map(function(s){return '<option'+(s===dr.担当?' selected':'')+'>'+h(s)+'</option>'}).join('')+'</select></label>'
+     +'<label class="f" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="rcon" style="width:auto;margin:0"'+(dr.連絡先?' checked':'')+'> お客さまの連絡先（名前・メール・電話）を入れる　<small style="color:var(--red)">※お客さまの了承を得た場合だけ</small></label>'
+     +'<label class="f">件名<input id="rs" value="'+h(dr.件名)+'"></label><label class="f">本文（自由に直せます）<textarea id="rb">'+h(dr.本文)+'</textarea></label>'
+     +'<label class="consent"><input type="checkbox" id="ragr"> お客さまから「'+h(name)+'」へご相談内容を伝えることの同意をいただきました。（同意がないと送れません。送った記録は対応ログに残ります）</label>'
+     +'<div class="acts"><button class="btn" data-close>今回は送らない</button><button class="btn pri" id="rgo" disabled>この内容で取次先に送る</button></div>');
+    $('#ragr').onchange=function(){$('#rgo').disabled=!(this.checked&&dr.宛先)};
+    $('#rcon').onchange=function(){closeModal();referralModal(c,name,this.checked,$('#rt2').value)};
+    var cur=dr.担当;$('#rt2').onchange=function(){var nw=this.value,t=$('#rb').value;t=t.split('の'+cur+'です。').join('の'+nw+'です。').split('担当：'+cur).join('担当：'+nw);$('#rb').value=t;cur=nw};
+    $('#rgo').onclick=function(){var b=this;busy(b);call('sendReferral',S.token,c.番号,name,$('#rs').value,$('#rb').value,$('#rt2').value,$('#ragr').checked).then(function(){closeModal();toast('取次先へ送信しました');reload()}).catch(fail)}}).catch(fail)}
+
+// ---- タブ ----
+$$('.tabs button').forEach(function(b){b.onclick=function(){var t=b.dataset.tab;$$('.tabs button').forEach(function(x){x.classList.toggle('on',x===b)});['cases','partners','log','setting'].forEach(function(k){$('#'+k).classList.toggle('hide',k!==t)});
+  $('#ptadd').classList.toggle('hide',!!(S.data&&S.data.me.立場!=='管理者'));
+  if(t==='partners')loadPartners();if(t==='log')loadLog();if(t==='setting')loadStaff()}});
+
+// ---- 対応ログ（管理者） ----
+var LOGK=['ログイン','段階の変更','対応の記録','お客さまへ報告','取次先へ送付','取次先の登録','取次先の変更','取次先の招待','取次先の登録（招待）','取次先の承認','担当者の追加','担当者の変更'];
+function loadLog(){var d=S.data;if(!$('#lg1').value){var t=new Date(Date.now()-30*86400000);$('#lg1').value=t.toISOString().slice(0,10)}
+  if($('#lgk').options.length<2){$('#lgk').innerHTML='<option value="">すべての区分</option>'+d.区分順.map(function(k){return '<option>'+h(k)+'</option>'}).join('');$('#lgt').innerHTML='<option value="">すべての種類</option>'+LOGK.map(function(k){return '<option>'+h(k)+'</option>'}).join('');$('#lgp').innerHTML='<option value="">操作した人：すべて</option>'+d.担当者.map(function(k){return '<option>'+h(k)+'</option>'}).join('')}
+  $('#lglist').innerHTML='<div class="empty">読み込み中…</div>';
+  call('getLog',S.token,{from:$('#lg1').value,to:$('#lg2').value,区分:$('#lgk').value,種類:$('#lgt').value,人:$('#lgp').value}).then(function(L){S.log=L;$('#lgn').textContent=L.length+' 件';
+    $('#lglist').innerHTML=L.length?'<table class="lg"><thead><tr><th>日時</th><th>受付番号</th><th>種類</th><th>内容</th><th class="hm">担当</th><th>操作した人</th><th class="hm">区分</th></tr></thead><tbody>'+L.map(function(x){return '<tr><td>'+h(x.日時)+'</td><td>'+(x.番号&&x.番号!=='-'?'<a href="#" data-no="'+h(x.番号)+'">'+h(x.番号)+'</a>':'—')+'</td><td><b>'+h(x.種類)+'</b></td><td class="w">'+h(x.内容)+'</td><td class="hm">'+h(x.担当)+'</td><td>'+h(x.人)+'</td><td class="hm">'+h(x.区分)+'</td></tr>'}).join('')+'</tbody></table>':'<div class="empty">この条件の記録はありません。</div>';
+    $$('#lglist [data-no]').forEach(function(a){a.onclick=function(e){e.preventDefault();if(find(a.dataset.no))openDetail(a.dataset.no);else toast('この案件は今の一覧にありません')}})}).catch(fail)}
+$('#lgr').onclick=loadLog;
+$('#lgc').onclick=function(){var L=S.log||[];if(!L.length){toast('先に「表示する」を押してください');return}
+  var q=function(v){v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"'};
+  var csv='\ufeff'+[['日時','受付番号','種類','内容','担当','操作した人','区分']].concat(L.map(function(x){return [x.日時,x.番号,x.種類,x.内容,x.担当,x.人,x.区分]})).map(function(r){return r.map(q).join(',')}).join('\r\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='対応ログ_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},2000)};
+
+// ---- 設定：担当者（管理者） ----
+function loadStaff(){$('#stlist').innerHTML='<div class="empty">読み込み中…</div>';call('listStaff',S.token).then(function(L){S.st=L;
+  $('#stlist').innerHTML='<table class="pt-tbl"><thead><tr><th>名前</th><th>ログインID</th><th class="hm">メール</th><th>立場</th><th>状態</th><th></th></tr></thead><tbody>'+L.map(function(x,i){return '<tr class="'+(x.有効?'':'off')+'"><td><b>'+h(x.名前)+'</b></td><td>'+h(x.id)+'</td><td class="hm">'+h(x.メール||'—')+'</td><td>'+h(x.立場)+'</td><td>'+(x.有効?(x.初期設定待ち?'初回ログイン待ち':'利用中'):'停止中')+'</td><td><button class="btn sm" data-i="'+i+'">変更</button></td></tr>'}).join('')+'</tbody></table>';
+  $$('#stlist [data-i]').forEach(function(b){b.onclick=function(){staffForm(S.st[+b.dataset.i])}})}).catch(fail)}
+$('#stadd').onclick=function(){staffForm(null)};
+function staffForm(x){x=x||{立場:'担当者',有効:true};
+  modal('<h3>'+(x.行?'担当者の変更':'担当者の追加')+'</h3>'
+   +'<div class="grid2"><label class="f">名前（必須）<input id="s_n" value="'+h(x.名前||'')+'"></label><label class="f">ログインID（半角英数字・必須）<input id="s_i" value="'+h(x.id||'')+'" autocomplete="off"></label></div>'
+   +'<label class="f">メール（お客さまからの返信の受け取り先）<input id="s_m" type="email" value="'+h(x.メール||'')+'"></label>'
+   +'<div class="grid2"><label class="f">立場<select id="s_r"><option'+(x.立場==='担当者'?' selected':'')+'>担当者</option><option'+(x.立場==='管理者'?' selected':'')+'>管理者</option></select></label><label class="f">'+(x.行?'パスワードを初期化する（入れたときだけ）':'初期パスワード（8文字以上・必須）')+'<input id="s_p" type="text" autocomplete="off" placeholder="8文字以上"></label></div>'
+   +'<p class="note">初期パスワードは、本人に口頭などで伝えてください。最初のログインのあと、本人が「パスワード変更」で変えられます。</p>'
+   +'<label class="f" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="s_e" style="width:auto;margin:0"'+(x.有効!==false?' checked':'')+'> 利用する（外すとログインできなくなります）</label>'
+   +'<p class="err" id="s_err"></p><div class="acts"><button class="btn" data-close>やめる</button><button class="btn pri" id="s_ok">保存する</button></div>');
+  $('#s_ok').onclick=function(){var b=this;busy(b);call('saveStaff',S.token,{行:x.行||0,id:$('#s_i').value,名前:$('#s_n').value,メール:$('#s_m').value,立場:$('#s_r').value,初期パスワード:$('#s_p').value,有効:$('#s_e').checked}).then(function(r){unbusy(b);if(!r.ok){$('#s_err').textContent=r.error;return}closeModal();toast('保存しました');loadStaff();load(false)}).catch(function(e){unbusy(b);$('#s_err').textContent=e.message})}}
+
+// ---- 取次先の招待 ----
+$('#ptinv').onclick=function(){
+  modal('<h3>取次先の登録フォームのリンクを送る</h3><p class="note">相手のメールに、専用の入力ページのリンクを送ります（14日間有効・1回だけ使えます）。入力された内容は「確認待ち」になり、管理者が確認してから候補に出るようになります。</p>'
+   +'<label class="f">相手の名前（会社名・お名前）<input id="i_n"></label><label class="f">相手のメール<input id="i_m" type="email"></label><p class="err" id="i_err"></p>'
+   +'<div class="acts"><button class="btn" data-close>やめる</button><button class="btn pri" id="i_ok">送る</button></div>');
+  $('#i_ok').onclick=function(){var b=this;busy(b);call('invitePartner',S.token,$('#i_n').value,$('#i_m').value).then(function(r){unbusy(b);if(!r.ok){$('#i_err').textContent=r.error;return}closeModal();toast('リンクを送りました')}).catch(function(e){unbusy(b);$('#i_err').textContent=e.message})}};
+
+// ---- 取次先の登録 ----
+function loadPartners(){$('#ptlist').innerHTML='<div class="empty">読み込み中…</div>';call('getPartners',S.token).then(function(P){S.pt=P;
+  if(!P.length){$('#ptlist').innerHTML='<div class="empty">まだ取次先が登録されていません。右上の「＋ 取次先を登録」から登録してください。</div>';return}
+  $('#ptlist').innerHTML='<table class="pt-tbl"><thead><tr><th>取次先</th><th class="hm">対応分野</th><th class="hm">得意なこと・キーワード</th><th>連絡先</th><th class="hm">取次実績</th><th></th></tr></thead><tbody>'
+   +P.map(function(p,i){return '<tr class="'+(p.確認待ち?'pend':p.有効?'':'off')+'"><td><b>'+h(p.名前)+'</b>'+(p.確認待ち?' <span class="badge b-yel">確認待ち</span>':'')+'<small>'+h(p.種別||'')+(p.確認待ち||p.有効?'':'（停止中）')+'</small>'+(p.登録者?'<small>登録：'+h(p.登録日||'')+'　'+h(p.登録者)+'</small>':'')+(p.条件?'<small>条件：'+h(p.条件)+'</small>':'')+'</td><td class="hm">'+h(p.分野||'—')+'</td><td class="hm">'+h(p.キーワード||'—')+(p.地域?'<small>地域：'+h(p.地域)+'</small>':'')+'</td><td>'+h(p.担当者||'')+'<small>'+h(p.メール||'メール未登録')+'</small><small>'+h(p.電話||'')+'</small></td><td class="hm">'+p.実績.件数+' 件<small>完了 '+p.実績.完了+' 件</small></td><td>'+(S.data.me.立場==='管理者'?(p.確認待ち?'<button class="btn sm pri" data-ok="'+p.行+'">確認して使えるようにする</button> ':'')+'<button class="btn sm" data-i="'+i+'">編集</button>':'')+'</td></tr>'}).join('')+'</tbody></table>';
+  $$('#ptlist [data-ok]').forEach(function(b){b.onclick=function(){busy(b);call('approvePartner',S.token,+b.dataset.ok).then(function(r){if(!r.ok){unbusy(b);toast(r.error);return}toast('使えるようにしました');loadPartners();load(false)}).catch(fail)}});
+  $$('#ptlist [data-i]').forEach(function(b){b.onclick=function(){partnerForm(S.pt[+b.dataset.i])}})}).catch(fail)}
+$('#ptadd').onclick=function(){partnerForm(null)};
+function partnerForm(p){p=p||{種別:'提携先',有効:true};
+  modal('<h3>'+(p.行?'取次先の編集':'取次先の登録')+'</h3>'
+   +'<div class="grid2"><label class="f">取次先名（必須）<input id="p_n" value="'+h(p.名前||'')+'"></label><label class="f">種別<select id="p_k">'+['提携先','有資格者','許可事業者','自社'].map(function(s){return '<option'+(s===p.種別?' selected':'')+'>'+s+'</option>'}).join('')+'</select></label></div>'
+   +'<div class="grid2"><label class="f">担当者名<input id="p_p" value="'+h(p.担当者||'')+'"></label><label class="f">電話<input id="p_t" value="'+h(p.電話||'')+'"></label></div>'
+   +'<label class="f">メール（取次の連絡文の送り先）<input id="p_m" type="email" value="'+h(p.メール||'')+'"></label>'
+   +'<label class="f">対応分野（ホームページの事業名を「、」で区切る。全部なら「すべて」）<input id="p_a" value="'+h(p.分野||'')+'" placeholder="例）家じまい・不動産支援、リユース・買取"></label>'
+   +'<div class="chiprow" id="p_ac"></div>'
+   +'<label class="f">得意なこと・キーワード（「、」で区切る。お問い合わせの言葉と照らし合わせます）<textarea id="p_w" rows="2" placeholder="例）遺品整理、空き家管理、不用品回収、解体">'+h(p.キーワード||'')+'</textarea></label>'
+   +'<div class="grid2"><label class="f">対応地域<input id="p_r" value="'+h(p.地域||'')+'" placeholder="例）大阪、兵庫、京都"></label><label class="f">手数料・条件<input id="p_c" value="'+h(p.条件||'')+'" placeholder="例）成約額の10％"></label></div>'
+   +'<label class="f">メモ<textarea id="p_o" rows="2">'+h(p.メモ||'')+'</textarea></label>'
+   +'<label class="f" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="p_e" style="width:auto;margin:0"'+(p.有効!==false?' checked':'')+'> 利用する（外すと候補に出なくなります）</label>'
+   +'<p class="err" id="p_err"></p><div class="acts"><button class="btn" data-close>やめる</button><button class="btn pri" id="p_ok">保存する</button></div>');
+  var MIDS=['企業支援・経営サポート','専門家連携・行政書士業務','人材・採用支援','事業連携・協業','新規事業開発','通信・電話関連','店舗運営支援','固定費・仕入れ削減','衛生・環境関連商材','商材開拓・代理店展開','海外・輸出・国際ネットワーク','地域活性化','企画・制作・プロデュース','AI・システム開発','リユース・買取','家じまい・不動産支援','医療・介護 総合支援','すべて'];
+  var drawA=function(){var cur=$('#p_a').value.split(/[、,]/).map(function(x){return x.trim()}).filter(Boolean);
+    $('#p_ac').innerHTML=MIDS.map(function(m){return '<button type="button" class="'+(cur.indexOf(m)>=0?'on':'')+'">'+h(m)+'</button>'}).join('');
+    $$('#p_ac button').forEach(function(b){b.onclick=function(){var t=b.textContent,i=cur.indexOf(t);i>=0?cur.splice(i,1):cur.push(t);$('#p_a').value=cur.join('、');drawA()}})};
+  drawA();$('#p_a').oninput=drawA;
+  $('#p_ok').onclick=function(){var b=this;busy(b);call('savePartner',S.token,{行:p.行||0,名前:$('#p_n').value,種別:$('#p_k').value,担当者:$('#p_p').value,電話:$('#p_t').value,メール:$('#p_m').value,分野:$('#p_a').value,キーワード:$('#p_w').value,地域:$('#p_r').value,条件:$('#p_c').value,メモ:$('#p_o').value,有効:$('#p_e').checked}).then(function(r){unbusy(b);if(!r.ok){$('#p_err').textContent=r.error;return}closeModal();toast('取次先を保存しました');loadPartners();load(false)}).catch(function(e){unbusy(b);$('#p_err').textContent=e.message})}}
+
+// ログイン済みなら、そのまま開く
+if(S.token)start();
+})();
+</script>
+</body>
+</html>

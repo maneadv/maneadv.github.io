@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>取次先のご登録｜株式会社マネージメントアドバイザーズ</title>
+<link rel="icon" href="../assets/logo-32.png">
+<style>
+:root{--bg:#f6f4f1;--card:#fff;--ink:#1f1d1a;--sub:#6b655d;--line:#e6e0d8;--or:#e8771e;--or2:#fde7d3;--red:#d93025;--red2:#fde4e1;--grn:#1e8e3e;--grn2:#e3f4e8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 "Hiragino Sans","Noto Sans JP","Yu Gothic",Meiryo,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.hide{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+.head{margin:0 0 18px}
+.head small{display:block;color:var(--sub);font-size:12px}
+.head h1{margin:2px 0 6px;font-size:22px}
+.head p{margin:0;color:var(--sub);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:0 0 16px}
+.card h2{margin:0 0 4px;font-size:16px;display:flex;gap:8px;align-items:center}
+.card h2 i{font-style:normal;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--or);color:#fff;font-size:13px}
+.card h2 span{font-size:11px;color:#fff;background:#b5341f;padding:1px 7px;border-radius:4px}
+.card .hint{margin:0 0 12px;font-size:13px;color:var(--sub)}
+label.f{display:block;margin:0 0 14px;font-size:13px;color:var(--sub);font-weight:600}
+label.f input,label.f textarea{display:block;width:100%;margin-top:4px;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:16px;font-weight:400;color:var(--ink)}
+label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--or)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.chips button{border:1.5px solid #cfc7bc;background:#fff;border-radius:999px;padding:9px 14px;min-height:44px;font-weight:600;font-size:14px;cursor:pointer}
+.chips button.on{background:#a84505;border-color:#a84505;color:#fff}
+.chips button.on::before{content:"✓ "}
+.sub{font-size:12px;color:var(--sub);margin:4px 0 6px;font-weight:700}
+.agree{display:flex;gap:10px;align-items:flex-start;padding:14px;border:1.5px solid #e6c9b2;background:#fff7f0;border-radius:10px;font-size:14px;font-weight:600}
+.agree input{width:22px;height:22px;flex:none;margin:2px 0 0}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:56px;border-radius:12px;border:0;background:var(--or);color:#fff;font-weight:800;font-size:17px;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.back{background:#fff;border:1.5px solid #8a96a3;color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1 1 220px}
+.err{color:var(--red);font-size:13px;font-weight:700;margin:6px 0 0}
+.bad input,.bad textarea{border-color:var(--red)!important;background:#fff6f4}
+.msg{padding:18px;border-radius:12px;font-size:15px}
+.msg.ng{background:var(--red2);color:#8a1c12}
+.msg.ok{background:var(--grn2);color:#145c2b}
+.msg b{display:block;font-size:17px;margin:0 0 4px}
+pre.conf{white-space:pre-wrap;word-break:break-word;margin:0;font-family:inherit;font-size:14px;line-height:1.8;background:#faf8f5;border:1px solid var(--line);border-radius:10px;padding:14px}
+.bar{position:sticky;top:0;z-index:3;background:var(--bg);padding:8px 0 10px;font-size:12px;font-weight:700;color:var(--sub)}
+.bar div{height:8px;border-radius:99px;background:#e9e3da;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a84505,#ff8a2a);transition:width .3s}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><small>株式会社マネージメントアドバイザーズ</small><h1>取次先のご登録</h1><p id="hello">読み込んでいます…</p></div>
+  <div id="ng" class="msg ng hide"></div>
+  <div id="done" class="msg ok hide"><b>ご登録ありがとうございました。</b>いただいた内容は、当社で確認したうえで登録いたします。確認が済みましたら、ご相談に合わせて取次のご連絡を差し上げます。このページは閉じていただいて大丈夫です。</div>
+
+  <form id="f" class="hide" novalidate>
+    <div class="bar">入力の進み具合 <span id="pct">0</span>%<div><i id="pbar"></i></div></div>
+    <div class="step1">
+      <div class="card"><h2><i>1</i>貴社の情報 <span>必須</span></h2>
+        <label class="f">会社名・屋号<input id="nm" required autocomplete="organization"></label>
+        <div class="grid2"><label class="f">ご担当者のお名前<input id="ps" required autocomplete="name"></label><label class="f">電話番号<input id="tl" type="tel" required autocomplete="tel" placeholder="例）06-0000-0000"></label></div>
+        <label class="f">取次のご連絡を受け取るメール<input id="ml" type="email" required autocomplete="email"></label>
+      </div>
+      <div class="card"><h2><i>2</i>対応できる分野 <span>必須</span></h2><p class="hint">当てはまるものをすべて押してください。</p><div class="chips" id="fields"></div></div>
+      <div class="card"><h2><i>3</i>対応できる地域 <span>必須</span></h2><p class="hint">まず地方を押すと、都道府県が出ます。全国に対応できる場合は「全国」を押してください。</p>
+        <div class="chips" id="areas"></div><div id="prefbox"></div>
+        <label class="f">地域の補足（任意）<input id="ar2" placeholder="例）大阪市内は当日訪問可。離島は要相談"></label>
+      </div>
+      <div class="card"><h2><i>4</i>得意なこと・条件 <small style="font-weight:500;color:var(--sub);font-size:12px">任意</small></h2>
+        <label class="f">得意なこと・キーワード（「、」で区切ってください）<textarea id="kw" rows="3" placeholder="例）遺品整理、空き家管理、不用品回収"></textarea></label>
+        <label class="f">取次の手数料・条件<input id="cd" placeholder="例）成約額の10％／紹介料なし"></label>
+        <label class="f">そのほか伝えたいこと<textarea id="mm" rows="3"></textarea></label>
+      </div>
+      <div class="card">
+        <label class="agree"><input type="checkbox" id="ag"> 入力した内容を、株式会社マネージメントアドバイザーズが取次（お客さまのご紹介）のために使うことに同意します。お客さまの情報を受け取った場合は、そのご相談のためだけに使います。</label>
+        <p class="err hide" id="agerr">チェックを入れてください。</p>
+      </div>
+      <button type="button" class="btn" id="go">入力内容を確認する</button>
+    </div>
+    <div class="step2 hide">
+      <div class="card"><h2>この内容で送ります</h2><p class="hint">まちがいがなければ「この内容で登録する」を押してください。</p><pre class="conf" id="conf"></pre></div>
+      <div class="row"><button type="button" class="btn back" id="back">戻って直す</button><button type="submit" class="btn" id="send">この内容で登録する</button></div>
+      <p class="err hide" id="senderr"></p>
+    </div>
+  </form>
+</div>
+<script>
+(function(){
+'use strict';
+var GAS='https://script.google.com/macros/s/AKfycbzepmv2nhstu4cCZT6eGkV7mOzPnPS5l5haTXulbpYSzf_-qIoIKs9A8dKfcuJYxNjVWw/exec';
+var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var h=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var t=(location.search.match(/[?&]t=([0-9a-f]{40})/)||[])[1]||'';
+var AREAS={'北海道・東北':['北海道','青森','岩手','宮城','秋田','山形','福島'],'関東':['茨城','栃木','群馬','埼玉','千葉','東京','神奈川'],'中部':['新潟','富山','石川','福井','山梨','長野','岐阜','静岡','愛知'],'近畿':['三重','滋賀','京都','大阪','兵庫','奈良','和歌山'],'中国':['鳥取','島根','岡山','広島','山口'],'四国':['徳島','香川','愛媛','高知'],'九州・沖縄':['福岡','佐賀','長崎','熊本','大分','宮崎','鹿児島','沖縄']};
+var sel={分野:[],地方:[],県:[],全国:false},dirty=false,sent=false;
+function post(o){return fetch(GAS,{method:'POST',body:new URLSearchParams(o)}).then(function(r){return r.json()})}
+function ng(m){$('#hello').textContent='';$('#ng').textContent=m;$('#ng').classList.remove('hide');$('#f').classList.add('hide')}
+if(!t){ng('このページは、当社からお送りしたメールのリンクから開いてください。');return}
+post({pub:'invite',t:t}).then(function(r){
+  if(!r.ok){ng(r.error);return}
+  $('#hello').textContent=r.名前+' 様　当社の取次先（提携先）としてご登録いただくため、下の項目をご入力ください。入力は5分ほどで終わります。';
+  if(!/様$/.test(r.名前)&&!$('#nm').value)$('#nm').value=r.名前;
+  $('#ml').value=r.メール||'';
+  $('#fields').innerHTML=r.分野.map(function(x){return '<button type="button">'+h(x)+'</button>'}).join('');
+  $$('#fields button').forEach(function(b){b.onclick=function(){toggle(sel.分野,b.textContent);b.classList.toggle('on');clr($('#fields').parentNode);prog()}});
+  drawAreas();$('#f').classList.remove('hide');prog()
+}).catch(function(){ng('読み込めませんでした。通信の状態を確認して、ページを開き直してください。')});
+function toggle(a,v){var i=a.indexOf(v);i>=0?a.splice(i,1):a.push(v)}
+function drawAreas(){
+  $('#areas').innerHTML='<button type="button" data-all class="'+(sel.全国?'on':'')+'">全国</button>'+Object.keys(AREAS).map(function(k){return '<button type="button" class="'+(sel.地方.indexOf(k)>=0?'on':'')+'">'+h(k)+'</button>'}).join('');
+  $$('#areas button').forEach(function(b){b.onclick=function(){dirty=true;if(b.hasAttribute('data-all')){sel.全国=!sel.全国;if(sel.全国){sel.地方=[];sel.県=[]}}else{sel.全国=false;var k=b.textContent;toggle(sel.地方,k);if(sel.地方.indexOf(k)<0)sel.県=sel.県.filter(function(p){return AREAS[k].indexOf(p)<0})}drawAreas();clr($('#areas').parentNode);prog()}});
+  $('#prefbox').innerHTML=sel.地方.map(function(k){return '<div class="sub">'+h(k)+'（押さなければ地方全体）</div><div class="chips">'+AREAS[k].map(function(p){return '<button type="button" data-p class="'+(sel.県.indexOf(p)>=0?'on':'')+'">'+h(p)+'</button>'}).join('')+'</div>'}).join('');
+  $$('#prefbox [data-p]').forEach(function(b){b.onclick=function(){toggle(sel.県,b.textContent);b.classList.toggle('on');prog()}})}
+function area(){if(sel.全国)return '全国';return sel.地方.map(function(k){var ps=AREAS[k].filter(function(p){return sel.県.indexOf(p)>=0});return ps.length?ps.join('、'):k}).join('、')}
+function err(el,m){var w=el.closest('label')||el;w.classList.add('bad');var s=w.querySelector('.err');if(!s){s=document.createElement('p');s.className='err';w.appendChild(s)}s.textContent=m}
+function clr(w){if(!w)return;w.classList.remove('bad');var s=w.querySelector(':scope > .err');s&&s.remove()}
+document.addEventListener('input',function(e){dirty=true;clr(e.target.closest('label'));prog()});
+function reqs(){return [['#nm'],['#ps'],['#tl'],['#ml'],['分野'],['地域'],['#ag']]}
+function prog(){var n=0,a=reqs();a.forEach(function(r){var k=r[0];if(k==='分野'?sel.分野.length:k==='地域'?area():k==='#ag'?$('#ag').checked:$(k).value.trim())n++});var p=Math.round(n/a.length*100);$('#pct').textContent=p;$('#pbar').style.width=p+'%'}
+$('#ag').onchange=function(){$('#agerr').classList.add('hide');prog()};
+function check(){var first=null,f=function(el,m){err(el,m);first=first||el};
+  ['#nm','#ps'].forEach(function(s){if(!$(s).value.trim())f($(s),'入力してください')});
+  if(!/^[0-9０-９+\-－ー()（） ]{9,}$/.test($('#tl').value.trim()))f($('#tl'),'電話番号を確認してください（例：06-0000-0000）');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#ml').value.trim()))f($('#ml'),'メールアドレスの形を確認してください');
+  if(!sel.分野.length)f($('#fields').parentNode,'どれか1つ以上を押してください');
+  if(!area())f($('#areas').parentNode,'地域を選んでください');
+  if(!$('#ag').checked){$('#agerr').classList.remove('hide');first=first||$('#ag')}
+  if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return !first}
+function data(){return {名前:$('#nm').value.trim(),担当者:$('#ps').value.trim(),電話:$('#tl').value.trim(),メール:$('#ml').value.trim(),分野:sel.分野.join('、'),地域:area()+($('#ar2').value.trim()?'（'+$('#ar2').value.trim()+'）':''),キーワード:$('#kw').value.trim(),条件:$('#cd').value.trim(),メモ:$('#mm').value.trim(),同意:$('#ag').checked}}
+$('#go').onclick=function(){if(!check())return;var d=data();
+  $('#conf').textContent=['会社名・屋号：'+d.名前,'ご担当者：'+d.担当者,'電話：'+d.電話,'メール：'+d.メール,'対応できる分野：'+d.分野,'対応できる地域：'+d.地域,'得意なこと：'+(d.キーワード||'—'),'手数料・条件：'+(d.条件||'—'),'そのほか：'+(d.メモ||'—'),'取次のための利用：同意します'].join('\n');
+  $('.step1').classList.add('hide');$('.step2').classList.remove('hide');scrollTo(0,0)};
+$('#back').onclick=function(){$('.step2').classList.add('hide');$('.step1').classList.remove('hide')};
+$('#f').onsubmit=function(e){e.preventDefault();var b=$('#send');b.disabled=true;b.textContent='送っています…';$('#senderr').classList.add('hide');
+  post({pub:'register',t:t,data:JSON.stringify(data())}).then(function(r){
+    if(!r.ok){b.disabled=false;b.textContent='この内容で登録する';$('#senderr').textContent=r.error;$('#senderr').classList.remove('hide');return}
+    sent=true;$('#f').classList.add('hide');$('#hello').textContent='';$('#done').classList.remove('hide');scrollTo(0,0)
+  }).catch(function(){b.disabled=false;b.textContent='この内容で登録する';$('#senderr').textContent='送れませんでした。通信の状態を確認して、もう一度押してください。';$('#senderr').classList.remove('hide')})};
+addEventListener('beforeunload',function(e){if(dirty&&!sent){e.preventDefault();e.returnValue=''}});
+})();
+</script>
+</body>
+</html>
