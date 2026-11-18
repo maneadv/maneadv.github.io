@@ -1,0 +1,4 @@
+# 買取価格くらべ：本番の価格データが入るまで検索に載せない（2026-11-18）
+<IfModule mod_headers.c>
+Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
