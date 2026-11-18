@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /denshi-keiyaku/
+Disallow: /kanri/
+# 買取価格くらべ：本番の価格データが入るまで検索に載せない
+Disallow: /kaitori/
+Sitemap: https://madvi.jp/sitemap.xml
